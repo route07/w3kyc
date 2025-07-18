@@ -80,8 +80,7 @@ The Web KYC system outlines a multi-stage process designed to guide users throug
 - **Pre-populating Details:** The system aims to pre-populate institution and user details where possible, likely through integration with existing databases or user profiles, to streamline the data entry process.
 - **Uploading Documents:** Users are required to upload essential documents such as passports and scanned OCR documents. The system is designed to check the validity of these documents and trigger workflows if they are expired.
 - **Linking Address:** Users provide and link their address information.
-- **Scan User and Risk Profiling:** As users provide information, the system performs a
-
+- **Scan User and Risk Profiling:** As users provide information, the system performs a 
 comprehensive scan of the user. This involves: \* **Webscraping and Data Mining:** The system  leverages  web  scraping  and  data  mining  techniques  to  gather  additional information about the user and pre-fill data in various sections. This also includes sentiment  analysis  to  assist  users  in  completing  the  process.  \*  **Risk  Profile Generation:** Based on the collected web data, a risk profile is generated for the user. This profile is crucial for assessing potential risks associated with the investor.
 
 - **Onboarding Complete:** Once all necessary information is gathered and verified, the onboarding process is marked as complete.
