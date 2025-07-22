@@ -9,8 +9,11 @@ import {
   CheckCircleIcon,
   WalletIcon,
   UserIcon,
-  CubeIcon
+  CubeIcon,
+  ArrowRightIcon,
+  CogIcon
 } from '@heroicons/react/24/outline'
+import Link from 'next/link'
 
 interface UserAData {
   id: string
@@ -227,23 +230,58 @@ export default function UserAPage() {
 
   const renderOverview = () => (
     <div className="space-y-6">
-      {/* Hero Status Card */}
-      <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-6 text-white">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="p-3 bg-white/20 rounded-full">
-              <ShieldCheckIcon className="w-8 h-8" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold">KYC Verified</h2>
-              <p className="text-green-100">Your identity is verified and credentials are active</p>
+      {/* Three Colorful Action Buttons */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Link href="/kyc/complete/userA" className="group">
+          <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-6 text-white hover:from-blue-600 hover:to-blue-700 transition-all duration-200 transform hover:scale-105">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="p-3 bg-white/20 rounded-full">
+                  <ShieldCheckIcon className="w-8 h-8" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold">Check KYC</h3>
+                  <p className="text-blue-100">View verification status</p>
+                </div>
+              </div>
+              <ArrowRightIcon className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
             </div>
           </div>
-          <div className="text-right">
-            <div className="text-3xl font-bold">{userAData.riskScore}/100</div>
-            <div className="text-green-100">Risk Score</div>
+        </Link>
+
+        <Link href="#dashboard" className="group">
+          <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-6 text-white hover:from-green-600 hover:to-green-700 transition-all duration-200 transform hover:scale-105">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="p-3 bg-white/20 rounded-full">
+                  <ChartBarIcon className="w-8 h-8" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold">My Dashboard</h3>
+                  <p className="text-green-100">View your progress</p>
+                </div>
+              </div>
+              <ArrowRightIcon className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+            </div>
           </div>
-        </div>
+        </Link>
+
+        <Link href="#settings" className="group">
+          <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-6 text-white hover:from-purple-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="p-3 bg-white/20 rounded-full">
+                  <CogIcon className="w-8 h-8" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold">Settings</h3>
+                  <p className="text-purple-100">Manage preferences</p>
+                </div>
+              </div>
+              <ArrowRightIcon className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </div>
+        </Link>
       </div>
 
       {/* Quick Stats */}
@@ -542,13 +580,27 @@ export default function UserAPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center space-x-4 mb-4">
-            <div className="p-3 bg-green-100 rounded-full">
-              <UserIcon className="w-8 h-8 text-green-600" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">{userAData.firstName} {userAData.lastName}</h1>
-              <p className="text-gray-600">{userAData.email}</p>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-green-100 rounded-full">
+                <UserIcon className="w-8 h-8 text-green-600" />
+              </div>
+              <div className="flex items-center space-x-4">
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900">{userAData.firstName} {userAData.lastName}</h1>
+                  <p className="text-gray-600">{userAData.email}</p>
+                </div>
+                {/* KYC Status Badge */}
+                <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg px-4 py-2 text-white">
+                  <div className="flex items-center space-x-2">
+                    <ShieldCheckIcon className="w-5 h-5" />
+                    <div>
+                      <div className="text-sm font-bold">KYC Verified</div>
+                      <div className="text-xs text-green-100">{userAData.riskScore}/100 Risk Score</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           <div className="flex items-center space-x-2 text-sm text-gray-500">

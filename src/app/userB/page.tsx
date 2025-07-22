@@ -15,7 +15,8 @@ import {
   StarIcon,
   CubeIcon,
   CheckCircleIcon,
-  PlusIcon
+  PlusIcon,
+  CogIcon
 } from '@heroicons/react/24/outline'
 
 interface UserBData {
@@ -65,23 +66,58 @@ export default function UserBPage() {
 
   const renderOverview = () => (
     <div className="space-y-6">
-      {/* Hero Status Card */}
-      <div className="bg-gradient-to-r from-orange-500 to-red-600 rounded-xl p-6 text-white">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="p-3 bg-white/20 rounded-full">
-              <ExclamationTriangleIcon className="w-8 h-8" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold">KYC Not Started</h2>
-              <p className="text-orange-100">Complete your verification to access Web3 services</p>
+      {/* Three Colorful Action Buttons */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Link href="/kyc/complete" className="group">
+          <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-6 text-white hover:from-blue-600 hover:to-blue-700 transition-all duration-200 transform hover:scale-105">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="p-3 bg-white/20 rounded-full">
+                  <DocumentTextIcon className="w-8 h-8" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold">Complete KYC</h3>
+                  <p className="text-blue-100">Start verification process</p>
+                </div>
+              </div>
+              <ArrowRightIcon className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
             </div>
           </div>
-          <div className="text-right">
-            <div className="text-3xl font-bold">0/100</div>
-            <div className="text-orange-100">Risk Score</div>
+        </Link>
+
+        <Link href="#dashboard" className="group">
+          <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-6 text-white hover:from-green-600 hover:to-green-700 transition-all duration-200 transform hover:scale-105">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="p-3 bg-white/20 rounded-full">
+                  <ChartBarIcon className="w-8 h-8" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold">My Dashboard</h3>
+                  <p className="text-green-100">View your progress</p>
+                </div>
+              </div>
+              <ArrowRightIcon className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+            </div>
           </div>
-        </div>
+        </Link>
+
+        <Link href="#settings" className="group">
+          <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-6 text-white hover:from-purple-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="p-3 bg-white/20 rounded-full">
+                  <CogIcon className="w-8 h-8" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold">Settings</h3>
+                  <p className="text-purple-100">Manage preferences</p>
+                </div>
+              </div>
+              <ArrowRightIcon className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </div>
+        </Link>
       </div>
 
       {/* Quick Stats */}
@@ -160,7 +196,7 @@ export default function UserBPage() {
               <h4 className="font-medium text-gray-900">Submit KYC Documents</h4>
               <p className="text-sm text-gray-600">Upload required identity documents for verification</p>
             </div>
-            <Link href="/kyc/submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            <Link href="/kyc/complete" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
               Start KYC
             </Link>
           </div>
@@ -201,15 +237,15 @@ export default function UserBPage() {
           <div className="flex items-start space-x-3">
             <CheckCircleIcon className="w-5 h-5 text-green-500 mt-0.5" />
             <div>
-              <h4 className="font-medium text-gray-900">Governance Rights</h4>
-              <p className="text-sm text-gray-600">Participate in DAO voting and proposals</p>
+              <h4 className="font-medium text-gray-900">Build Reputation</h4>
+              <p className="text-sm text-gray-600">Establish trust in the Web3 ecosystem</p>
             </div>
           </div>
           <div className="flex items-start space-x-3">
             <CheckCircleIcon className="w-5 h-5 text-green-500 mt-0.5" />
             <div>
-              <h4 className="font-medium text-gray-900">Reputation Building</h4>
-              <p className="text-sm text-gray-600">Build trust in the Web3 ecosystem</p>
+              <h4 className="font-medium text-gray-900">Compliance Ready</h4>
+              <p className="text-sm text-gray-600">Meet regulatory requirements</p>
             </div>
           </div>
         </div>
@@ -380,13 +416,27 @@ export default function UserBPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center space-x-4 mb-4">
-            <div className="p-3 bg-orange-100 rounded-full">
-              <UserIcon className="w-8 h-8 text-orange-600" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">{userBData.firstName} {userBData.lastName}</h1>
-              <p className="text-gray-600">{userBData.email}</p>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-orange-100 rounded-full">
+                <UserIcon className="w-8 h-8 text-orange-600" />
+              </div>
+              <div className="flex items-center space-x-4">
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900">{userBData.firstName} {userBData.lastName}</h1>
+                  <p className="text-gray-600">{userBData.email}</p>
+                </div>
+                {/* KYC Status Badge */}
+                <div className="bg-gradient-to-r from-orange-500 to-red-600 rounded-lg px-4 py-2 text-white">
+                  <div className="flex items-center space-x-2">
+                    <ExclamationTriangleIcon className="w-5 h-5" />
+                    <div>
+                      <div className="text-sm font-bold">KYC Not Started</div>
+                      <div className="text-xs text-orange-100">0/100 Risk Score</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           <div className="flex items-center space-x-2 text-sm text-gray-500">

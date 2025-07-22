@@ -33,7 +33,28 @@ services:
       - mongo-kyc
     networks:
       - kyc-trading-network
-
+  ## Next.js Application
+  app:
+    build: .
+    container_name: kyc-app
+    restart: unless-stopped
+    ports:
+      - "$app_port:3000"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://root:example@mongo-kyc:27017/oil-trading?authSource=admin
+      - NEXTAUTH_URL=http://localhost:3000
+      - NEXTAUTH_SECRET=$NEXTAUTH_SECRET
+      - NEXT_PUBLIC_KYCVERIFICATION_CONTRACT_ADDRESS=$NEXT_PUBLIC_KYCVERIFICATION_CONTRACT_ADDRESS
+      - NEXT_PUBLIC_NETWORK_ID=$NEXT_PUBLIC_CHAIN_ID
+      - NEXT_PUBLIC_RPC_URL=$NEXT_PUBLIC_RPC_URL
+      - NEXT_PUBLIC_EXPLORER_URL=$NEXT_PUBLIC_EXPLORER_URL
+    depends_on:
+      - mongo-kyc
+    volumes:
+      - ./uploads:/app/uploads
+    networks:
+      - kyc-trading-network
 
 networks:
   kyc-trading-network:
