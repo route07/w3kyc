@@ -75,9 +75,25 @@ export default function MockNavigation() {
             </div>
           </div>
 
+          {/* Admin Dashboard - Moved to the very left */}
+          <Link
+            href="/admin"
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+              pathname === '/admin'
+                ? 'bg-blue-100 text-blue-900'
+                : 'text-blue-600 hover:text-blue-900 hover:bg-blue-50'
+            }`}
+          >
+            <CogIcon className="w-4 h-4" />
+            <span className="text-sm font-medium">Admin Dashboard</span>
+            <span className="px-2 py-1 text-xs font-medium rounded-full border bg-blue-100 text-blue-800 border-blue-200">
+              admin
+            </span>
+          </Link>
+
           {/* Navigation */}
           <nav className="flex space-x-1">
-            {mockSections.map((section) => {
+            {mockSections.slice(0, 2).map((section) => {
               const Icon = section.icon
               const isActive = pathname === section.path
               

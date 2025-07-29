@@ -46,12 +46,19 @@ interface UserBData {
 
 const userBData: UserBData = {
   id: 'user-b-001',
-  firstName: 'Sarah',
-  lastName: 'Johnson',
-  email: 'sarah.johnson@web3mail.eth',
-  walletAddress: undefined,
+  firstName: 'Crypto',
+  lastName: 'Finance Corp',
+  email: 'sarah.johnson@cryptofinance.com',
+  walletAddress: '0x8ba1f109551bD432803012645Hac136c772c3c3',
   kycStatus: 'not_started',
+  kycSubmittedAt: null,
+  kycVerifiedAt: null,
+  riskScore: null,
+  riskLevel: null,
   documents: [],
+  blockchainCredentials: null,
+  riskProfile: null,
+  activityHistory: [],
   web3Profile: {
     reputationScore: 0,
     totalTransactions: 0,

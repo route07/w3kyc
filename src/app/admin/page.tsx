@@ -76,9 +76,9 @@ const mockSubmissions: KYCSubmission[] = [
   {
     id: 'sub-001',
     userId: 'user-a-001',
-    firstName: 'Alex',
-    lastName: 'Chen',
-    email: 'alex.chen@web3mail.eth',
+    firstName: 'Web3',
+    lastName: 'Ventures LLC',
+    email: 'alex.chen@web3ventures.com',
     walletAddress: '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6',
     status: 'verified',
     submittedAt: '2024-01-15T10:30:00Z',
@@ -87,7 +87,7 @@ const mockSubmissions: KYCSubmission[] = [
     documents: [
       {
         id: 'doc-001',
-        name: 'Passport - Alex Chen',
+        name: 'Passport - Web3 Ventures LLC',
         type: 'passport',
         ipfsHash: 'QmX7K9Y2Z1A8B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9',
         status: 'verified'
@@ -111,9 +111,9 @@ const mockSubmissions: KYCSubmission[] = [
   {
     id: 'sub-002',
     userId: 'user-b-001',
-    firstName: 'Sarah',
-    lastName: 'Johnson',
-    email: 'sarah.johnson@web3mail.eth',
+    firstName: 'Crypto',
+    lastName: 'Finance Corp',
+    email: 'sarah.johnson@cryptofinance.com',
     status: 'not_started',
     submittedAt: '',
     documents: []
@@ -121,9 +121,9 @@ const mockSubmissions: KYCSubmission[] = [
   {
     id: 'sub-003',
     userId: 'user-c-001',
-    firstName: 'Michael',
-    lastName: 'Rodriguez',
-    email: 'michael.rodriguez@web3mail.eth',
+    firstName: 'NFT',
+    lastName: 'Gaming Studios',
+    email: 'michael.rodriguez@nftgaming.com',
     walletAddress: '0x8f4e2A1B3C5D7E9F0A2B4C6D8E0F1A3B5C7D9E0F',
     status: 'pending',
     submittedAt: '2024-01-20T09:15:00Z',
@@ -132,7 +132,7 @@ const mockSubmissions: KYCSubmission[] = [
     documents: [
       {
         id: 'doc-003',
-        name: 'Driver License - Michael Rodriguez',
+        name: 'Driver License - NFT Gaming Studios',
         type: 'driver_license',
         ipfsHash: 'QmZ9M1A3C0D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T1U2',
         status: 'pending'
@@ -142,9 +142,9 @@ const mockSubmissions: KYCSubmission[] = [
   {
     id: 'sub-004',
     userId: 'user-d-001',
-    firstName: 'Emma',
-    lastName: 'Wilson',
-    email: 'emma.wilson@web3mail.eth',
+    firstName: 'DeFi',
+    lastName: 'Protocol Labs',
+    email: 'emma.wilson@defiprotocol.com',
     walletAddress: '0x1A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T1',
     status: 'approved',
     submittedAt: '2024-01-18T14:30:00Z',
@@ -153,7 +153,7 @@ const mockSubmissions: KYCSubmission[] = [
     documents: [
       {
         id: 'doc-004',
-        name: 'Passport - Emma Wilson',
+        name: 'Passport - DeFi Protocol Labs',
         type: 'passport',
         ipfsHash: 'QmN0O1P2Q3R4S5T6U7V8W9X0Y1Z2A3B4C5D6E7F8G9H0',
         status: 'verified'
@@ -163,9 +163,9 @@ const mockSubmissions: KYCSubmission[] = [
   {
     id: 'sub-005',
     userId: 'user-e-001',
-    firstName: 'David',
-    lastName: 'Thompson',
-    email: 'david.thompson@web3mail.eth',
+    firstName: 'Blockchain',
+    lastName: 'Tech Solutions',
+    email: 'david.kim@blockchaintech.com',
     walletAddress: '0x2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T1U2V3',
     status: 'rejected',
     submittedAt: '2024-01-19T11:45:00Z',
@@ -174,7 +174,7 @@ const mockSubmissions: KYCSubmission[] = [
     documents: [
       {
         id: 'doc-005',
-        name: 'ID Card - David Thompson',
+        name: 'ID Card - Blockchain Tech Solutions',
         type: 'national_id',
         ipfsHash: 'QmO1P2Q3R4S5T6U7V8W9X0Y1Z2A3B4C5D6E7F8G9H0I1',
         status: 'rejected'
@@ -187,9 +187,9 @@ const mockRiskProfiles: RiskProfile[] = [
   {
     id: 'risk-001',
     userId: 'user-a-001',
-    firstName: 'Alex',
-    lastName: 'Chen',
-    email: 'alex.chen@web3mail.eth',
+    firstName: 'Web3',
+    lastName: 'Ventures LLC',
+    email: 'alex.chen@web3ventures.com',
     overallScore: 12,
     riskLevel: 'low',
     riskFactors: [
@@ -222,9 +222,9 @@ const mockRiskProfiles: RiskProfile[] = [
   {
     id: 'risk-002',
     userId: 'user-c-001',
-    firstName: 'Michael',
-    lastName: 'Rodriguez',
-    email: 'michael.rodriguez@web3mail.eth',
+    firstName: 'NFT',
+    lastName: 'Gaming Studios',
+    email: 'michael.rodriguez@nftgaming.com',
     overallScore: 45,
     riskLevel: 'medium',
     riskFactors: [
@@ -257,9 +257,9 @@ const mockRiskProfiles: RiskProfile[] = [
   {
     id: 'risk-003',
     userId: 'user-e-001',
-    firstName: 'David',
-    lastName: 'Thompson',
-    email: 'david.thompson@web3mail.eth',
+    firstName: 'Blockchain',
+    lastName: 'Tech Solutions',
+    email: 'david.kim@blockchaintech.com',
     overallScore: 78,
     riskLevel: 'high',
     riskFactors: [

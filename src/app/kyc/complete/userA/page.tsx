@@ -64,108 +64,6 @@ export default function KYCCompleteUserAPage() {
 
   const kycSteps: KYCStep[] = [
     {
-      id: 'personal-info',
-      title: 'Personal Information',
-      description: 'Basic identity details and contact information',
-      status: 'completed',
-      icon: UserIcon,
-      color: 'blue',
-      content: (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-              <input type="text" value="Alex" className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50" readOnly />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-              <input type="text" value="Chen" className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50" readOnly />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <input type="email" value="alex.chen@web3mail.eth" className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50" readOnly />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-              <input type="tel" value="+1 (555) 987-6543" className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50" readOnly />
-            </div>
-          </div>
-          <div className="flex items-center space-x-2 text-green-600">
-            <CheckCircleIcon className="w-4 h-4" />
-            <span className="text-sm font-medium">Personal information verified</span>
-          </div>
-        </div>
-      )
-    },
-    {
-      id: 'identity-documents',
-      title: 'Identity Documents',
-      description: 'Government-issued ID and verification documents',
-      status: 'completed',
-      icon: IdentificationIcon,
-      color: 'purple',
-      content: (
-        <div className="space-y-4">
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <div className="flex items-center space-x-3">
-              <CheckCircleIcon className="w-5 h-5 text-green-600" />
-              <div>
-                <h4 className="font-medium text-green-900">Passport Verified</h4>
-                <p className="text-sm text-green-700">Document authenticity confirmed</p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <div className="flex items-center space-x-3">
-              <CheckCircleIcon className="w-5 h-5 text-green-600" />
-              <div>
-                <h4 className="font-medium text-green-900">Proof of Address Verified</h4>
-                <p className="text-sm text-green-700">Utility bill confirmed</p>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center space-x-2 text-green-600">
-            <CheckCircleIcon className="w-4 h-4" />
-            <span className="text-sm font-medium">All identity documents verified</span>
-          </div>
-        </div>
-      )
-    },
-    {
-      id: 'institution-details',
-      title: 'Institution Details',
-      description: 'Organization and business information',
-      status: 'completed',
-      icon: BuildingOfficeIcon,
-      color: 'indigo',
-      content: (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Institution Name</label>
-              <input type="text" value="Web3 Ventures LLC" className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50" readOnly />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Registration Number</label>
-              <input type="text" value="LLC-2024-001234" className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50" readOnly />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Industry</label>
-              <input type="text" value="Fintech/DeFi" className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50" readOnly />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Country of Registration</label>
-              <input type="text" value="United States" className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50" readOnly />
-            </div>
-          </div>
-          <div className="flex items-center space-x-2 text-green-600">
-            <CheckCircleIcon className="w-4 h-4" />
-            <span className="text-sm font-medium">Institution details verified</span>
-          </div>
-        </div>
-      )
-    },
-    {
       id: 'investor-type',
       title: 'Investor Type',
       description: 'Investment profile and experience level',
@@ -244,36 +142,35 @@ export default function KYCCompleteUserAPage() {
       )
     },
     {
-      id: 'directors-declaration',
-      title: 'Directors Declaration',
-      description: 'Board member and executive information',
+      id: 'institution-details',
+      title: 'Institution Details',
+      description: 'Organization and business information',
       status: 'completed',
-      icon: UserIcon,
-      color: 'yellow',
+      icon: BuildingOfficeIcon,
+      color: 'indigo',
       content: (
         <div className="space-y-4">
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <div className="flex items-center space-x-3">
-              <CheckCircleIcon className="w-5 h-5 text-green-600" />
-              <div>
-                <h4 className="font-medium text-green-900">Directors Information Verified</h4>
-                <p className="text-sm text-green-700">All board members and executives confirmed</p>
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Institution Name</label>
+              <input type="text" value="Web3 Ventures LLC" className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50" readOnly />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Registration Number</label>
+              <input type="text" value="LLC-2024-001234" className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50" readOnly />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Industry</label>
+              <input type="text" value="Fintech/DeFi" className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50" readOnly />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Country of Registration</label>
+              <input type="text" value="United States" className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50" readOnly />
             </div>
           </div>
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2">
-              <CheckCircleIcon className="w-4 h-4 text-green-600" />
-              <span className="text-sm text-gray-700">Alex Chen - CEO & Founder</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <CheckCircleIcon className="w-4 h-4 text-green-600" />
-              <span className="text-sm text-gray-700">Sarah Johnson - CTO</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <CheckCircleIcon className="w-4 h-4 text-green-600" />
-              <span className="text-sm text-gray-700">Michael Rodriguez - CFO</span>
-            </div>
+          <div className="flex items-center space-x-2 text-green-600">
+            <CheckCircleIcon className="w-4 h-4" />
+            <span className="text-sm font-medium">Institution details verified</span>
           </div>
         </div>
       )
@@ -309,6 +206,109 @@ export default function KYCCompleteUserAPage() {
               <CheckCircleIcon className="w-4 h-4 text-green-600" />
               <span className="text-sm text-gray-700">Michael Rodriguez - 15% ownership</span>
             </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'directors-declaration',
+      title: 'Directors Declaration',
+      description: 'Board member and executive information',
+      status: 'completed',
+      icon: UserIcon,
+      color: 'yellow',
+      content: (
+        <div className="space-y-4">
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div className="flex items-center space-x-3">
+              <CheckCircleIcon className="w-5 h-5 text-green-600" />
+              <div>
+                <h4 className="font-medium text-green-900">Directors Information Verified</h4>
+                <p className="text-sm text-green-700">All board members and executives confirmed</p>
+              </div>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2">
+              <CheckCircleIcon className="w-4 h-4 text-green-600" />
+              <span className="text-sm text-gray-700">Alex Chen - CEO & Founder</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <CheckCircleIcon className="w-4 h-4 text-green-600" />
+              <span className="text-sm text-gray-700">Sarah Johnson - CTO</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <CheckCircleIcon className="w-4 h-4 text-green-600" />
+              <span className="text-sm text-gray-700">Michael Rodriguez - CFO</span>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'personal-info',
+      title: 'Personal Information',
+      description: 'Basic identity details and contact information',
+      status: 'completed',
+      icon: UserIcon,
+      color: 'blue',
+      content: (
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+              <input type="text" value="Alex" className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50" readOnly />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+              <input type="text" value="Chen" className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50" readOnly />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <input type="email" value="alex.chen@web3mail.eth" className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50" readOnly />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+              <input type="tel" value="+1 (555) 987-6543" className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50" readOnly />
+            </div>
+          </div>
+          <div className="flex items-center space-x-2 text-green-600">
+            <CheckCircleIcon className="w-4 h-4" />
+            <span className="text-sm font-medium">Personal information verified</span>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'identity-documents',
+      title: 'Identity Documents',
+      description: 'Government-issued ID and verification documents',
+      status: 'completed',
+      icon: IdentificationIcon,
+      color: 'purple',
+      content: (
+        <div className="space-y-4">
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div className="flex items-center space-x-3">
+              <CheckCircleIcon className="w-5 h-5 text-green-600" />
+              <div>
+                <h4 className="font-medium text-green-900">Passport Verified</h4>
+                <p className="text-sm text-green-700">Document authenticity confirmed</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div className="flex items-center space-x-3">
+              <CheckCircleIcon className="w-5 h-5 text-green-600" />
+              <div>
+                <h4 className="font-medium text-green-900">Proof of Address Verified</h4>
+                <p className="text-sm text-green-700">Utility bill confirmed</p>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2 text-green-600">
+            <CheckCircleIcon className="w-4 h-4" />
+            <span className="text-sm font-medium">All identity documents verified</span>
           </div>
         </div>
       )
@@ -411,47 +411,97 @@ export default function KYCCompleteUserAPage() {
 
         {/* KYC Steps */}
         <div className="space-y-4">
-          {kycSteps.map((step) => {
-            const Icon = step.icon
-            const isExpanded = expandedStep === step.id
-            
-            return (
-              <div key={step.id} className="bg-white rounded-lg border border-gray-200 shadow-sm">
-                <button
-                  onClick={() => toggleStep(step.id)}
-                  className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex items-center space-x-4">
-                    <div className={`p-2 bg-${step.color}-100 rounded-lg`}>
-                      <Icon className={`w-5 h-5 text-${step.color}-600`} />
+          {/* Section 1: Corporate Information */}
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Section 1: Corporate Information</h2>
+            {kycSteps.slice(0, 5).map((step) => {
+              const Icon = step.icon
+              const isExpanded = expandedStep === step.id
+              
+              return (
+                <div key={step.id} className="bg-white rounded-lg border border-gray-200 shadow-sm mb-4">
+                  <button
+                    onClick={() => toggleStep(step.id)}
+                    className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-center space-x-4">
+                      <div className={`p-2 bg-${step.color}-100 rounded-lg`}>
+                        <Icon className={`w-5 h-5 text-${step.color}-600`} />
+                      </div>
+                      <div className="text-left">
+                        <h3 className="font-medium text-gray-900">{step.title}</h3>
+                        <p className="text-sm text-gray-600">{step.description}</p>
+                      </div>
                     </div>
-                    <div className="text-left">
-                      <h3 className="font-medium text-gray-900">{step.title}</h3>
-                      <p className="text-sm text-gray-600">{step.description}</p>
+                    <div className="flex items-center space-x-3">
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getStatusColor(step.status)}`}>
+                        {step.status.replace('_', ' ')}
+                      </span>
+                      {isExpanded ? (
+                        <ChevronDownIcon className="w-5 h-5 text-gray-400" />
+                      ) : (
+                        <ChevronRightIcon className="w-5 h-5 text-gray-400" />
+                      )}
                     </div>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getStatusColor(step.status)}`}>
-                      {step.status.replace('_', ' ')}
-                    </span>
-                    {isExpanded ? (
-                      <ChevronDownIcon className="w-5 h-5 text-gray-400" />
-                    ) : (
-                      <ChevronRightIcon className="w-5 h-5 text-gray-400" />
-                    )}
-                  </div>
-                </button>
-                
-                {isExpanded && (
-                  <div className="px-6 pb-6 border-t border-gray-200">
-                    <div className="pt-4">
-                      {step.content}
+                  </button>
+                  
+                  {isExpanded && (
+                    <div className="px-6 pb-6 border-t border-gray-200">
+                      <div className="pt-4">
+                        {step.content}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            )
-          })}
+                  )}
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Section 2: Personal & Financial Information */}
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Section 2: Personal & Financial Information</h2>
+            {kycSteps.slice(5).map((step) => {
+              const Icon = step.icon
+              const isExpanded = expandedStep === step.id
+              
+              return (
+                <div key={step.id} className="bg-white rounded-lg border border-gray-200 shadow-sm mb-4">
+                  <button
+                    onClick={() => toggleStep(step.id)}
+                    className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-center space-x-4">
+                      <div className={`p-2 bg-${step.color}-100 rounded-lg`}>
+                        <Icon className={`w-5 h-5 text-${step.color}-600`} />
+                      </div>
+                      <div className="text-left">
+                        <h3 className="font-medium text-gray-900">{step.title}</h3>
+                        <p className="text-sm text-gray-600">{step.description}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getStatusColor(step.status)}`}>
+                        {step.status.replace('_', ' ')}
+                      </span>
+                      {isExpanded ? (
+                        <ChevronDownIcon className="w-5 h-5 text-gray-400" />
+                      ) : (
+                        <ChevronRightIcon className="w-5 h-5 text-gray-400" />
+                      )}
+                    </div>
+                  </button>
+                  
+                  {isExpanded && (
+                    <div className="px-6 pb-6 border-t border-gray-200">
+                      <div className="pt-4">
+                        {step.content}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
         </div>
 
         {/* Action Buttons */}

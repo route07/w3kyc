@@ -77,9 +77,9 @@ interface UserAData {
 
 const userAData: UserAData = {
   id: 'user-a-001',
-  firstName: 'Alex',
-  lastName: 'Chen',
-  email: 'alex.chen@web3mail.eth',
+  firstName: 'Web3',
+  lastName: 'Ventures LLC',
+  email: 'alex.chen@web3ventures.com',
   walletAddress: '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6',
   kycStatus: 'verified',
   kycSubmittedAt: '2024-01-15T10:30:00Z',
@@ -89,7 +89,7 @@ const userAData: UserAData = {
   documents: [
     {
       id: 'doc-001',
-      name: 'Passport - Alex Chen',
+      name: 'Passport - Web3 Ventures LLC',
       type: 'passport',
       status: 'verified',
       uploadedAt: '2024-01-15T10:30:00Z',
