@@ -1,2 +1,9 @@
 onlyBuiltDependencies:
+  - bufferutil
+  - keccak
+  - protobufjs
   - secp256k1
+  - sharp
+  - tesseract.js
+  - unrs-resolver
+  - utf-8-validate

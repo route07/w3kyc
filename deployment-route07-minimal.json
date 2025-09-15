@@ -1,0 +1,13 @@
+{
+  "network": "Route07 Testnet",
+  "chainId": 336699,
+  "deployer": "0x97a362bC0d128E008E2E2eD7Fc10CFDdDF54ed55",
+  "deploymentTime": "2025-09-14T23:31:58.542Z",
+  "totalContracts": 2,
+  "contracts": {
+    "InputValidator": "0xA74E223CC1D51F1cFaF3594B01A0335DD5F0Cf29",
+    "BoundsChecker": "0xe6a30fb8727a8D27f19c4170bEaE4e7C4d0C527e"
+  },
+  "note": "Minimal deployment - only utility contracts that work on Route07 EVM",
+  "status": "Partial deployment due to EVM compatibility issues"
+}

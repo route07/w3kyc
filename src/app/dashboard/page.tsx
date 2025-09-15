@@ -11,8 +11,11 @@ import {
   CheckCircleIcon,
   XCircleIcon,
   ArrowRightIcon,
-  WalletIcon
+  WalletIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
+import { KYCService } from '@/lib/kyc-service'
+import { getNetworkInfo } from '@/lib/blockchain'
 
 interface UserData {
   id: string
@@ -31,16 +34,38 @@ interface UserData {
     status: string
     uploadedAt: string
   }>
+  blockchainStatus?: {
+    isVerified: boolean
+    verificationHash?: string
+    blockNumber?: number
+    transactionHash?: string
+    isActive: boolean
+    expiresAt?: number
+  }
 }
 
 export default function DashboardPage() {
   const [userData, setUserData] = useState<UserData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('overview')
+  const [blockchainConnected, setBlockchainConnected] = useState(false)
+  const [networkInfo, setNetworkInfo] = useState<any>(null)
 
   useEffect(() => {
     fetchUserData()
+    checkBlockchainConnection()
   }, [])
+
+  const checkBlockchainConnection = async () => {
+    try {
+      const networkInfo = await getNetworkInfo()
+      setNetworkInfo(networkInfo)
+      setBlockchainConnected(true)
+    } catch (error) {
+      console.error('Blockchain connection failed:', error)
+      setBlockchainConnected(false)
+    }
+  }
 
   const fetchUserData = async () => {
     try {
@@ -51,14 +76,89 @@ export default function DashboardPage() {
         }
       })
 
+      let userData: UserData
+      
       if (response.ok) {
-        const data = await response.json()
-        setUserData(data)
+        userData = await response.json()
       } else {
-        console.error('Failed to fetch user data')
+        // Fallback to mock data if API fails
+        userData = {
+          id: 'user-001',
+          firstName: 'John',
+          lastName: 'Doe',
+          email: 'john.doe@example.com',
+          walletAddress: '0x1234567890123456789012345678901234567890',
+          kycStatus: 'pending',
+          kycSubmittedAt: '2024-01-15T10:30:00Z',
+          riskScore: 25,
+          riskLevel: 'low',
+          documents: [
+            {
+              id: 'doc-001',
+              name: 'passport.pdf',
+              type: 'passport',
+              status: 'verified',
+              uploadedAt: '2024-01-15T10:00:00Z'
+            },
+            {
+              id: 'doc-002',
+              name: 'utility_bill.pdf',
+              type: 'utility_bill',
+              status: 'pending',
+              uploadedAt: '2024-01-15T10:15:00Z'
+            }
+          ]
+        }
       }
+
+      // Fetch blockchain status if wallet address exists
+      if (userData.walletAddress && blockchainConnected) {
+        try {
+          const kycStatusResult = await KYCService.getKYCStatus(userData.walletAddress)
+          if (kycStatusResult.success && kycStatusResult.status) {
+            userData.blockchainStatus = {
+              isVerified: kycStatusResult.status.isVerified,
+              verificationHash: kycStatusResult.status.verificationHash,
+              isActive: kycStatusResult.status.isActive,
+              expiresAt: Number(kycStatusResult.status.expiresAt),
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching blockchain status:', error)
+        }
+      }
+
+      setUserData(userData)
     } catch (error) {
       console.error('Error fetching user data:', error)
+      // Fallback to mock data
+      setUserData({
+        id: 'user-001',
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'john.doe@example.com',
+        walletAddress: '0x1234567890123456789012345678901234567890',
+        kycStatus: 'pending',
+        kycSubmittedAt: '2024-01-15T10:30:00Z',
+        riskScore: 25,
+        riskLevel: 'low',
+        documents: [
+          {
+            id: 'doc-001',
+            name: 'passport.pdf',
+            type: 'passport',
+            status: 'verified',
+            uploadedAt: '2024-01-15T10:00:00Z'
+          },
+          {
+            id: 'doc-002',
+            name: 'utility_bill.pdf',
+            type: 'utility_bill',
+            status: 'pending',
+            uploadedAt: '2024-01-15T10:15:00Z'
+          }
+        ]
+      })
     } finally {
       setIsLoading(false)
     }
@@ -116,7 +216,7 @@ export default function DashboardPage() {
   const renderOverview = () => (
     <div className="space-y-6">
       {/* Status Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="card">
           <div className="flex items-center">
             <div className="p-2 bg-blue-100 rounded-lg">
@@ -155,6 +255,35 @@ export default function DashboardPage() {
               <p className="text-lg font-semibold text-gray-900">
                 {userData?.documents?.length || 0} uploaded
               </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="flex items-center">
+            <div className={`p-2 rounded-lg ${blockchainConnected ? 'bg-green-100' : 'bg-red-100'}`}>
+              <WalletIcon className={`w-6 h-6 ${blockchainConnected ? 'text-green-600' : 'text-red-600'}`} />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Blockchain</p>
+              <p className="text-lg font-semibold text-gray-900">
+                {blockchainConnected ? (
+                  <span className="flex items-center text-green-600">
+                    <CheckCircleIcon className="w-4 h-4 mr-1" />
+                    Connected
+                  </span>
+                ) : (
+                  <span className="flex items-center text-red-600">
+                    <ExclamationTriangleIcon className="w-4 h-4 mr-1" />
+                    Disconnected
+                  </span>
+                )}
+              </p>
+              {networkInfo && (
+                <p className="text-xs text-gray-500">
+                  Chain ID: {networkInfo.chainId.toString()}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -296,6 +425,75 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+
+      {/* Blockchain Status */}
+      <div className="card">
+        <h3 className="text-lg font-semibold text-gray-900 mb-6">Blockchain Status</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Connection Status</label>
+            <div className="flex items-center space-x-2">
+              {blockchainConnected ? (
+                <>
+                  <CheckCircleIcon className="w-5 h-5 text-green-500" />
+                  <span className="text-green-600 font-medium">Connected</span>
+                </>
+              ) : (
+                <>
+                  <ExclamationTriangleIcon className="w-5 h-5 text-red-500" />
+                  <span className="text-red-600 font-medium">Disconnected</span>
+                </>
+              )}
+            </div>
+          </div>
+          
+          {networkInfo && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Network</label>
+              <p className="text-gray-900">Chain ID: {networkInfo.chainId.toString()}</p>
+            </div>
+          )}
+          
+          {userData?.blockchainStatus && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">On-Chain Verification</label>
+                <div className="flex items-center space-x-2">
+                  {userData.blockchainStatus.isVerified ? (
+                    <>
+                      <CheckCircleIcon className="w-5 h-5 text-green-500" />
+                      <span className="text-green-600 font-medium">Verified</span>
+                    </>
+                  ) : (
+                    <>
+                      <XCircleIcon className="w-5 h-5 text-red-500" />
+                      <span className="text-red-600 font-medium">Not Verified</span>
+                    </>
+                  )}
+                </div>
+              </div>
+              
+              {userData.blockchainStatus.verificationHash && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Verification Hash</label>
+                  <p className="text-gray-900 font-mono text-sm break-all">
+                    {userData.blockchainStatus.verificationHash.slice(0, 20)}...
+                  </p>
+                </div>
+              )}
+              
+              {userData.blockchainStatus.expiresAt && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Expires At</label>
+                  <p className="text-gray-900">
+                    {new Date(userData.blockchainStatus.expiresAt * 1000).toLocaleDateString()}
+                  </p>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
     </div>
   )
 
@@ -356,10 +554,30 @@ export default function DashboardPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-2">
-            Welcome back, {userData?.firstName}! Here&apos;s your KYC verification status.
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+              <p className="text-gray-600 mt-2">
+                Welcome back, {userData?.firstName}! Here&apos;s your KYC verification status.
+              </p>
+            </div>
+            <div className="flex items-center space-x-4">
+              <Link
+                href="/tenant-dashboard"
+                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center"
+              >
+                <UserIcon className="w-5 h-5 mr-2" />
+                Tenant Dashboard
+              </Link>
+              <Link
+                href="/kyc/submit"
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center"
+              >
+                <DocumentTextIcon className="w-5 h-5 mr-2" />
+                Submit KYC
+              </Link>
+            </div>
+          </div>
         </div>
 
         {/* Tabs */}

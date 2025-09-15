@@ -1,0 +1,1120 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "/home/blockshady/Downloads/dapps/w3kyc/contracts/storage/AuditLogStorage.sol": {
+      "lastModificationDate": 1757885641133,
+      "contentHash": "ed279731915a926a5738e5c816a9f713",
+      "sourceName": "contracts/storage/AuditLogStorage.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "viaIR": true,
+          "evmVersion": "shanghai",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/security/ReentrancyGuard.sol",
+        "../utility/InputValidator.sol",
+        "../utility/BoundsChecker.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "AuditLogStorage"
+      ]
+    },
+    "/home/blockshady/Downloads/dapps/w3kyc/contracts/storage/KYCDataStorage.sol": {
+      "lastModificationDate": 1757885089213,
+      "contentHash": "e52d6d8e2a82115548d59144b58a9940",
+      "sourceName": "contracts/storage/KYCDataStorage.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "viaIR": true,
+          "evmVersion": "shanghai",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/security/ReentrancyGuard.sol",
+        "../utility/InputValidator.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "KYCDataStorage"
+      ]
+    },
+    "/home/blockshady/Downloads/dapps/w3kyc/contracts/storage/TenantConfigStorage.sol": {
+      "lastModificationDate": 1757883967593,
+      "contentHash": "e2727db0b14eada2860c4652513bf1cd",
+      "sourceName": "contracts/storage/TenantConfigStorage.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "viaIR": true,
+          "evmVersion": "shanghai",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/security/ReentrancyGuard.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "TenantConfigStorage"
+      ]
+    },
+    "/home/blockshady/Downloads/dapps/w3kyc/contracts/storage/DIDCredentialStorage.sol": {
+      "lastModificationDate": 1757883967593,
+      "contentHash": "d7eb47eb0bf7ed2c00738d57aca2ae34",
+      "sourceName": "contracts/storage/DIDCredentialStorage.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "viaIR": true,
+          "evmVersion": "shanghai",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/security/ReentrancyGuard.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "DIDCredentialStorage"
+      ]
+    },
+    "/home/blockshady/Downloads/dapps/w3kyc/contracts/business/KYCManager.sol": {
+      "lastModificationDate": 1757885089213,
+      "contentHash": "0d45896ee7f458faa935aa1c3044fb44",
+      "sourceName": "contracts/business/KYCManager.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "viaIR": true,
+          "evmVersion": "shanghai",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../storage/KYCDataStorage.sol",
+        "../storage/AuditLogStorage.sol",
+        "../storage/TenantConfigStorage.sol",
+        "@openzeppelin/contracts/security/ReentrancyGuard.sol",
+        "../utility/InputValidator.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "KYCManager"
+      ]
+    },
+    "/home/blockshady/Downloads/dapps/w3kyc/contracts/access/AuthorizationManager.sol": {
+      "lastModificationDate": 1757883967590,
+      "contentHash": "36b7cb84e89e2cb64897db6216850186",
+      "sourceName": "contracts/access/AuthorizationManager.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "viaIR": true,
+          "evmVersion": "shanghai",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../storage/AuditLogStorage.sol",
+        "@openzeppelin/contracts/security/ReentrancyGuard.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "AuthorizationManager"
+      ]
+    },
+    "/home/blockshady/Downloads/dapps/w3kyc/contracts/utility/ComplianceChecker.sol": {
+      "lastModificationDate": 1757883967593,
+      "contentHash": "85e58bafca6c2f5f0521bdf728ee9e72",
+      "sourceName": "contracts/utility/ComplianceChecker.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "viaIR": true,
+          "evmVersion": "shanghai",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../storage/KYCDataStorage.sol",
+        "../storage/TenantConfigStorage.sol",
+        "../storage/DIDCredentialStorage.sol",
+        "@openzeppelin/contracts/security/ReentrancyGuard.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "ComplianceChecker"
+      ]
+    },
+    "/home/blockshady/Downloads/dapps/w3kyc/contracts/business/DIDManager.sol": {
+      "lastModificationDate": 1757883967590,
+      "contentHash": "c0b314be79901f86a5aa5d35b4922a2c",
+      "sourceName": "contracts/business/DIDManager.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "viaIR": true,
+          "evmVersion": "shanghai",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../storage/DIDCredentialStorage.sol",
+        "../storage/AuditLogStorage.sol",
+        "@openzeppelin/contracts/security/ReentrancyGuard.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "DIDManager"
+      ]
+    },
+    "/home/blockshady/Downloads/dapps/w3kyc/contracts/examples/MultisigExample.sol": {
+      "lastModificationDate": 1757883097930,
+      "contentHash": "cc2e1af4ed1610fd8ed9428c5974dd1a",
+      "sourceName": "contracts/examples/MultisigExample.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "viaIR": true,
+          "evmVersion": "shanghai",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../system/MultisigModifier.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "MultisigExample"
+      ]
+    },
+    "/home/blockshady/Downloads/dapps/w3kyc/contracts/system/MultisigModifier.sol": {
+      "lastModificationDate": 1757883967590,
+      "contentHash": "52f1e86913c4c645b51e694410047692",
+      "sourceName": "contracts/system/MultisigModifier.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "viaIR": true,
+          "evmVersion": "shanghai",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./MultisigManager.sol",
+        "@openzeppelin/contracts/security/ReentrancyGuard.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "MultisigModifier"
+      ]
+    },
+    "/home/blockshady/Downloads/dapps/w3kyc/contracts/system/MultisigManager.sol": {
+      "lastModificationDate": 1757885641133,
+      "contentHash": "44053c3ba6dcec2a1c40706f64b3ec84",
+      "sourceName": "contracts/system/MultisigManager.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "viaIR": true,
+          "evmVersion": "shanghai",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/security/ReentrancyGuard.sol",
+        "../utility/InputValidator.sol",
+        "../utility/BoundsChecker.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "MultisigManager"
+      ]
+    },
+    "/home/blockshady/Downloads/dapps/w3kyc/contracts/system/EmergencyManager.sol": {
+      "lastModificationDate": 1757885089213,
+      "contentHash": "a2493ecd2d6a466f4d96f43b8679c8fc",
+      "sourceName": "contracts/system/EmergencyManager.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "viaIR": true,
+          "evmVersion": "shanghai",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./MultisigManager.sol",
+        "@openzeppelin/contracts/security/ReentrancyGuard.sol",
+        "../utility/InputValidator.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "EmergencyManager"
+      ]
+    },
+    "/home/blockshady/Downloads/dapps/w3kyc/node_modules/.pnpm/@openzeppelin+contracts@4.9.3/node_modules/@openzeppelin/contracts/security/ReentrancyGuard.sol": {
+      "lastModificationDate": 1757882731136,
+      "contentHash": "1535f8c0c68463f8c1b5239f7584e71f",
+      "sourceName": "@openzeppelin/contracts/security/ReentrancyGuard.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "viaIR": true,
+          "evmVersion": "shanghai",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "ReentrancyGuard"
+      ]
+    },
+    "/home/blockshady/Downloads/dapps/w3kyc/contracts/governance/GovernanceManager.sol": {
+      "lastModificationDate": 1757883097930,
+      "contentHash": "d2dd395de7fed5cefb20a6ca91e31b6b",
+      "sourceName": "contracts/governance/GovernanceManager.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "viaIR": true,
+          "evmVersion": "shanghai",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/security/ReentrancyGuard.sol",
+        "@openzeppelin/contracts/access/Ownable.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "GovernanceManager"
+      ]
+    },
+    "/home/blockshady/Downloads/dapps/w3kyc/node_modules/.pnpm/@openzeppelin+contracts@4.9.3/node_modules/@openzeppelin/contracts/access/Ownable.sol": {
+      "lastModificationDate": 1757882731136,
+      "contentHash": "5a20b2cad87ddb61c7a3a6af21289e28",
+      "sourceName": "@openzeppelin/contracts/access/Ownable.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "viaIR": true,
+          "evmVersion": "shanghai",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../utils/Context.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "Ownable"
+      ]
+    },
+    "/home/blockshady/Downloads/dapps/w3kyc/node_modules/.pnpm/@openzeppelin+contracts@4.9.3/node_modules/@openzeppelin/contracts/utils/Context.sol": {
+      "lastModificationDate": 1757882731120,
+      "contentHash": "5f2c5c4b6af2dd4551027144797bc8be",
+      "sourceName": "@openzeppelin/contracts/utils/Context.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "viaIR": true,
+          "evmVersion": "shanghai",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "Context"
+      ]
+    },
+    "/home/blockshady/Downloads/dapps/w3kyc/contracts/utility/InputValidator.sol": {
+      "lastModificationDate": 1757885089150,
+      "contentHash": "06820fdfc2485b5d20a833fc52e9d543",
+      "sourceName": "contracts/utility/InputValidator.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "viaIR": true,
+          "evmVersion": "shanghai",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "InputValidator"
+      ]
+    },
+    "/home/blockshady/Downloads/dapps/w3kyc/contracts/utility/BoundsChecker.sol": {
+      "lastModificationDate": 1757885641103,
+      "contentHash": "9bcec223356347555fc76b8d8252fbbf",
+      "sourceName": "contracts/utility/BoundsChecker.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "viaIR": true,
+          "evmVersion": "shanghai",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "BoundsChecker"
+      ]
+    },
+    "/home/blockshady/Downloads/dapps/w3kyc/contracts/utility/VersionManager.sol": {
+      "lastModificationDate": 1757887259670,
+      "contentHash": "cec1158fa20a1df34299296636971d6c",
+      "sourceName": "contracts/utility/VersionManager.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "viaIR": true,
+          "evmVersion": "shanghai",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/security/ReentrancyGuard.sol",
+        "./InputValidator.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "VersionManager"
+      ]
+    },
+    "/home/blockshady/Downloads/dapps/w3kyc/contracts/business/BatchOperationsSimple.sol": {
+      "lastModificationDate": 1757887259710,
+      "contentHash": "4f1c7d6ee73123672532f3d1f54f9436",
+      "sourceName": "contracts/business/BatchOperationsSimple.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "viaIR": true,
+          "evmVersion": "shanghai",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/security/ReentrancyGuard.sol",
+        "../storage/KYCDataStorage.sol",
+        "../storage/AuditLogStorage.sol",
+        "../storage/DIDCredentialStorage.sol",
+        "../utility/InputValidator.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "BatchOperationsSimple"
+      ]
+    },
+    "/home/blockshady/Downloads/dapps/w3kyc/contracts/utility/JurisdictionConfig.sol": {
+      "lastModificationDate": 1757887259706,
+      "contentHash": "9f93750ce6f395f3307a179aba3699ae",
+      "sourceName": "contracts/utility/JurisdictionConfig.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "viaIR": true,
+          "evmVersion": "shanghai",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/security/ReentrancyGuard.sol",
+        "./InputValidator.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "JurisdictionConfig"
+      ]
+    },
+    "/home/blockshady/Downloads/dapps/w3kyc/contracts/utility/FeatureFlags.sol": {
+      "lastModificationDate": 1757887259706,
+      "contentHash": "c18d25e1504f4153bae476432766aa2e",
+      "sourceName": "contracts/utility/FeatureFlags.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "viaIR": true,
+          "evmVersion": "shanghai",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/security/ReentrancyGuard.sol",
+        "./InputValidator.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "FeatureFlags"
+      ]
+    },
+    "/home/blockshady/Downloads/dapps/w3kyc/contracts/utility/CredentialTypeManagerSimple.sol": {
+      "lastModificationDate": 1757887259710,
+      "contentHash": "bf2acd207792a7915baca3df57720de2",
+      "sourceName": "contracts/utility/CredentialTypeManagerSimple.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "viaIR": true,
+          "evmVersion": "shanghai",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/security/ReentrancyGuard.sol",
+        "./InputValidator.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "CredentialTypeManagerSimple"
+      ]
+    },
+    "/home/blockshady/Downloads/dapps/w3kyc/contracts/utility/CredentialTypeManager.sol": {
+      "lastModificationDate": 1757887259713,
+      "contentHash": "0cea75fdf64785123b19e8040194227a",
+      "sourceName": "contracts/utility/CredentialTypeManager.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "viaIR": true,
+          "evmVersion": "shanghai",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/security/ReentrancyGuard.sol",
+        "./InputValidator.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "CredentialTypeManager"
+      ]
+    },
+    "/home/blockshady/Downloads/dapps/w3kyc/contracts/business/BatchOperationsRefactored.sol": {
+      "lastModificationDate": 1757889308700,
+      "contentHash": "7f01bc8944ae6b6580e1784f7df69a62",
+      "sourceName": "contracts/business/BatchOperationsRefactored.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "viaIR": true,
+          "evmVersion": "shanghai",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/security/ReentrancyGuard.sol",
+        "../storage/KYCDataStorage.sol",
+        "../storage/AuditLogStorage.sol",
+        "../storage/DIDCredentialStorage.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "BatchOperationsRefactored"
+      ]
+    },
+    "/home/blockshady/Downloads/dapps/w3kyc/contracts/utility/FeatureFlagsRefactored.sol": {
+      "lastModificationDate": 1757889308700,
+      "contentHash": "b0d776357875c2542016a86ae97597c4",
+      "sourceName": "contracts/utility/FeatureFlagsRefactored.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "viaIR": true,
+          "evmVersion": "shanghai",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/security/ReentrancyGuard.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "FeatureFlagsRefactored"
+      ]
+    },
+    "/home/blockshady/Downloads/dapps/w3kyc/contracts/utility/CredentialTypeManagerRefactored.sol": {
+      "lastModificationDate": 1757889308700,
+      "contentHash": "bffbe7f9599747241c5fbed84d2c21a9",
+      "sourceName": "contracts/utility/CredentialTypeManagerRefactored.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "viaIR": true,
+          "evmVersion": "shanghai",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/security/ReentrancyGuard.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "CredentialTypeManagerRefactored"
+      ]
+    },
+    "/home/blockshady/Downloads/dapps/w3kyc/contracts/test/SimpleTest.sol": {
+      "lastModificationDate": 1757889308700,
+      "contentHash": "e077923ef695b855f881b01f2d13ea8d",
+      "sourceName": "contracts/test/SimpleTest.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "viaIR": true,
+          "evmVersion": "shanghai",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/security/ReentrancyGuard.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "SimpleTest"
+      ]
+    }
+  }
+}

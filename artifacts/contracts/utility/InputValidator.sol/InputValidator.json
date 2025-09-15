@@ -1,0 +1,102 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "InputValidator",
+  "sourceName": "contracts/utility/InputValidator.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "MAX_BYTES_LENGTH",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "MAX_SIGNATURES",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "MAX_STRING_LENGTH",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "MAX_TIMELOCK_DURATION",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "MAX_UINT256",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "MIN_SIGNATURES",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "MIN_TIMELOCK_DURATION",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x6080806040523461001a57610143908161001f823930815050f35b5f80fdfe608060408181526004361015610013575f80fd5b5f91823560e01c908163037a3796146100f7575080631a179692146100e157806333a581d2146100cb57806334ccc5ea146100b45780633ff562b81461009f5780638da0837c146100885763e727283a1461006c575f80fd5b8160031936011261008457602090516301e133808152f35b5080fd5b508160031936011261008457602090516104008152f35b50816003193601126100845751908152602090f35b508160031936011261008457602090516101008152f35b508160031936011261008457515f198152602090f35b5081600319360112610084576020905160018152f35b8390816003193601126100845780603260209252f3fea26469706673582212207a0ab44ec58d16bd0ce087eff4950992d4aff6cc8bc560d662c691ea6fe199a764736f6c63430008140033",
+  "deployedBytecode": "0x608060408181526004361015610013575f80fd5b5f91823560e01c908163037a3796146100f7575080631a179692146100e157806333a581d2146100cb57806334ccc5ea146100b45780633ff562b81461009f5780638da0837c146100885763e727283a1461006c575f80fd5b8160031936011261008457602090516301e133808152f35b5080fd5b508160031936011261008457602090516104008152f35b50816003193601126100845751908152602090f35b508160031936011261008457602090516101008152f35b508160031936011261008457515f198152602090f35b5081600319360112610084576020905160018152f35b8390816003193601126100845780603260209252f3fea26469706673582212207a0ab44ec58d16bd0ce087eff4950992d4aff6cc8bc560d662c691ea6fe199a764736f6c63430008140033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

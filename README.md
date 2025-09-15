@@ -46,6 +46,17 @@ This project includes a comprehensive mock demo system with three distinct secti
 - **Database**: MongoDB
 - **Authentication**: JWT with Web3 wallet support
 
+## 📚 **Documentation**
+
+Comprehensive documentation is available in the `/docs` folder:
+
+- **[📋 Documentation Index](docs/README.md)** - Central documentation hub
+- **[🏗️ Smart Contract Architecture](docs/smart-contracts.md)** - Complete smart contract system design
+- **[⚙️ Configurable Values](docs/configurable-values.md)** - Configurable parameters and settings
+- **[📅 Implementation Plan](docs/implementation-plan.md)** - Step-by-step implementation roadmap
+- **[📝 Comprehensive TODO](docs/comprehensive-implementation-todo.md)** - Complete task list
+- **[🔧 Documentation Maintenance](docs/documentation-maintenance.md)** - Documentation upkeep procedures
+
 ## 🏗️ Project Structure
 
 ```
@@ -63,8 +74,8 @@ src/
 │   ├── blockchain/      # Route07 integration
 │   ├── ai/             # AI/ML services
 │   └── ipfs/           # IPFS client
-└── styles/
-    └── globals.css     # Tailwind CSS
+├── contracts/           # Smart contracts
+└── docs/               # Comprehensive documentation
 ```
 
 ## 🚀 Getting Started
