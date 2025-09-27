@@ -1,0 +1,64 @@
+{
+  "network": "Route07 Testnet",
+  "chainId": 336699,
+  "evmVersion": "london",
+  "deployer": "0x97a362bC0d128E008E2E2eD7Fc10CFDdDF54ed55",
+  "deploymentTime": "2025-09-22T21:10:28.437Z",
+  "totalContracts": 21,
+  "deployedContracts": 12,
+  "successRate": 57.14285714285714,
+  "contracts": {
+    "KYCDataStorage": "0x6fCBb05EdD51e965D276df2482c66cA88b66E230",
+    "AuditLogStorage": "0x536DBa8e56b067CCe5484216F0D9DF1DEEffe8bb",
+    "TenantConfigStorage": "0xd6E2f23f3e9E9585Baf6aE4e33F52496f6B2a308",
+    "DIDCredentialStorage": "0x6729FC3E2fbc7140742B006C826549e17Df4fDe0",
+    "InputValidator": "0xbA56948c63E95d381C60C5dF94CD1A8d1703c2c3",
+    "BoundsChecker": "0xa186BC0128c14991719d21BF97EF7F6be02c8C47",
+    "JurisdictionConfig": "0x293F636971F9F280a885cCe4Dc0460c55eA67b96",
+    "VersionManager": "0x7F2D6B606BA80C425C8ae605dc487a0d504eb63E",
+    "CredentialTypeManagerRefactored": "0x47709F6eF15496273A8e26CEc8215878B21fD3c6",
+    "FeatureFlagsRefactored": "0x636fea56c05e18A83E1Df99876cCD0AC523DBb80",
+    "MultisigManager": "0xb5762C1Ee3d059B5BEF0271f2Cf5E7cC786360D4",
+    "GovernanceManager": "0x7abbDF8fF70Ad29DB23fED5a730F85f19E806aea"
+  },
+  "failedContracts": [
+    {
+      "name": "KYCManager",
+      "error": "incorrect number of arguments to constructor"
+    },
+    {
+      "name": "DIDManager",
+      "error": "incorrect number of arguments to constructor"
+    },
+    {
+      "name": "BatchOperationsSimple",
+      "error": "incorrect number of arguments to constructor"
+    },
+    {
+      "name": "BatchOperationsRefactored",
+      "error": "incorrect number of arguments to constructor"
+    },
+    {
+      "name": "AuthorizationManager",
+      "error": "incorrect number of arguments to constructor"
+    },
+    {
+      "name": "ComplianceChecker",
+      "error": "incorrect number of arguments to constructor"
+    },
+    {
+      "name": "MultisigModifier",
+      "error": "incorrect number of arguments to constructor"
+    },
+    {
+      "name": "EmergencyManager",
+      "error": "incorrect number of arguments to constructor"
+    },
+    {
+      "name": "MultisigExample",
+      "error": "incorrect number of arguments to constructor"
+    }
+  ],
+  "analysis": "London EVM resolved compatibility issues - 57.1% success rate",
+  "status": "Partial deployment success"
+}

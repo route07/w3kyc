@@ -10,7 +10,7 @@ module.exports = {
         runs: 1000, // Increase runs
       },
       viaIR: true,
-      evmVersion: "shanghai"
+      evmVersion: "london" // Permanently set to London EVM for Route07 compatibility
     },
   },
   networks: {

@@ -6,7 +6,8 @@ import {
   ShieldCheckIcon, 
   CogIcon,
   CubeIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  ChartBarIcon
 } from '@heroicons/react/24/outline'
 
 const mockSections = [
@@ -75,21 +76,35 @@ export default function MockNavigation() {
             </div>
           </div>
 
-          {/* Admin Dashboard - Moved to the very left */}
-          <Link
-            href="/admin"
-            className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-              pathname === '/admin'
-                ? 'bg-blue-100 text-blue-900'
-                : 'text-blue-600 hover:text-blue-900 hover:bg-blue-50'
-            }`}
-          >
-            <CogIcon className="w-4 h-4" />
-            <span className="text-sm font-medium">Admin Dashboard</span>
-            <span className="px-2 py-1 text-xs font-medium rounded-full border bg-blue-100 text-blue-800 border-blue-200">
-              admin
-            </span>
-          </Link>
+          {/* Admin Dashboard and Blockchain Status */}
+          <div className="flex space-x-2">
+            <Link
+              href="/admin"
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                pathname === '/admin'
+                  ? 'bg-blue-100 text-blue-900'
+                  : 'text-blue-600 hover:text-blue-900 hover:bg-blue-50'
+              }`}
+            >
+              <CogIcon className="w-4 h-4" />
+              <span className="text-sm font-medium">Admin</span>
+            </Link>
+            
+            <Link
+              href="/blockchain-status"
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                pathname === '/blockchain-status'
+                  ? 'bg-green-100 text-green-900'
+                  : 'text-green-600 hover:text-green-900 hover:bg-green-50'
+              }`}
+            >
+              <ChartBarIcon className="w-4 h-4" />
+              <span className="text-sm font-medium">Blockchain</span>
+              <span className="px-2 py-1 text-xs font-medium rounded-full border bg-green-100 text-green-800 border-green-200">
+                21 contracts
+              </span>
+            </Link>
+          </div>
 
           {/* Navigation */}
           <nav className="flex space-x-1">

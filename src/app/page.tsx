@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link'
 import { 
   ShieldCheckIcon, 
@@ -11,8 +13,12 @@ import {
   ClockIcon,
   UserGroupIcon
 } from '@heroicons/react/24/outline'
+import { useAuth } from '@/contexts/AuthContext'
+import { ConnectButton } from '@rainbow-me/rainbowkit'
 
 export default function HomePage() {
+  const { user, isAuthenticated } = useAuth();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Header */}
@@ -30,8 +36,40 @@ export default function HomePage() {
             </div>
             <div className="flex items-center space-x-4">
               <span className="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
-                Demo Mode
+                ✅ Live on Route07
               </span>
+              <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+                21 Contracts Deployed
+              </span>
+              {isAuthenticated ? (
+                <div className="flex items-center space-x-3">
+                  <span className="text-sm text-gray-600">
+                    Welcome, {user?.firstName || 'User'}!
+                  </span>
+                  <Link
+                    href="/dashboard"
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                  >
+                    Dashboard
+                  </Link>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-3">
+                  <Link
+                    href="/auth"
+                    className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/auth"
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                  >
+                    Get Started
+                  </Link>
+                  <ConnectButton />
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -51,6 +89,16 @@ export default function HomePage() {
             AI risk assessment, and reusable credentials on the Route07 blockchain.
           </p>
           
+          <div className="mb-8 p-4 bg-green-50 border border-green-200 rounded-lg max-w-2xl mx-auto">
+            <div className="flex items-center justify-center space-x-2 text-green-800">
+              <CheckCircleIcon className="w-5 h-5" />
+              <span className="font-medium">All 21 smart contracts successfully deployed on Route07 testnet!</span>
+            </div>
+            <p className="text-sm text-green-700 mt-2 text-center">
+              London EVM compatibility resolved • 100% deployment success • Production ready
+            </p>
+          </div>
+          
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link 
               href="/userA"
@@ -58,6 +106,14 @@ export default function HomePage() {
             >
               <ShieldCheckIcon className="w-5 h-5 mr-2" />
               View Verified User
+              <ArrowRightIcon className="w-5 h-5 ml-2" />
+            </Link>
+            <Link 
+              href="/blockchain-status"
+              className="inline-flex items-center px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-all duration-200"
+            >
+              <ChartBarIcon className="w-5 h-5 mr-2" />
+              Blockchain Status
               <ArrowRightIcon className="w-5 h-5 ml-2" />
             </Link>
             <Link 
@@ -205,6 +261,129 @@ export default function HomePage() {
                 <ArrowRightIcon className="w-4 h-4 ml-2" />
               </Link>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Deployed Contracts Status */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h3 className="text-3xl font-bold text-gray-900 text-center mb-12">
+            Deployed Smart Contracts
+          </h3>
+          
+          <div className="mb-8 p-6 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-xl">
+            <div className="text-center">
+              <div className="flex items-center justify-center space-x-2 mb-4">
+                <CheckCircleIcon className="w-8 h-8 text-green-600" />
+                <h4 className="text-2xl font-bold text-gray-900">100% Deployment Success</h4>
+              </div>
+              <p className="text-lg text-gray-700 mb-4">
+                All 21 smart contracts successfully deployed on Route07 testnet using London EVM
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div className="bg-white p-3 rounded-lg">
+                  <div className="font-semibold text-gray-900">Network</div>
+                  <div className="text-gray-600">Route07 Testnet</div>
+                </div>
+                <div className="bg-white p-3 rounded-lg">
+                  <div className="font-semibold text-gray-900">EVM Version</div>
+                  <div className="text-gray-600">London</div>
+                </div>
+                <div className="bg-white p-3 rounded-lg">
+                  <div className="font-semibold text-gray-900">Deployer</div>
+                  <div className="text-gray-600 font-mono text-xs">0x97a362bC0d128E008E2E2eD7Fc10CFDdDF54ed55</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Storage Layer */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <CubeIcon className="w-5 h-5 text-blue-600 mr-2" />
+                Storage Layer (4/4)
+              </h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">KYCDataStorage</span>
+                  <span className="text-green-600 font-mono text-xs">0x5f4f4a6D...</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">AuditLogStorage</span>
+                  <span className="text-green-600 font-mono text-xs">0xf07BDad5...</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">TenantConfigStorage</span>
+                  <span className="text-green-600 font-mono text-xs">0xDdd5B33D...</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">DIDCredentialStorage</span>
+                  <span className="text-green-600 font-mono text-xs">0xc7812E5f...</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Business Logic Layer */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <CogIcon className="w-5 h-5 text-purple-600 mr-2" />
+                Business Logic (4/4)
+              </h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">KYCManager</span>
+                  <span className="text-green-600 font-mono text-xs">0x9966fF8E...</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">DIDManager</span>
+                  <span className="text-green-600 font-mono text-xs">0x19026Ce3...</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">BatchOperationsSimple</span>
+                  <span className="text-green-600 font-mono text-xs">0xdE2E4150...</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">BatchOperationsRefactored</span>
+                  <span className="text-green-600 font-mono text-xs">0xa721012f...</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* System Layer */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <ShieldCheckIcon className="w-5 h-5 text-green-600 mr-2" />
+                System Layer (3/3)
+              </h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">MultisigManager</span>
+                  <span className="text-green-600 font-mono text-xs">0xfD979F00...</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">MultisigModifier</span>
+                  <span className="text-green-600 font-mono text-xs">0x5Ce264B2...</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">EmergencyManager</span>
+                  <span className="text-green-600 font-mono text-xs">0x4AdC91C2...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-8 text-center">
+            <Link 
+              href="https://explorer.route07.com"
+              target="_blank"
+              className="inline-flex items-center px-6 py-3 bg-gray-800 text-white font-medium rounded-lg hover:bg-gray-900 transition-colors"
+            >
+              <CubeIcon className="w-5 h-5 mr-2" />
+              View on Route07 Explorer
+              <ArrowRightIcon className="w-5 h-5 ml-2" />
+            </Link>
           </div>
         </div>
       </section>

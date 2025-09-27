@@ -3,12 +3,14 @@ require("@nomicfoundation/hardhat-toolbox");
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
   solidity: {
-    version: "0.8.19",
+    version: "0.8.20", // Updated to match refactored config
     settings: {
       optimizer: {
         enabled: true,
-        runs: 200,
+        runs: 1000, // Increased for better optimization
       },
+      viaIR: true, // Enable Yul IR for stack too deep fixes
+      evmVersion: "london" // Use London EVM for Route07 compatibility
     },
   },
   networks: {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import MockNavigation from '@/components/MockNavigation'
 import { 
   UserGroupIcon, 
@@ -297,6 +297,38 @@ export default function AdminDashboardPage() {
   const [filter, setFilter] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedSubmission, setSelectedSubmission] = useState<KYCSubmission | null>(null)
+  const [contractStats, setContractStats] = useState<any>(null)
+  const [auditStats, setAuditStats] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchContractStats = async () => {
+      try {
+        setLoading(true)
+        
+        // Fetch audit statistics from blockchain
+        const auditResponse = await fetch('/api/contracts/audit-logs?address=0x0000000000000000000000000000000000000000&limit=1')
+        const auditData = await auditResponse.json()
+        
+        setAuditStats(auditData.auditStats)
+        
+        // Fetch multisig information
+        const multisigResponse = await fetch('/api/contracts/multisig')
+        const multisigData = await multisigResponse.json()
+        
+        setContractStats({
+          multisig: multisigData,
+          audit: auditData
+        })
+      } catch (error) {
+        console.error('Error fetching contract stats:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchContractStats()
+  }, [])
   const [showModal, setShowModal] = useState(false)
   const [activeTab, setActiveTab] = useState('overview')
 
@@ -381,6 +413,58 @@ export default function AdminDashboardPage() {
 
   const renderOverview = () => (
     <div className="space-y-6">
+      {/* Blockchain Statistics */}
+      {loading ? (
+        <div className="bg-white border border-gray-200 rounded-lg p-6">
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span className="ml-2 text-gray-600">Loading blockchain statistics...</span>
+          </div>
+        </div>
+      ) : contractStats && (
+        <div className="bg-white border border-gray-200 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <ChartBarIcon className="w-5 h-5 text-blue-600 mr-2" />
+            Blockchain Statistics
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-center">
+                <UserGroupIcon className="w-8 h-8 text-blue-600 mr-3" />
+                <div>
+                  <p className="text-sm font-medium text-blue-600">Total Audit Logs</p>
+                  <p className="text-2xl font-bold text-blue-900">
+                    {auditStats?.totalLogs ? Number(auditStats.totalLogs) : 'N/A'}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="flex items-center">
+                <UserIcon className="w-8 h-8 text-green-600 mr-3" />
+                <div>
+                  <p className="text-sm font-medium text-green-600">Unique Users</p>
+                  <p className="text-2xl font-bold text-green-900">
+                    {auditStats?.uniqueUsers ? Number(auditStats.uniqueUsers) : 'N/A'}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+              <div className="flex items-center">
+                <ShieldCheckIcon className="w-8 h-8 text-purple-600 mr-3" />
+                <div>
+                  <p className="text-sm font-medium text-purple-600">Authorized Signers</p>
+                  <p className="text-2xl font-bold text-purple-900">
+                    {contractStats?.multisig?.signerCount || 'N/A'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="card">

@@ -44,6 +44,12 @@ module.exports = {
       chainId: parseInt(process.env.NEXT_PUBLIC_CHAIN_ID) || 336699,
       gasPrice: 20000000000, // 20 gwei
     },
+    route07: {
+      url: process.env.NEXT_PUBLIC_RPC_URL || "https://tapi.tractsafe.com",
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+      chainId: parseInt(process.env.NEXT_PUBLIC_CHAIN_ID) || 35935,
+      gasPrice: 20000000000, // 20 gwei
+    },
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,

@@ -1,155 +1,89 @@
-import { NextRequest, NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
-import { User } from '@/lib/models';
-import dbConnect from '@/lib/mongodb';
+import { NextAuthOptions } from 'next-auth';
+import CredentialsProvider from 'next-auth/providers/credentials';
+import bcrypt from 'bcryptjs';
 
-export interface JWTPayload {
-  userId: string;
-  email: string;
-  kycStatus: string;
-  iat: number;
-  exp: number;
-}
+export const authOptions: NextAuthOptions = {
+  providers: [
+    CredentialsProvider({
+      name: 'credentials',
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
 
-/**
- * Verify JWT token and return payload
- */
-export function verifyToken(token: string): JWTPayload | null {
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret-for-mvp') as JWTPayload;
-    return decoded;
-  } catch (error) {
-    return null;
-  }
-}
+        try {
+          // Check if user exists in database
+          const response = await fetch(`${process.env.NEXTAUTH_URL}/api/auth/user`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: credentials.email }),
+          });
 
-/**
- * Extract token from Authorization header
- */
-export function extractToken(request: NextRequest): string | null {
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return null;
-  }
-  return authHeader.substring(7);
-}
+          if (!response.ok) {
+            return null;
+          }
 
-/**
- * Middleware to authenticate requests
- */
-export async function authenticateRequest(request: NextRequest): Promise<{
-  user: any;
-  token: string;
-} | null> {
-  try {
-    // Extract token
-    const token = extractToken(request);
-    if (!token) {
-      return null;
-    }
+          const result = await response.json();
+          if (!result.success || !result.user) {
+            return null;
+          }
 
-    // Verify token
-    const payload = verifyToken(token);
-    if (!payload) {
-      return null;
-    }
+          // Verify password
+          const isValidPassword = await bcrypt.compare(credentials.password, result.user.passwordHash);
+          if (!isValidPassword) {
+            return null;
+          }
 
-    // Connect to database
-    await dbConnect();
-
-    // Get user from database
-    const user = await User.findById(payload.userId).select('-password');
-    if (!user) {
-      return null;
-    }
-
-    return { user, token };
-  } catch (error) {
-    console.error('Authentication error:', error);
-    return null;
-  }
-}
-
-/**
- * Middleware wrapper for protected routes
- */
-export function withAuth(handler: Function) {
-  return async (request: NextRequest) => {
-    const auth = await authenticateRequest(request);
-    if (!auth) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Add user and token to request context
-    (request as any).user = auth.user;
-    (request as any).token = auth.token;
-
-    return handler(request);
-  };
-}
-
-/**
- * Middleware wrapper for admin routes
- */
-export function withAdminAuth(handler: Function) {
-  return async (request: NextRequest) => {
-    const auth = await authenticateRequest(request);
-    if (!auth) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Check if user is admin (you'll need to implement this based on your admin model)
-    // For now, we'll check if the user has admin role in their profile
-    if (auth.user.role !== 'admin') {
-      return NextResponse.json(
-        { success: false, error: 'Insufficient permissions' },
-        { status: 403 }
-      );
-    }
-
-    // Add user and token to request context
-    (request as any).user = auth.user;
-    (request as any).token = auth.token;
-
-    return handler(request);
-  };
-}
-
-/**
- * Generate JWT token for user
- */
-export function generateToken(user: any): string {
-  const userId = user._id?.toString() || user.userId || user.id;
-  const email = user.email;
-  const kycStatus = user.kycStatus || 'not_started';
-  
-  return jwt.sign(
-    {
-      userId,
-      email,
-      kycStatus,
+          return {
+            id: result.user.id,
+            email: result.user.email,
+            firstName: result.user.firstName,
+            lastName: result.user.lastName,
+            kycStatus: result.user.kycStatus,
+            createdAt: result.user.createdAt,
+            updatedAt: result.user.updatedAt,
+          };
+        } catch (error) {
+          console.error('Auth error:', error);
+          return null;
+        }
+      },
+    }),
+  ],
+  session: {
+    strategy: 'jwt',
+  },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.firstName = user.firstName;
+        token.lastName = user.lastName;
+        token.kycStatus = user.kycStatus;
+        token.createdAt = user.createdAt;
+        token.updatedAt = user.updatedAt;
+      }
+      return token;
     },
-    process.env.JWT_SECRET || 'fallback-secret-for-mvp',
-    { expiresIn: '24h' }
-  );
-}
-
-/**
- * Get user from request (after authentication)
- */
-export function getUserFromRequest(request: NextRequest): any {
-  return (request as any).user;
-}
-
-/**
- * Get token from request (after authentication)
- */
-export function getTokenFromRequest(request: NextRequest): string {
-  return (request as any).token;
-} 
+    async session({ session, token }) {
+      if (token) {
+        session.user.id = token.id as string;
+        session.user.firstName = token.firstName as string;
+        session.user.lastName = token.lastName as string;
+        session.user.kycStatus = token.kycStatus as string;
+        session.user.createdAt = token.createdAt as string;
+        session.user.updatedAt = token.updatedAt as string;
+      }
+      return session;
+    },
+  },
+  pages: {
+    signIn: '/auth/login',
+    signUp: '/auth/signup',
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+};

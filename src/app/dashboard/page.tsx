@@ -1,617 +1,236 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { 
-  UserIcon, 
-  ShieldCheckIcon, 
-  DocumentTextIcon, 
-  ChartBarIcon,
-  ClockIcon,
-  CheckCircleIcon,
-  XCircleIcon,
-  ArrowRightIcon,
-  WalletIcon,
-  ExclamationTriangleIcon
-} from '@heroicons/react/24/outline'
-import { KYCService } from '@/lib/kyc-service'
-import { getNetworkInfo } from '@/lib/blockchain'
-
-interface UserData {
-  id: string
-  firstName: string
-  lastName: string
-  email: string
-  walletAddress?: string
-  kycStatus: 'not_started' | 'pending' | 'in_progress' | 'approved' | 'rejected' | 'verified' | 'expired'
-  kycSubmittedAt?: string
-  riskScore?: number
-  riskLevel?: 'low' | 'medium' | 'high'
-  documents: Array<{
-    id: string
-    name: string
-    type: string
-    status: string
-    uploadedAt: string
-  }>
-  blockchainStatus?: {
-    isVerified: boolean
-    verificationHash?: string
-    blockNumber?: number
-    transactionHash?: string
-    isActive: boolean
-    expiresAt?: number
-  }
-}
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useAccount } from 'wagmi';
+import { useRouter } from 'next/navigation';
 
 export default function DashboardPage() {
-  const [userData, setUserData] = useState<UserData | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('overview')
-  const [blockchainConnected, setBlockchainConnected] = useState(false)
-  const [networkInfo, setNetworkInfo] = useState<any>(null)
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
+  const { address, isConnected } = useAccount();
+  const router = useRouter();
+  const [kycStatus, setKycStatus] = useState<any>(null);
 
   useEffect(() => {
-    fetchUserData()
-    checkBlockchainConnection()
-  }, [])
-
-  const checkBlockchainConnection = async () => {
-    try {
-      const networkInfo = await getNetworkInfo()
-      setNetworkInfo(networkInfo)
-      setBlockchainConnected(true)
-    } catch (error) {
-      console.error('Blockchain connection failed:', error)
-      setBlockchainConnected(false)
+    if (!isLoading && !isAuthenticated) {
+      router.push('/auth');
     }
-  }
+  }, [isAuthenticated, isLoading, router]);
 
-  const fetchUserData = async () => {
-    try {
-      const token = localStorage.getItem('token')
-      const response = await fetch('/api/user/profile', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-
-      let userData: UserData
-      
-      if (response.ok) {
-        userData = await response.json()
-      } else {
-        // Fallback to mock data if API fails
-        userData = {
-          id: 'user-001',
-          firstName: 'John',
-          lastName: 'Doe',
-          email: 'john.doe@example.com',
-          walletAddress: '0x1234567890123456789012345678901234567890',
-          kycStatus: 'pending',
-          kycSubmittedAt: '2024-01-15T10:30:00Z',
-          riskScore: 25,
-          riskLevel: 'low',
-          documents: [
-            {
-              id: 'doc-001',
-              name: 'passport.pdf',
-              type: 'passport',
-              status: 'verified',
-              uploadedAt: '2024-01-15T10:00:00Z'
-            },
-            {
-              id: 'doc-002',
-              name: 'utility_bill.pdf',
-              type: 'utility_bill',
-              status: 'pending',
-              uploadedAt: '2024-01-15T10:15:00Z'
-            }
-          ]
-        }
-      }
-
-      // Fetch blockchain status if wallet address exists
-      if (userData.walletAddress && blockchainConnected) {
+  useEffect(() => {
+    const fetchKYCStatus = async () => {
+      if (user?.walletAddress || address) {
         try {
-          const kycStatusResult = await KYCService.getKYCStatus(userData.walletAddress)
-          if (kycStatusResult.success && kycStatusResult.status) {
-            userData.blockchainStatus = {
-              isVerified: kycStatusResult.status.isVerified,
-              verificationHash: kycStatusResult.status.verificationHash,
-              isActive: kycStatusResult.status.isActive,
-              expiresAt: Number(kycStatusResult.status.expiresAt),
-            }
+          const walletAddr = user?.walletAddress || address;
+          const response = await fetch(`/api/kyc/submit?walletAddress=${walletAddr}`);
+          const result = await response.json();
+          if (result.success) {
+            setKycStatus(result.data);
           }
         } catch (error) {
-          console.error('Error fetching blockchain status:', error)
+          console.error('Error fetching KYC status:', error);
         }
       }
+    };
 
-      setUserData(userData)
-    } catch (error) {
-      console.error('Error fetching user data:', error)
-      // Fallback to mock data
-      setUserData({
-        id: 'user-001',
-        firstName: 'John',
-        lastName: 'Doe',
-        email: 'john.doe@example.com',
-        walletAddress: '0x1234567890123456789012345678901234567890',
-        kycStatus: 'pending',
-        kycSubmittedAt: '2024-01-15T10:30:00Z',
-        riskScore: 25,
-        riskLevel: 'low',
-        documents: [
-          {
-            id: 'doc-001',
-            name: 'passport.pdf',
-            type: 'passport',
-            status: 'verified',
-            uploadedAt: '2024-01-15T10:00:00Z'
-          },
-          {
-            id: 'doc-002',
-            name: 'utility_bill.pdf',
-            type: 'utility_bill',
-            status: 'pending',
-            uploadedAt: '2024-01-15T10:15:00Z'
-          }
-        ]
-      })
-    } finally {
-      setIsLoading(false)
+    fetchKYCStatus();
+  }, [user, address]);
+
+  const handleLogout = async () => {
+    await logout();
+    router.push('/');
+  };
+
+  const getKYCStatusColor = (status: string) => {
+    switch (status) {
+      case 'APPROVED': return 'bg-green-100 text-green-800';
+      case 'PENDING': return 'bg-yellow-100 text-yellow-800';
+      case 'REJECTED': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
-  }
-
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      not_started: { class: 'status-not-started', text: 'Not Started', icon: ClockIcon },
-      pending: { class: 'status-pending', text: 'Pending Review', icon: ClockIcon },
-      approved: { class: 'status-approved', text: 'Approved', icon: CheckCircleIcon },
-      rejected: { class: 'status-rejected', text: 'Rejected', icon: XCircleIcon },
-      verified: { class: 'status-verified', text: 'Verified', icon: ShieldCheckIcon },
-      in_progress: { class: 'status-in-progress', text: 'In Progress', icon: ClockIcon },
-      expired: { class: 'status-expired', text: 'Expired', icon: XCircleIcon }
-    }
-
-    const config = statusConfig[status as keyof typeof statusConfig]
-    
-    // Safety check for unknown status
-    if (!config) {
-      return (
-        <span className="status-badge status-unknown">
-          <ClockIcon className="w-4 h-4 mr-1" />
-          {status || 'Unknown'}
-        </span>
-      )
-    }
-
-    const Icon = config.icon
-
-    return (
-      <span className={`status-badge ${config.class}`}>
-        <Icon className="w-4 h-4 mr-1" />
-        {config.text}
-      </span>
-    )
-  }
-
-  const getRiskLevelBadge = (level: string) => {
-    const levelConfig = {
-      low: { class: 'bg-green-100 text-green-800', text: 'Low Risk' },
-      medium: { class: 'bg-yellow-100 text-yellow-800', text: 'Medium Risk' },
-      high: { class: 'bg-red-100 text-red-800', text: 'High Risk' }
-    }
-
-    const config = levelConfig[level as keyof typeof levelConfig]
-
-    return (
-      <span className={`status-badge ${config.class}`}>
-        {config.text}
-      </span>
-    )
-  }
-
-  const renderOverview = () => (
-    <div className="space-y-6">
-      {/* Status Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="card">
-          <div className="flex items-center">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <ShieldCheckIcon className="w-6 h-6 text-blue-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">KYC Status</p>
-              <p className="text-lg font-semibold text-gray-900">
-                {userData?.kycStatus ? getStatusBadge(userData.kycStatus) : 'Not Submitted'}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="card">
-          <div className="flex items-center">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <ChartBarIcon className="w-6 h-6 text-green-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Risk Score</p>
-              <p className="text-lg font-semibold text-gray-900">
-                {userData?.riskScore ? `${userData.riskScore}/100` : 'N/A'}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="card">
-          <div className="flex items-center">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <DocumentTextIcon className="w-6 h-6 text-purple-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Documents</p>
-              <p className="text-lg font-semibold text-gray-900">
-                {userData?.documents?.length || 0} uploaded
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="card">
-          <div className="flex items-center">
-            <div className={`p-2 rounded-lg ${blockchainConnected ? 'bg-green-100' : 'bg-red-100'}`}>
-              <WalletIcon className={`w-6 h-6 ${blockchainConnected ? 'text-green-600' : 'text-red-600'}`} />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Blockchain</p>
-              <p className="text-lg font-semibold text-gray-900">
-                {blockchainConnected ? (
-                  <span className="flex items-center text-green-600">
-                    <CheckCircleIcon className="w-4 h-4 mr-1" />
-                    Connected
-                  </span>
-                ) : (
-                  <span className="flex items-center text-red-600">
-                    <ExclamationTriangleIcon className="w-4 h-4 mr-1" />
-                    Disconnected
-                  </span>
-                )}
-              </p>
-              {networkInfo && (
-                <p className="text-xs text-gray-500">
-                  Chain ID: {networkInfo.chainId.toString()}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="card">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {userData?.kycStatus === 'pending' && (
-            <Link href="/kyc/status" className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-              <ClockIcon className="w-5 h-5 text-gray-400 mr-3" />
-              <div>
-                <p className="font-medium text-gray-900">Check KYC Status</p>
-                <p className="text-sm text-gray-600">View your verification progress</p>
-              </div>
-              <ArrowRightIcon className="w-5 h-5 text-gray-400 ml-auto" />
-            </Link>
-          )}
-
-          {(userData?.kycStatus === 'not_started' || userData?.kycStatus === 'rejected') && (
-            <Link href="/kyc/submit" className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-              <DocumentTextIcon className="w-5 h-5 text-gray-400 mr-3" />
-              <div>
-                <p className="font-medium text-gray-900">Submit KYC</p>
-                <p className="text-sm text-gray-600">Complete your verification</p>
-              </div>
-              <ArrowRightIcon className="w-5 h-5 text-gray-400 ml-auto" />
-            </Link>
-          )}
-
-          <Link href="/risk-profile" className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-            <ChartBarIcon className="w-5 h-5 text-gray-400 mr-3" />
-            <div>
-              <p className="font-medium text-gray-900">View Risk Profile</p>
-              <p className="text-sm text-gray-600">Check your AI risk assessment</p>
-            </div>
-            <ArrowRightIcon className="w-5 h-5 text-gray-400 ml-auto" />
-          </Link>
-
-          <Link href="/documents" className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-            <DocumentTextIcon className="w-5 h-5 text-gray-400 mr-3" />
-            <div>
-              <p className="font-medium text-gray-900">Manage Documents</p>
-              <p className="text-sm text-gray-600">View and update your documents</p>
-            </div>
-            <ArrowRightIcon className="w-5 h-5 text-gray-400 ml-auto" />
-          </Link>
-        </div>
-      </div>
-
-      {/* Recent Activity */}
-      <div className="card">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
-        <div className="space-y-4">
-          {userData?.kycSubmittedAt && (
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <div className="flex-1">
-                <p className="text-sm text-gray-900">KYC submitted for review</p>
-                <p className="text-xs text-gray-500">
-                  {new Date(userData.kycSubmittedAt).toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-          )}
-          
-          {userData?.documents?.map((doc, index) => (
-            <div key={doc.id} className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <div className="flex-1">
-                <p className="text-sm text-gray-900">{doc.name} uploaded</p>
-                <p className="text-xs text-gray-500">
-                  {new Date(doc.uploadedAt).toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-
-  const renderProfile = () => (
-    <div className="space-y-6">
-      <div className="card">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">Personal Information</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-            <p className="text-gray-900">{userData?.firstName} {userData?.lastName}</p>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-            <p className="text-gray-900">{userData?.email}</p>
-          </div>
-          
-          {userData?.walletAddress && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Wallet Address</label>
-              <div className="flex items-center space-x-2">
-                <WalletIcon className="w-4 h-4 text-gray-400" />
-                <p className="text-gray-900 font-mono text-sm">
-                  {userData.walletAddress.slice(0, 6)}...{userData.walletAddress.slice(-4)}
-                </p>
-              </div>
-            </div>
-          )}
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">KYC Status</label>
-            <div>{userData?.kycStatus ? getStatusBadge(userData.kycStatus) : 'Not Submitted'}</div>
-          </div>
-        </div>
-      </div>
-
-      {userData?.riskScore && (
-        <div className="card">
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">Risk Assessment</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Risk Score</label>
-              <div className="flex items-center space-x-3">
-                <div className="flex-1 bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${userData.riskScore}%` }}
-                  ></div>
-                </div>
-                <span className="text-sm font-medium text-gray-900">{userData.riskScore}/100</span>
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Risk Level</label>
-              <div>{userData.riskLevel ? getRiskLevelBadge(userData.riskLevel) : 'Not assessed'}</div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Blockchain Status */}
-      <div className="card">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">Blockchain Status</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Connection Status</label>
-            <div className="flex items-center space-x-2">
-              {blockchainConnected ? (
-                <>
-                  <CheckCircleIcon className="w-5 h-5 text-green-500" />
-                  <span className="text-green-600 font-medium">Connected</span>
-                </>
-              ) : (
-                <>
-                  <ExclamationTriangleIcon className="w-5 h-5 text-red-500" />
-                  <span className="text-red-600 font-medium">Disconnected</span>
-                </>
-              )}
-            </div>
-          </div>
-          
-          {networkInfo && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Network</label>
-              <p className="text-gray-900">Chain ID: {networkInfo.chainId.toString()}</p>
-            </div>
-          )}
-          
-          {userData?.blockchainStatus && (
-            <>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">On-Chain Verification</label>
-                <div className="flex items-center space-x-2">
-                  {userData.blockchainStatus.isVerified ? (
-                    <>
-                      <CheckCircleIcon className="w-5 h-5 text-green-500" />
-                      <span className="text-green-600 font-medium">Verified</span>
-                    </>
-                  ) : (
-                    <>
-                      <XCircleIcon className="w-5 h-5 text-red-500" />
-                      <span className="text-red-600 font-medium">Not Verified</span>
-                    </>
-                  )}
-                </div>
-              </div>
-              
-              {userData.blockchainStatus.verificationHash && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Verification Hash</label>
-                  <p className="text-gray-900 font-mono text-sm break-all">
-                    {userData.blockchainStatus.verificationHash.slice(0, 20)}...
-                  </p>
-                </div>
-              )}
-              
-              {userData.blockchainStatus.expiresAt && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Expires At</label>
-                  <p className="text-gray-900">
-                    {new Date(userData.blockchainStatus.expiresAt * 1000).toLocaleDateString()}
-                  </p>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-
-  const renderDocuments = () => (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold text-gray-900">Documents</h3>
-        <Link href="/kyc/submit" className="btn-primary">
-          Upload New Document
-        </Link>
-      </div>
-
-      {userData?.documents && userData.documents.length > 0 ? (
-        <div className="card">
-          <div className="space-y-4">
-            {userData.documents.map((doc) => (
-              <div key={doc.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <DocumentTextIcon className="w-5 h-5 text-gray-400" />
-                  <div>
-                    <p className="font-medium text-gray-900">{doc.name}</p>
-                    <p className="text-sm text-gray-500">{doc.type} • {new Date(doc.uploadedAt).toLocaleDateString()}</p>
-                  </div>
-                </div>
-                <span className={`status-badge ${doc.status === 'verified' ? 'status-verified' : 'status-pending'}`}>
-                  {doc.status === 'verified' ? 'Verified' : 'Pending'}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : (
-        <div className="card text-center py-12">
-          <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No documents uploaded</h3>
-          <p className="text-gray-600 mb-6">Upload your identity documents to complete KYC verification</p>
-          <Link href="/kyc/submit" className="btn-primary">
-            Upload Documents
-          </Link>
-        </div>
-      )}
-    </div>
-  )
+  };
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading dashboard...</p>
-        </div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
-    )
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null;
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-              <p className="text-gray-600 mt-2">
-                Welcome back, {userData?.firstName}! Here&apos;s your KYC verification status.
-              </p>
+      {/* Header */}
+      <header className="bg-white shadow">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-6">
+            <div className="flex items-center">
+              <div className="h-8 w-8 bg-blue-600 rounded-full flex items-center justify-center">
+                <span className="text-white text-sm font-bold">W3</span>
+              </div>
+              <h1 className="ml-3 text-2xl font-bold text-gray-900">W3KYC Dashboard</h1>
             </div>
-            <div className="flex items-center space-x-4">
-              <Link
-                href="/tenant-dashboard"
-                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center"
-              >
-                <UserIcon className="w-5 h-5 mr-2" />
-                Tenant Dashboard
-              </Link>
-              <Link
-                href="/kyc/submit"
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center"
-              >
-                <DocumentTextIcon className="w-5 h-5 mr-2" />
-                Submit KYC
-              </Link>
+            <button
+              onClick={handleLogout}
+              className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Welcome Section */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            Welcome, {user?.firstName || 'User'}!
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">Account Information</h3>
+              <div className="space-y-2">
+                {user?.email && (
+                  <div className="flex items-center">
+                    <span className="text-gray-600 w-20">Email:</span>
+                    <span className="text-gray-900">{user.email}</span>
+                  </div>
+                )}
+                {(user?.walletAddress || address) && (
+                  <div className="flex items-center">
+                    <span className="text-gray-600 w-20">Wallet:</span>
+                    <span className="text-gray-900 font-mono text-sm">
+                      {(user?.walletAddress || address)?.slice(0, 6)}...{(user?.walletAddress || address)?.slice(-4)}
+                    </span>
+                  </div>
+                )}
+                <div className="flex items-center">
+                  <span className="text-gray-600 w-20">Type:</span>
+                  <span className="text-gray-900">
+                    {user?.email && (user?.walletAddress || address) ? 'Hybrid' : 
+                     user?.email ? 'Web2' : 'Web3'}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">KYC Status</h3>
+              <div className="space-y-2">
+                <div className="flex items-center">
+                  <span className="text-gray-600 w-20">Status:</span>
+                  <span className={`px-2 py-1 rounded-full text-sm font-medium ${getKYCStatusColor(kycStatus?.status || 'NONE')}`}>
+                    {kycStatus?.status || 'Not Started'}
+                  </span>
+                </div>
+                {kycStatus?.kycData?.jurisdiction && (
+                  <div className="flex items-center">
+                    <span className="text-gray-600 w-20">Jurisdiction:</span>
+                    <span className="text-gray-900">{kycStatus.kycData.jurisdiction}</span>
+                  </div>
+                )}
+                {kycStatus?.kycData?.riskScore && (
+                  <div className="flex items-center">
+                    <span className="text-gray-600 w-20">Risk Score:</span>
+                    <span className="text-gray-900">{kycStatus.kycData.riskScore}</span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="border-b border-gray-200 mb-8">
-          <nav className="-mb-px flex space-x-8">
-            {[
-              { id: 'overview', name: 'Overview', icon: ChartBarIcon },
-              { id: 'profile', name: 'Profile', icon: UserIcon },
-              { id: 'documents', name: 'Documents', icon: DocumentTextIcon }
-            ].map((tab) => {
-              const Icon = tab.icon
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center space-x-2 py-2 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === tab.id
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span>{tab.name}</span>
-                </button>
-              )
-            })}
-          </nav>
+        {/* Action Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* KYC Verification */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="flex items-center mb-4">
+              <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <span className="text-blue-600 text-xl">🆔</span>
+              </div>
+              <h3 className="ml-3 text-lg font-semibold text-gray-900">KYC Verification</h3>
+            </div>
+            <p className="text-gray-600 mb-4">
+              Complete your Know Your Customer verification process
+            </p>
+            <button
+              onClick={() => router.push('/onboarding')}
+              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              {kycStatus?.status === 'NONE' || !kycStatus?.status ? 'Start KYC' : 'View Status'}
+            </button>
+          </div>
+
+          {/* Profile Settings */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="flex items-center mb-4">
+              <div className="h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center">
+                <span className="text-green-600 text-xl">⚙️</span>
+              </div>
+              <h3 className="ml-3 text-lg font-semibold text-gray-900">Profile Settings</h3>
+            </div>
+            <p className="text-gray-600 mb-4">
+              Manage your account information and preferences
+            </p>
+            <button
+              onClick={() => router.push('/profile')}
+              className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors"
+            >
+              Manage Profile
+            </button>
+          </div>
+
+          {/* Blockchain Status */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="flex items-center mb-4">
+              <div className="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                <span className="text-purple-600 text-xl">⛓️</span>
+              </div>
+              <h3 className="ml-3 text-lg font-semibold text-gray-900">Blockchain Status</h3>
+            </div>
+            <p className="text-gray-600 mb-4">
+              View deployed contracts and network status
+            </p>
+            <button
+              onClick={() => router.push('/blockchain-status')}
+              className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              View Status
+            </button>
+          </div>
         </div>
 
-        {/* Tab Content */}
-        {activeTab === 'overview' && renderOverview()}
-        {activeTab === 'profile' && renderProfile()}
-        {activeTab === 'documents' && renderDocuments()}
+        {/* Recent Activity */}
+        {kycStatus?.kycData && (
+          <div className="mt-8 bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                <div className="flex items-center">
+                  <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <span className="text-blue-600 text-sm">📝</span>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-gray-900">KYC Submission</p>
+                    <p className="text-xs text-gray-500">
+                      {kycStatus.kycData.createdAt ? 
+                        new Date(kycStatus.kycData.createdAt).toLocaleDateString() : 
+                        'Recently'
+                      }
+                    </p>
+                  </div>
+                </div>
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getKYCStatusColor(kycStatus.status)}`}>
+                  {kycStatus.status}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
-  )
-} 
+  );
+}

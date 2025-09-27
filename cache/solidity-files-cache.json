@@ -13,7 +13,7 @@
             "runs": 1000
           },
           "viaIR": true,
-          "evmVersion": "shanghai",
+          "evmVersion": "london",
           "outputSelection": {
             "*": {
               "*": [
@@ -54,7 +54,7 @@
             "runs": 1000
           },
           "viaIR": true,
-          "evmVersion": "shanghai",
+          "evmVersion": "london",
           "outputSelection": {
             "*": {
               "*": [
@@ -94,7 +94,7 @@
             "runs": 1000
           },
           "viaIR": true,
-          "evmVersion": "shanghai",
+          "evmVersion": "london",
           "outputSelection": {
             "*": {
               "*": [
@@ -133,7 +133,7 @@
             "runs": 1000
           },
           "viaIR": true,
-          "evmVersion": "shanghai",
+          "evmVersion": "london",
           "outputSelection": {
             "*": {
               "*": [
@@ -172,7 +172,7 @@
             "runs": 1000
           },
           "viaIR": true,
-          "evmVersion": "shanghai",
+          "evmVersion": "london",
           "outputSelection": {
             "*": {
               "*": [
@@ -215,7 +215,7 @@
             "runs": 1000
           },
           "viaIR": true,
-          "evmVersion": "shanghai",
+          "evmVersion": "london",
           "outputSelection": {
             "*": {
               "*": [
@@ -255,7 +255,7 @@
             "runs": 1000
           },
           "viaIR": true,
-          "evmVersion": "shanghai",
+          "evmVersion": "london",
           "outputSelection": {
             "*": {
               "*": [
@@ -297,7 +297,7 @@
             "runs": 1000
           },
           "viaIR": true,
-          "evmVersion": "shanghai",
+          "evmVersion": "london",
           "outputSelection": {
             "*": {
               "*": [
@@ -338,7 +338,7 @@
             "runs": 1000
           },
           "viaIR": true,
-          "evmVersion": "shanghai",
+          "evmVersion": "london",
           "outputSelection": {
             "*": {
               "*": [
@@ -377,7 +377,7 @@
             "runs": 1000
           },
           "viaIR": true,
-          "evmVersion": "shanghai",
+          "evmVersion": "london",
           "outputSelection": {
             "*": {
               "*": [
@@ -417,7 +417,7 @@
             "runs": 1000
           },
           "viaIR": true,
-          "evmVersion": "shanghai",
+          "evmVersion": "london",
           "outputSelection": {
             "*": {
               "*": [
@@ -458,7 +458,7 @@
             "runs": 1000
           },
           "viaIR": true,
-          "evmVersion": "shanghai",
+          "evmVersion": "london",
           "outputSelection": {
             "*": {
               "*": [
@@ -499,7 +499,7 @@
             "runs": 1000
           },
           "viaIR": true,
-          "evmVersion": "shanghai",
+          "evmVersion": "london",
           "outputSelection": {
             "*": {
               "*": [
@@ -536,7 +536,7 @@
             "runs": 1000
           },
           "viaIR": true,
-          "evmVersion": "shanghai",
+          "evmVersion": "london",
           "outputSelection": {
             "*": {
               "*": [
@@ -576,7 +576,7 @@
             "runs": 1000
           },
           "viaIR": true,
-          "evmVersion": "shanghai",
+          "evmVersion": "london",
           "outputSelection": {
             "*": {
               "*": [
@@ -615,7 +615,7 @@
             "runs": 1000
           },
           "viaIR": true,
-          "evmVersion": "shanghai",
+          "evmVersion": "london",
           "outputSelection": {
             "*": {
               "*": [
@@ -652,7 +652,7 @@
             "runs": 1000
           },
           "viaIR": true,
-          "evmVersion": "shanghai",
+          "evmVersion": "london",
           "outputSelection": {
             "*": {
               "*": [
@@ -689,7 +689,7 @@
             "runs": 1000
           },
           "viaIR": true,
-          "evmVersion": "shanghai",
+          "evmVersion": "london",
           "outputSelection": {
             "*": {
               "*": [
@@ -726,7 +726,7 @@
             "runs": 1000
           },
           "viaIR": true,
-          "evmVersion": "shanghai",
+          "evmVersion": "london",
           "outputSelection": {
             "*": {
               "*": [
@@ -766,7 +766,7 @@
             "runs": 1000
           },
           "viaIR": true,
-          "evmVersion": "shanghai",
+          "evmVersion": "london",
           "outputSelection": {
             "*": {
               "*": [
@@ -809,7 +809,7 @@
             "runs": 1000
           },
           "viaIR": true,
-          "evmVersion": "shanghai",
+          "evmVersion": "london",
           "outputSelection": {
             "*": {
               "*": [
@@ -849,7 +849,7 @@
             "runs": 1000
           },
           "viaIR": true,
-          "evmVersion": "shanghai",
+          "evmVersion": "london",
           "outputSelection": {
             "*": {
               "*": [
@@ -889,7 +889,7 @@
             "runs": 1000
           },
           "viaIR": true,
-          "evmVersion": "shanghai",
+          "evmVersion": "london",
           "outputSelection": {
             "*": {
               "*": [
@@ -929,7 +929,7 @@
             "runs": 1000
           },
           "viaIR": true,
-          "evmVersion": "shanghai",
+          "evmVersion": "london",
           "outputSelection": {
             "*": {
               "*": [
@@ -969,7 +969,7 @@
             "runs": 1000
           },
           "viaIR": true,
-          "evmVersion": "shanghai",
+          "evmVersion": "london",
           "outputSelection": {
             "*": {
               "*": [
@@ -1011,7 +1011,7 @@
             "runs": 1000
           },
           "viaIR": true,
-          "evmVersion": "shanghai",
+          "evmVersion": "london",
           "outputSelection": {
             "*": {
               "*": [
@@ -1050,7 +1050,7 @@
             "runs": 1000
           },
           "viaIR": true,
-          "evmVersion": "shanghai",
+          "evmVersion": "london",
           "outputSelection": {
             "*": {
               "*": [
@@ -1089,7 +1089,7 @@
             "runs": 1000
           },
           "viaIR": true,
-          "evmVersion": "shanghai",
+          "evmVersion": "london",
           "outputSelection": {
             "*": {
               "*": [

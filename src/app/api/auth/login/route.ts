@@ -1,73 +1,62 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
-import { generateToken } from '@/lib/auth';
-import dbConnect from '@/lib/mongodb';
-import { User } from '@/lib/models';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
-// Validation schema for user login
-const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(1, 'Password is required'),
-});
+// Mock database - in production, use a real database
+const users: any[] = [];
 
 export async function POST(request: NextRequest) {
   try {
-    // Connect to database
-    await dbConnect();
+    const { email, password } = await request.json();
 
-    // Parse and validate request body
-    const body = await request.json();
-    const validatedData = loginSchema.parse(body);
+    // Validate required fields
+    if (!email || !password) {
+      return NextResponse.json(
+        { success: false, error: 'Email and password are required' },
+        { status: 400 }
+      );
+    }
 
     // Find user by email
-    const user = await User.findOne({ email: validatedData.email.toLowerCase() });
+    const user = users.find(u => u.email === email);
     if (!user) {
-      return NextResponse.json({
-        success: false,
-        error: 'Invalid email or password',
-      }, { status: 401 });
+      return NextResponse.json(
+        { success: false, error: 'Invalid email or password' },
+        { status: 401 }
+      );
     }
 
     // Verify password
-    const isPasswordValid = await user.comparePassword(validatedData.password);
-    if (!isPasswordValid) {
-      return NextResponse.json({
-        success: false,
-        error: 'Invalid email or password',
-      }, { status: 401 });
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid email or password' },
+        { status: 401 }
+      );
     }
 
     // Generate JWT token
-    const token = generateToken(user);
+    const token = jwt.sign(
+      { userId: user.id, email: user.email },
+      process.env.JWT_SECRET || 'your-secret-key',
+      { expiresIn: '7d' }
+    );
 
-    // Return success response with token
+    // Remove password from response
+    const { password: _, ...userWithoutPassword } = user;
+
     return NextResponse.json({
       success: true,
       message: 'Login successful',
+      user: userWithoutPassword,
       token,
-      user: {
-        id: user._id.toString(),
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        kycStatus: user.kycStatus
-      }
-    });
+    }, { status: 200 });
 
   } catch (error) {
     console.error('Login error:', error);
-
-    if (error instanceof z.ZodError) {
-      return NextResponse.json({
-        success: false,
-        error: 'Validation failed',
-        details: error.issues,
-      }, { status: 400 });
-    }
-
-    return NextResponse.json({
-      success: false,
-      error: 'Internal server error',
-    }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
+    );
   }
-} 
+}

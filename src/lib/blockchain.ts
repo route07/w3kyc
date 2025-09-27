@@ -8,12 +8,12 @@ const PRIVATE_KEY = process.env.PRIVATE_KEY!;
 const LOCAL_RPC_URL = 'http://127.0.0.1:8545';
 const LOCAL_CHAIN_ID = '31337';
 
-// Use local network for development if available
-const isLocalDevelopment = process.env.NODE_ENV === 'development' || 
-                          (typeof window !== 'undefined' && window.location.hostname === 'localhost');
+// Use Route07 testnet for all environments (since we deployed there)
+// Only use local network if explicitly configured
+const useLocalNetwork = process.env.USE_LOCAL_NETWORK === 'true';
 
-const effectiveRpcUrl = isLocalDevelopment ? LOCAL_RPC_URL : RPC_URL;
-const effectiveChainId = isLocalDevelopment ? LOCAL_CHAIN_ID : CHAIN_ID;
+const effectiveRpcUrl = useLocalNetwork ? LOCAL_RPC_URL : RPC_URL;
+const effectiveChainId = useLocalNetwork ? LOCAL_CHAIN_ID : CHAIN_ID;
 
 if (!effectiveChainId || !effectiveRpcUrl) {
   throw new Error('Blockchain configuration missing in environment variables');
@@ -22,7 +22,7 @@ if (!effectiveChainId || !effectiveRpcUrl) {
 // Provider for read-only operations
 export const provider = new ethers.JsonRpcProvider(effectiveRpcUrl);
 
-// Deployed Contract Addresses (Local Hardhat Network)
+// Deployed Contract Addresses - Route07 Testnet (London EVM)
 export const CONTRACT_ADDRESSES = {
   local: {
     KYCDataStorage: "0x5eb3bc0a489c5a8288765d2336659ebca68fcd00",
@@ -42,18 +42,52 @@ export const CONTRACT_ADDRESSES = {
     GovernanceManager: "0x162a433068f51e18b7d13932f27e66a3f99e6890",
     BatchOperationsRefactored: "0x922d6956c99e12dfeb3224dea977d0939758a1fe",
     MultisigExample: "0x5081a39b8a5f0e35a8d959395a630b68b74dd30f",
-    AuditLogStorage: "0x0000000000000000000000000000000000000000", // Will be updated when deployed
+    AuditLogStorage: "0x36C02dA8a0983159322a80FFE9F24b1acfF8B570",
   },
+  // Route07 Testnet - All 21 contracts deployed successfully (London EVM)
   testnet: {
-    InputValidator: "0xA74E223CC1D51F1cFaF3594B01A0335DD5F0Cf29",
-    BoundsChecker: "0xe6a30fb8727a8D27f19c4170bEaE4e7C4d0C527e",
+    // Storage Layer
+    KYCDataStorage: "0x5f4f4a6Ddb4a10AB2842c0414c490Fdc33b9d2Ba",
+    AuditLogStorage: "0xf07BDad5f0Fd8b2f7DA548C2eFB68a699704a5c4",
+    TenantConfigStorage: "0xDdd5B33D7b9D943712ddF5180d0aB472A4dFA07C",
+    DIDCredentialStorage: "0xc7812E5f4Ab5E9Bb2b421c8E8bfE178d81696bC8",
+    
+    // Business Logic Layer
+    KYCManager: "0x9966fF8E8D04c19B2d3337d7F3b6A27F769B4F85",
+    DIDManager: "0x19026Ce391b35c205191b91E5Ae929ED0e20B261",
+    BatchOperationsSimple: "0xdE2E4150AA04AB879a88302cA2430b3B13B63dc4",
+    BatchOperationsRefactored: "0xa721012f2Fa362977C952485Fc068A44Ff940d34",
+    
+    // Access Control Layer
+    AuthorizationManager: "0xF2Df465954265Bf59DeF33DFE271d09ecfDB1d44",
+    
+    // Utility Layer
+    ComplianceChecker: "0xA6465F8C41991Bc8Bf90AcB71f14E82822347560",
+    InputValidator: "0x0DC8D172E1Dd777f5B98bAE0913A5DED41c6E971",
+    BoundsChecker: "0x7b9eA0b99B73998e8558CCD0C6612Dcb6CaFD8E9",
+    JurisdictionConfig: "0x9a8BdA52EC7E2E8795d74C41e21047eb2DA85c18",
+    VersionManager: "0x9db689Af1a4A7Cd58322C983296dEA0920337630",
+    CredentialTypeManagerRefactored: "0xdAfB73F91D5a2FDE7F6EF6161bCB3e892f8c514E",
+    FeatureFlagsRefactored: "0x1e830E3eB31350511844D4ABC7e8f5E4C1Ab6d07",
+    
+    // System Layer
+    MultisigManager: "0xfD979F006135e5E459AE56FDe027db0B2c92a7be",
+    MultisigModifier: "0x5Ce264B230398DD339F295563E1969E7AaCDE2F4",
+    EmergencyManager: "0x4AdC91C27F9B4933eb08cD6ee48251b3132Ae227",
+    
+    // Governance Layer
+    GovernanceManager: "0x9d9d2F136d17505BE4F0789ff90383901645dF92",
+    
+    // Examples
+    MultisigExample: "0x98a0392b090FA90D85012064dcfebaCdD0EB866f",
   }
 };
 
 // Get contract addresses based on environment
 export function getContractAddresses() {
-  const isLocal = effectiveRpcUrl.includes('localhost') || effectiveRpcUrl.includes('127.0.0.1') || effectiveRpcUrl.includes('127.0.0.1:8545');
-  return isLocal ? CONTRACT_ADDRESSES.local : CONTRACT_ADDRESSES.testnet;
+  // Use testnet addresses by default (since we deployed there)
+  // Only use local addresses if explicitly configured
+  return useLocalNetwork ? CONTRACT_ADDRESSES.local : CONTRACT_ADDRESSES.testnet;
 }
 
 // For development, prefer local network if available

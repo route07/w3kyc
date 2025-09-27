@@ -1,236 +1,147 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { WalletIcon, EnvelopeIcon, LockClosedIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { useAuth } from '@/contexts/AuthContext';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 export default function LoginPage() {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  })
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [showWeb3, setShowWeb3] = useState(false);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    })
-  }
+  const { login } = useAuth();
 
-  const handleEmailLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    const result = await login(email, password);
     
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        localStorage.setItem('token', data.token)
-        router.push('/dashboard')
-      } else {
-        const error = await response.json()
-        alert(error.message || 'Login failed')
-      }
-    } catch (error) {
-      console.error('Login error:', error)
-      alert('Login failed. Please try again.')
-    } finally {
-      setIsLoading(false)
+    if (result.success) {
+      // Redirect to dashboard or home page
+      window.location.href = '/dashboard';
+    } else {
+      setError(result.error || 'Login failed');
     }
-  }
-
-  const handleWalletLogin = async () => {
-    setIsLoading(true)
     
-    try {
-      // Check if MetaMask is installed
-      if (typeof window.ethereum === 'undefined') {
-        alert('Please install MetaMask to connect your wallet')
-        return
-      }
-
-      // Request account access
-      const accounts = await window.ethereum.request({ 
-        method: 'eth_requestAccounts' 
-      })
-      
-      if (accounts.length > 0) {
-        const walletAddress = accounts[0]
-        
-        // Call backend to authenticate wallet
-        const response = await fetch('/api/auth/wallet-login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ walletAddress }),
-        })
-
-        if (response.ok) {
-          const data = await response.json()
-          localStorage.setItem('token', data.token)
-          localStorage.setItem('walletAddress', walletAddress)
-          router.push('/dashboard')
-        } else {
-          const error = await response.json()
-          alert(error.message || 'Wallet login failed')
-        }
-      }
-    } catch (error) {
-      console.error('Wallet login error:', error)
-      alert('Wallet connection failed. Please try again.')
-    } finally {
-      setIsLoading(false)
-    }
-  }
+    setIsLoading(false);
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <div className="mx-auto h-12 w-12 bg-blue-600 rounded-lg flex items-center justify-center">
-            <WalletIcon className="h-6 w-6 text-white" />
-          </div>
-          <h2 className="mt-6 text-3xl font-bold text-gray-900">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             Sign in to your account
           </h2>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="mt-2 text-center text-sm text-gray-600">
             Or{' '}
-            <Link href="/auth/register" className="font-medium text-blue-600 hover:text-blue-500">
+            <Link href="/auth/signup" className="font-medium text-indigo-600 hover:text-indigo-500">
               create a new account
             </Link>
           </p>
         </div>
 
-        <div className="space-y-6">
-          {/* Web3 Wallet Login */}
-          <div>
-            <button
-              onClick={handleWalletLogin}
-              disabled={isLoading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <WalletIcon className="h-5 w-5 mr-2" />
-              {isLoading ? 'Connecting...' : 'Connect Wallet'}
-            </button>
-          </div>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-gradient-to-br from-blue-50 via-white to-indigo-50 text-gray-500">
-                Or continue with email
-              </span>
-            </div>
-          </div>
-
-          {/* Email Login Form */}
-          <form className="space-y-4" onSubmit={handleEmailLogin}>
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
-              </label>
-              <div className="mt-1 relative">
+        <div className="bg-white py-8 px-6 shadow-xl rounded-lg">
+          {!showWeb3 ? (
+            <form className="space-y-6" onSubmit={handleSubmit}>
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                  Email address
+                </label>
                 <input
                   id="email"
                   name="email"
                   type="email"
                   autoComplete="email"
                   required
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className="input-field pl-10"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                   placeholder="Enter your email"
                 />
-                <EnvelopeIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
               </div>
-            </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <div className="mt-1 relative">
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                  Password
+                </label>
                 <input
                   id="password"
                   name="password"
-                  type={showPassword ? 'text' : 'password'}
+                  type="password"
                   autoComplete="current-password"
                   required
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  className="input-field pl-10 pr-10"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                   placeholder="Enter your password"
                 />
-                <LockClosedIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+              </div>
+
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md">
+                  {error}
+                </div>
+              )}
+
+              <div>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? 'Signing in...' : 'Sign in'}
+                </button>
+              </div>
+
+              <div className="text-center">
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                  onClick={() => setShowWeb3(true)}
+                  className="text-sm text-indigo-600 hover:text-indigo-500"
                 >
-                  {showPassword ? (
-                    <EyeSlashIcon className="h-5 w-5 text-gray-400" />
-                  ) : (
-                    <EyeIcon className="h-5 w-5 text-gray-400" />
-                  )}
+                  Or connect with wallet
+                </button>
+              </div>
+            </form>
+          ) : (
+            <div className="space-y-6">
+              <div className="text-center">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  Connect with your wallet
+                </h3>
+                <p className="text-sm text-gray-600 mb-6">
+                  Connect your wallet to sign in or create a new account
+                </p>
+                <div className="flex justify-center">
+                  <ConnectButton />
+                </div>
+              </div>
+
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => setShowWeb3(false)}
+                  className="text-sm text-gray-600 hover:text-gray-500"
+                >
+                  Or sign in with email
                 </button>
               </div>
             </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                  Remember me
-                </label>
-              </div>
-
-              <div className="text-sm">
-                <Link href="/auth/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
-                  Forgot your password?
-                </Link>
-              </div>
-            </div>
-
-            <div>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isLoading ? 'Signing in...' : 'Sign in'}
-              </button>
-            </div>
-          </form>
+          )}
         </div>
 
         <div className="text-center">
-          <p className="text-sm text-gray-600">
-            Don&apos;t have an account?{' '}
-            <Link href="/auth/register" className="font-medium text-blue-600 hover:text-blue-500">
-              Sign up here
-            </Link>
-          </p>
+          <Link href="/" className="text-sm text-gray-600 hover:text-gray-500">
+            ← Back to home
+          </Link>
         </div>
       </div>
     </div>
-  )
-} 
+  );
+}

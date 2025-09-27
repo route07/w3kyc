@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import MockNavigation from '@/components/MockNavigation'
 import { 
   ShieldCheckIcon, 
@@ -121,7 +121,7 @@ const userAData: UserAData = {
     issuedAt: '2024-01-17T14:22:00Z',
     expiresAt: '2025-01-17T14:22:00Z',
     blockchainTx: '0x4567890123def1234567890abcdef1234567890abcdef1234567890abcdef',
-    smartContractAddress: '0x9876543210fedcba9876543210fedcba9876543210',
+    smartContractAddress: '0x9966fF8E8D04c19B2d3337d7F3b6A27F769B4F85', // Real KYCManager address
     credentialHash: '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890'
   },
   riskProfile: {
@@ -204,6 +204,37 @@ const userAData: UserAData = {
 
 export default function UserAPage() {
   const [activeTab, setActiveTab] = useState('overview')
+  const [contractData, setContractData] = useState<any>(null)
+  const [auditLogs, setAuditLogs] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  // Mock user address for demonstration
+  const userAddress = '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6'
+
+  useEffect(() => {
+    const fetchContractData = async () => {
+      try {
+        setLoading(true)
+        
+        // Fetch KYC data from blockchain
+        const kycResponse = await fetch(`/api/contracts/kyc-data?address=${userAddress}`)
+        const kycData = await kycResponse.json()
+        
+        // Fetch audit logs
+        const auditResponse = await fetch(`/api/contracts/audit-logs?address=${userAddress}&limit=5`)
+        const auditData = await auditResponse.json()
+        
+        setContractData(kycData)
+        setAuditLogs(auditData.auditLogs || [])
+      } catch (error) {
+        console.error('Error fetching contract data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchContractData()
+  }, [userAddress])
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
@@ -341,35 +372,99 @@ export default function UserAPage() {
           <h3 className="text-lg font-semibold text-gray-900">Blockchain Credential</h3>
           <CheckCircleIcon className="w-6 h-6 text-green-500" />
         </div>
-        <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Credential ID</p>
-              <p className="font-mono text-sm text-gray-900">{userAData.blockchainCredentials.credentialId}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600">Issuer</p>
-              <p className="text-sm text-gray-900">{userAData.blockchainCredentials.issuer}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600">Issued</p>
-              <p className="text-sm text-gray-900">{formatDate(userAData.blockchainCredentials.issuedAt)}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600">Expires</p>
-              <p className="text-sm text-gray-900">{formatDate(userAData.blockchainCredentials.expiresAt)}</p>
-            </div>
-            <div className="md:col-span-2">
-              <p className="text-sm font-medium text-gray-600">Transaction Hash</p>
-              <p className="font-mono text-sm text-gray-900">{truncateHash(userAData.blockchainCredentials.blockchainTx)}</p>
+        {loading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span className="ml-2 text-gray-600">Loading blockchain data...</span>
+          </div>
+        ) : contractData?.success ? (
+          <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm font-medium text-gray-600">KYC Status</p>
+                <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                  contractData.kycStatus?.isVerified ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                }`}>
+                  {contractData.kycStatus?.isVerified ? 'Verified' : 'Not Verified'}
+                </span>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-600">Active Status</p>
+                <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                  contractData.kycStatus?.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                }`}>
+                  {contractData.kycStatus?.isActive ? 'Active' : 'Inactive'}
+                </span>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-600">Risk Score</p>
+                <p className="text-sm font-semibold text-gray-900">
+                  {contractData.kycData?.riskScore ? Number(contractData.kycData.riskScore) : 'N/A'}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-600">Jurisdiction</p>
+                <p className="text-sm text-gray-900">{contractData.kycData?.jurisdiction || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-600">Tenant ID</p>
+                <p className="text-sm text-gray-900">{contractData.kycData?.tenantId || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-600">Linked Wallets</p>
+                <p className="text-sm text-gray-900">{contractData.linkedWallets?.length || 0}</p>
+              </div>
+              <div className="md:col-span-2">
+                <p className="text-sm font-medium text-gray-600">Contract Address</p>
+                <p className="font-mono text-sm text-blue-600">{contractData.contractAddress}</p>
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-4">
+            <div className="text-center py-8">
+              <p className="text-gray-500">No blockchain data available</p>
+              <p className="text-sm text-gray-400 mt-1">User may not be registered on the blockchain</p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Recent Activity */}
       <div className="card">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+        
+        {loading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            <span className="ml-2 text-gray-600">Loading activity...</span>
+          </div>
+        ) : auditLogs.length > 0 ? (
+          <div className="space-y-3">
+            {auditLogs.map((log, index) => (
+              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <DocumentTextIcon className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">{log.action}</p>
+                    <p className="text-xs text-gray-500">{log.details}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-gray-500">{new Date(Number(log.timestamp) * 1000).toLocaleDateString()}</p>
+                  <p className="text-xs text-gray-400">{log.jurisdiction}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-gray-500">No recent activity found</p>
+            <p className="text-sm text-gray-400 mt-1">Activity will appear here as blockchain operations occur</p>
+          </div>
+        )}
         <div className="space-y-3">
           {userAData.activityHistory.slice(0, 3).map((activity) => (
             <div key={activity.id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
