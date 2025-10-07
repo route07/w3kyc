@@ -96,15 +96,19 @@ export class DatabaseUserService {
 
   static async update(id: string, updateData: Partial<IUser>): Promise<IUser | null> {
     try {
+      console.log('DatabaseUserService.update called with:', { id, updateData });
       const UserModel = await this.getModel();
       
       updateData.updatedAt = new Date();
       
-      return await UserModel.findByIdAndUpdate(
+      const result = await UserModel.findByIdAndUpdate(
         id,
         updateData,
         { new: true, runValidators: true }
       ).lean();
+      
+      console.log('Database update result:', result);
+      return result;
     } catch (error) {
       console.error('Database error in update:', error);
       throw error;

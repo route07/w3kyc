@@ -14,11 +14,19 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   const handleLogout = async () => {
-    await logout()
-    if (isConnected) {
-      disconnect()
+    try {
+      await logout()
+      if (isConnected) {
+        disconnect()
+      }
+      // The logout function in AuthContext already redirects to '/'
+      // But we'll also ensure it here as a fallback
+      router.push('/')
+    } catch (error) {
+      console.error('Logout error:', error)
+      // Even if logout fails, redirect to main page
+      router.push('/')
     }
-    router.push('/')
   }
 
   const handleDisconnect = () => {

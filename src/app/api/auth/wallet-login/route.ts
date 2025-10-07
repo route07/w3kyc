@@ -1,63 +1,73 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { ethers } from 'ethers'
-import { generateToken } from '@/lib/auth'
-import { getMockUserById } from '@/lib/mock-data'
+import { NextRequest, NextResponse } from 'next/server';
+import { DatabaseUserService } from '@/lib/database-user-service';
+import jwt from 'jsonwebtoken';
 
 export async function POST(request: NextRequest) {
   try {
-    const { walletAddress, signature, message } = await request.json()
+    console.log('Wallet login API called');
+    const { walletAddress } = await request.json();
+    console.log('Wallet address received:', walletAddress);
 
-    if (!walletAddress || !signature || !message) {
+    // Validate required fields
+    if (!walletAddress) {
+      console.log('ERROR: Wallet address is required');
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { success: false, error: 'Wallet address is required' },
         { status: 400 }
-      )
+      );
     }
 
-    // Verify the signature
-    const recoveredAddress = ethers.verifyMessage(message, signature)
-    
-    if (recoveredAddress.toLowerCase() !== walletAddress.toLowerCase()) {
+    // Validate wallet address format
+    if (!/^0x[a-fA-F0-9]{40}$/.test(walletAddress)) {
+      console.log('ERROR: Invalid wallet address format:', walletAddress);
       return NextResponse.json(
-        { error: 'Invalid signature' },
-        { status: 401 }
-      )
+        { success: false, error: 'Invalid wallet address format' },
+        { status: 400 }
+      );
     }
 
-    // For MVP, find or create user by wallet address
-    // In production, you'd check the database
-    const user = getMockUserById('1') // Use first mock user for demo
+    // Find user by wallet address
+    console.log('Looking up user by wallet address...');
+    const user = await DatabaseUserService.findByWalletAddress(walletAddress);
     
     if (!user) {
+      console.log('ERROR: No user found with this wallet address');
       return NextResponse.json(
-        { error: 'User not found' },
+        { success: false, error: 'No account found with this wallet address. Please connect your wallet to an existing account first.' },
         { status: 404 }
-      )
+      );
     }
 
+    console.log('User found:', user.email, 'Wallet:', user.walletAddress);
+
     // Generate JWT token
-    const token = generateToken({
-      userId: user.id,
-      email: user.email,
-      walletAddress: walletAddress
-    })
+    const token = jwt.sign(
+      { 
+        userId: user._id,
+        email: user.email,
+        walletAddress: user.walletAddress
+      },
+      process.env.JWT_SECRET || 'your-secret-key',
+      { expiresIn: '7d' }
+    );
+
+    console.log('JWT token generated for user:', user.email);
+
+    // Convert to public user object
+    const publicUser = DatabaseUserService.toPublicUser(user);
 
     return NextResponse.json({
+      success: true,
+      message: 'Wallet login successful',
       token,
-      user: {
-        id: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        walletAddress: user.walletAddress,
-        kycStatus: user.kycStatus
-      }
-    })
+      user: publicUser
+    });
+
   } catch (error) {
-    console.error('Error in wallet login:', error)
+    console.error('Wallet login error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { success: false, error: 'Internal server error' },
       { status: 500 }
-    )
+    );
   }
-} 
+}

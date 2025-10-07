@@ -1,7 +1,6 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
 
 export interface User {
   id: string;
@@ -25,11 +24,12 @@ export interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  walletLogin: (walletAddress: string) => Promise<{ success: boolean; error?: string }>;
   signup: (email: string, password: string, firstName: string, lastName: string) => Promise<{ success: boolean; error?: string }>;
-  connectWallet: () => Promise<{ success: boolean; error?: string }>;
   connectEmail: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   updateProfile: (data: Partial<User>) => Promise<{ success: boolean; error?: string }>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -50,10 +50,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
-  
-  const { address, isConnected } = useAccount();
-  const { connect } = useConnect();
-  const { disconnect } = useDisconnect();
 
   const isAuthenticated = !!user;
 
@@ -127,6 +123,51 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, []);
 
+  const walletLogin = useCallback(async (walletAddress: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const response = await fetch('/api/auth/wallet-login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ walletAddress }),
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        // Set user data
+        const userData = {
+          id: result.user.id,
+          email: result.user.email,
+          firstName: result.user.firstName,
+          lastName: result.user.lastName,
+          walletAddress: result.user.walletAddress,
+          kycStatus: result.user.kycStatus,
+          role: result.user.role,
+          isAdmin: result.user.isAdmin,
+          adminLevel: result.user.adminLevel,
+          authMethod: 'web3' as const,
+          isEmailVerified: false,
+          isWalletConnected: true,
+          createdAt: result.user.createdAt,
+          updatedAt: result.user.updatedAt,
+        };
+        
+        setUser(userData);
+        localStorage.setItem('auth_token', result.token);
+        localStorage.setItem('auth_user', JSON.stringify(userData));
+        
+        return { success: true };
+      } else {
+        return { success: false, error: result.error };
+      }
+    } catch (error) {
+      console.error('Wallet login error:', error);
+      return { success: false, error: 'Wallet login failed. Please try again.' };
+    }
+  }, []);
+
   const signup = useCallback(async (email: string, password: string, firstName: string, lastName: string): Promise<{ success: boolean; error?: string }> => {
     try {
       const response = await fetch('/api/auth/signup', {
@@ -158,15 +199,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, []);
 
-  const connectWallet = useCallback(async (): Promise<{ success: boolean; error?: string }> => {
-    try {
-      // This will trigger the wallet connection via Rainbow
-      // The actual connection is handled by the useEffect above
-      return { success: true };
-    } catch (error) {
-      return { success: false, error: 'Wallet connection failed' };
-    }
-  }, []);
 
   const connectEmail = useCallback(async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
@@ -217,11 +249,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(null);
       localStorage.removeItem('auth_token');
       localStorage.removeItem('auth_user');
-      if (isConnected) {
-        disconnect();
+      
+      // Redirect to main page after logout
+      if (typeof window !== 'undefined') {
+        window.location.href = '/';
       }
     }
-  }, [isConnected, disconnect]);
+  }, []);
 
   const updateProfile = useCallback(async (data: Partial<User>): Promise<{ success: boolean; error?: string }> => {
     try {
@@ -282,112 +316,48 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     verifySession();
   }, [isInitialized, user]);
 
-  // Handle wallet connection - only run when wallet state changes
-  useEffect(() => {
-    if (!isInitialized) return;
 
-    const handleWalletConnection = async (walletAddress: string) => {
-      try {
-        // Check if wallet is already associated with an account
-        const response = await fetch('/api/auth/wallet', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ walletAddress }),
-        });
+  // Refresh user data from server
+  const refreshUser = useCallback(async (): Promise<void> => {
+    const token = localStorage.getItem('auth_token');
+    if (!token) return;
 
-        const result = await response.json();
-        
-        if (result.success) {
-          if (result.user) {
-            // Existing user with this wallet
-            const userData = {
-              ...result.user,
-              authMethod: 'web3' as const,
-              isEmailVerified: false,
-              isWalletConnected: true,
-            };
-            setUser(userData);
-            localStorage.setItem('auth_token', result.token);
-            localStorage.setItem('auth_user', JSON.stringify(userData));
-          } else {
-            // New wallet user - create in database first
-            try {
-              const response = await fetch('/api/auth/wallet', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ walletAddress }),
-              });
-
-              const result = await response.json();
-              
-              if (result.success && result.user) {
-                const userData = {
-                  ...result.user,
-                  authMethod: 'web3' as const,
-                  isEmailVerified: false,
-                  isWalletConnected: true,
-                };
-                setUser(userData);
-                localStorage.setItem('auth_token', result.token);
-                localStorage.setItem('auth_user', JSON.stringify(userData));
-              } else {
-                // Fallback: create temporary user without database
-                const newUser: User = {
-                  id: `temp_${Date.now()}`,
-                  walletAddress,
-                  authMethod: 'web3',
-                  isEmailVerified: false,
-                  isWalletConnected: true,
-                  createdAt: new Date().toISOString(),
-                  updatedAt: new Date().toISOString(),
-                };
-                setUser(newUser);
-              }
-            } catch (error) {
-              console.error('Error creating wallet user:', error);
-              // Fallback: create temporary user
-              const newUser: User = {
-                id: `temp_${Date.now()}`,
-                walletAddress,
-                authMethod: 'web3',
-                isEmailVerified: false,
-                isWalletConnected: true,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-              };
-              setUser(newUser);
-            }
-          }
+    try {
+      const response = await fetch('/api/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`
         }
-      } catch (error) {
-        console.error('Wallet connection failed:', error);
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.user) {
+          const userData = {
+            ...data.user,
+            authMethod: user?.authMethod || 'web2' as const,
+            isEmailVerified: user?.isEmailVerified || false,
+            isWalletConnected: !!data.user.walletAddress,
+          };
+          setUser(userData);
+          localStorage.setItem('auth_user', JSON.stringify(userData));
+        }
       }
-    };
-
-    if (isConnected && address) {
-      handleWalletConnection(address);
-    } else if (!isConnected && user?.authMethod === 'web3') {
-      // Wallet disconnected but user was web3 only
-      setUser(null);
-      localStorage.removeItem('auth_token');
+    } catch (error) {
+      console.error('Error refreshing user data:', error);
     }
-  }, [isConnected, address, isInitialized, user?.authMethod]);
-
+  }, [user?.authMethod, user?.isEmailVerified]);
 
   const value: AuthContextType = {
     user,
     isLoading,
     isAuthenticated,
     login,
+    walletLogin,
     signup,
-    connectWallet,
     connectEmail,
     logout,
     updateProfile,
+    refreshUser,
   };
 
   return (

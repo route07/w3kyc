@@ -251,7 +251,35 @@ export default function OnboardingPage() {
       if (typeof window !== 'undefined' && window.ethereum) {
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
         if (accounts.length > 0) {
-          setUserData(prev => ({ ...prev, walletAddress: accounts[0] }))
+          const walletAddress = accounts[0]
+          
+          // Update local state
+          setUserData(prev => ({ ...prev, walletAddress }))
+          
+          // Save to database if user is authenticated
+          const token = localStorage.getItem('auth_token')
+          if (token) {
+            try {
+              const response = await fetch('/api/auth/connect-wallet', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ walletAddress })
+              })
+
+              const result = await response.json()
+              if (!result.success) {
+                console.warn('Failed to save wallet to database:', result.error)
+                // Continue with the flow even if database save fails
+              }
+            } catch (dbError) {
+              console.warn('Database save failed:', dbError)
+              // Continue with the flow even if database save fails
+            }
+          }
+          
           handleNext()
         }
       } else {

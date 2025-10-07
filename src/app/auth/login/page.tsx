@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { useAccount, useDisconnect } from 'wagmi';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -12,7 +13,9 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [showWeb3, setShowWeb3] = useState(false);
 
-  const { login } = useAuth();
+  const { login, walletLogin } = useAuth();
+  const { address, isConnected } = useAccount();
+  const { disconnect } = useDisconnect();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,6 +33,38 @@ export default function LoginPage() {
     
     setIsLoading(false);
   };
+
+  // Handle wallet login when wallet is connected
+  const handleWalletLogin = async () => {
+    if (!address) {
+      setError('No wallet address found');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const result = await walletLogin(address);
+      
+      if (result.success) {
+        window.location.href = '/dashboard';
+      } else {
+        setError(result.error || 'Wallet login failed');
+      }
+    } catch (error) {
+      setError('Wallet login failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Auto-login when wallet connects (same as main page logic)
+  useEffect(() => {
+    if (isConnected && address && showWeb3) {
+      handleWalletLogin();
+    }
+  }, [isConnected, address, showWeb3]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -116,11 +151,32 @@ export default function LoginPage() {
                   Connect with your wallet
                 </h3>
                 <p className="text-sm text-gray-600 mb-6">
-                  Connect your wallet to sign in or create a new account
+                  Connect your wallet to sign in to your existing account
                 </p>
-                <div className="flex justify-center">
+                
+                <div className="flex justify-center mb-4">
                   <ConnectButton />
                 </div>
+                
+                {isConnected && address && (
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center justify-center">
+                      <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                      <span className="text-sm text-green-800">
+                        Wallet Connected: {address.substring(0, 6)}...{address.substring(38)}
+                      </span>
+                    </div>
+                  </div>
+                )}
+                
+                {isLoading && (
+                  <div className="text-center">
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600 mr-2"></div>
+                      <span className="text-sm text-gray-600">Signing in...</span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="text-center">

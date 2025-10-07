@@ -4,10 +4,10 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useAccount, useDisconnect } from 'wagmi';
-import { XMarkIcon, UserIcon, ShieldCheckIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import { UserIcon, ShieldCheckIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 
 export default function DashboardPage() {
-  const { user, isAuthenticated, isLoading, logout } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const { address, isConnected } = useAccount();
   const { disconnect } = useDisconnect();
   const router = useRouter();
@@ -50,17 +50,6 @@ export default function DashboardPage() {
     }
   }, [mounted, isAuthenticated, user, address]);
 
-  const handleLogout = async () => {
-    try {
-      if (isConnected) {
-        disconnect();
-      }
-      await logout();
-      router.push('/');
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
-  };
 
   // Show loading while checking auth
   if (!mounted || isLoading) {
@@ -104,31 +93,29 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              {user?.email ? (
-                <div className="flex items-center space-x-3 bg-gradient-to-r from-green-50 to-emerald-50 px-4 py-2 rounded-full border border-green-200">
-                  <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center">
-                    <span className="text-white font-semibold text-sm">
-                      {user?.firstName?.charAt(0) || user?.email?.charAt(0)}
-                    </span>
-                  </div>
-                  <span className="text-sm font-medium text-gray-700">
-                    Welcome, {user?.firstName || user?.email}!
+              <div className="flex items-center space-x-3 bg-gradient-to-r from-green-50 to-emerald-50 px-4 py-2 rounded-full border border-green-200">
+                <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center">
+                  <span className="text-white font-semibold text-sm">
+                    {user?.firstName?.charAt(0) || user?.email?.charAt(0)}
                   </span>
                 </div>
-              ) : (
+                <span className="text-sm font-medium text-gray-700">
+                  Welcome, {user?.firstName || user?.email}!
+                </span>
+              </div>
+              {(user?.walletAddress || address) && (
                 <div className="flex items-center space-x-3 bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-2 rounded-full border border-blue-200">
                   <div className="w-2 h-2 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full animate-pulse"></div>
                   <span className="text-sm font-medium text-gray-700">Wallet Connected</span>
+                  <button
+                    onClick={() => disconnect()}
+                    className="ml-2 text-blue-600 hover:text-blue-800 text-xs font-medium"
+                    title="Disconnect Wallet"
+                  >
+                    Disconnect
+                  </button>
                 </div>
               )}
-              <button
-                onClick={handleLogout}
-                className="flex items-center space-x-2 bg-gradient-to-r from-red-50 to-pink-50 hover:from-red-100 hover:to-pink-100 text-red-600 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border border-red-200 hover:border-red-300 hover:shadow-md"
-                title="Disconnect & Logout"
-              >
-                <XMarkIcon className="w-4 h-4" />
-                <span>Disconnect</span>
-              </button>
             </div>
           </div>
         </div>
@@ -285,7 +272,27 @@ export default function DashboardPage() {
                   Wallet Address
                 </dt>
                 <dd className="mt-1 text-sm font-mono text-gray-900 sm:mt-0 sm:col-span-2">
-                  {user?.walletAddress || address || 'Not connected'}
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono">
+                      {user?.walletAddress || address || 'Not connected'}
+                    </span>
+                    {!user?.walletAddress && !address && (
+                      <button
+                        onClick={() => router.push('/connect-wallet')}
+                        className="ml-4 px-3 py-1 bg-purple-600 text-white text-xs font-medium rounded-lg hover:bg-purple-700 transition-colors"
+                      >
+                        Connect Wallet
+                      </button>
+                    )}
+                    {(user?.walletAddress || address) && (
+                      <button
+                        onClick={() => disconnect()}
+                        className="ml-4 px-3 py-1 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 transition-colors"
+                      >
+                        Disconnect
+                      </button>
+                    )}
+                  </div>
                 </dd>
               </div>
               <div className="bg-white px-6 py-5 sm:grid sm:grid-cols-3 sm:gap-4">
@@ -375,6 +382,31 @@ export default function DashboardPage() {
                     </div>
                   </dd>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Wallet Connection Card */}
+          {!user?.walletAddress && !address && (
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">Connect Your Wallet</h3>
+                    <p className="text-sm text-gray-600">Link your Web3 wallet for enhanced security and features</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => router.push('/connect-wallet')}
+                  className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-300 transform hover:-translate-y-0.5"
+                >
+                  Connect Wallet
+                </button>
               </div>
             </div>
           )}
