@@ -27,6 +27,17 @@ module.exports = {
       chainId: parseInt(process.env.NEXT_PUBLIC_CHAIN_ID) || 336699,
       gasPrice: 20000000000, // 20 gwei
     },
+    tractsafe: {
+      url: "https://tapi.tractsafe.com",
+      chainId: 35935,
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      gas: "auto",
+      gasPrice: "auto",
+      timeout: 60000, // 60 seconds timeout for Besu
+      httpHeaders: {
+        "Content-Type": "application/json",
+      }
+    },
   },
   paths: {
     sources: "./contracts",

@@ -3,13 +3,15 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import '@rainbow-me/rainbowkit/styles.css'
 import { Providers } from './providers'
+import Navbar from '@/components/Navbar'
+import Footer from '@/components/Footer'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Web3 KYC System - Route07',
-  description: 'Decentralized KYC verification system on Route07 blockchain with AI-powered risk assessment',
-  keywords: 'KYC, Web3, blockchain, verification, Route07, AI, risk assessment',
+  title: 'Web3 KYC System - Tractsafe',
+  description: 'Decentralized KYC verification system on Tractsafe blockchain with AI-powered risk assessment',
+  keywords: 'KYC, Web3, blockchain, verification, Tractsafe, AI, risk assessment',
 }
 
 export default function RootLayout({
@@ -21,7 +23,11 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.className} bg-gray-50 min-h-screen`}>
         <Providers>
-          {children}
+          <Navbar />
+          <main className="min-h-screen">
+            {children}
+          </main>
+          <Footer />
         </Providers>
       </body>
     </html>

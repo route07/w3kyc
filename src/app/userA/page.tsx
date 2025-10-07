@@ -117,7 +117,7 @@ const userAData: UserAData = {
   ],
   blockchainCredentials: {
     credentialId: 'cred-kyc-001',
-    issuer: 'Route07 KYC Authority',
+    issuer: 'Tractsafe KYC Authority',
     issuedAt: '2024-01-17T14:22:00Z',
     expiresAt: '2025-01-17T14:22:00Z',
     blockchainTx: '0x4567890123def1234567890abcdef1234567890abcdef1234567890abcdef',

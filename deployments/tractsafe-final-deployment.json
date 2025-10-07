@@ -1,0 +1,42 @@
+{
+  "network": "tractsafe",
+  "chainId": 35935,
+  "deployer": "0x97a362bC0d128E008E2E2eD7Fc10CFDdDF54ed55",
+  "timestamp": "2025-10-07T18:55:42.500Z",
+  "contracts": {
+    "InputValidator": "0x77Ae7460f012390F94CfBd17Be2b020C99B69418",
+    "BoundsChecker": "0xFF7eF4f9727C6f15161Faae5E5a06aeD44d30D73",
+    "KYCDataStorage": "0x4Bbd5bca3033960E131bC75a3f89c7B8dBb865cc",
+    "TenantConfigStorage": "0xeEdEf9Df661b6f1778769149B4718FDe739c128D",
+    "AuditLogStorage": "0xC2edDFCC80698c79632Be3c5Bf8D7E8b2C723513"
+  },
+  "deploymentLog": [
+    {
+      "name": "InputValidator",
+      "address": "0x77Ae7460f012390F94CfBd17Be2b020C99B69418",
+      "txHash": "0x8bb0828fa9894517805487a8a3f21fce61f3ca4b8ed996e2e8175a5d47b1375f"
+    },
+    {
+      "name": "BoundsChecker",
+      "address": "0xFF7eF4f9727C6f15161Faae5E5a06aeD44d30D73",
+      "txHash": "0x7a44ce7adb6a66b6e2d08b87f490c79c1639bf429846e2dd20ca6a3e26c37a7e"
+    },
+    {
+      "name": "KYCDataStorage",
+      "address": "0x4Bbd5bca3033960E131bC75a3f89c7B8dBb865cc",
+      "txHash": "0x5b9d6c635559d46761062fc2f3c2ed408c46ea5e091aac26e5f008a0355ca6f3"
+    },
+    {
+      "name": "TenantConfigStorage",
+      "address": "0xeEdEf9Df661b6f1778769149B4718FDe739c128D",
+      "txHash": "0x0de77c1b4d36be1f03ea287326168044fe49824d1658a8c7a4e9936aebdceb21"
+    },
+    {
+      "name": "AuditLogStorage",
+      "address": "0xC2edDFCC80698c79632Be3c5Bf8D7E8b2C723513",
+      "txHash": "0x8db3968a07bd41c5fb73cd4058b778bd4ae1811bd7dc0901bce514a910ca1c82"
+    }
+  ],
+  "gasUsed": "0.007896415",
+  "finalBalance": "2.854746867081558213"
+}

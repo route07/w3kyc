@@ -124,6 +124,9 @@ export class DatabaseUserService {
       walletAddress: user.walletAddress,
       kycStatus: user.kycStatus,
       riskScore: user.riskScore,
+      role: user.role,
+      isAdmin: user.isAdmin,
+      adminLevel: user.adminLevel,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
@@ -133,5 +136,38 @@ export class DatabaseUserService {
   static clearUserCache(userId: string): void {
     // This would be called when user data is updated
     // For now, we'll implement this in the API routes
+  }
+
+  // Find all admin users
+  async findAdmins(): Promise<IUser[]> {
+    try {
+      await dbConnect();
+      return await User.find({ isAdmin: true }).select('-password');
+    } catch (error) {
+      console.error('Error finding admins:', error);
+      throw error;
+    }
+  }
+
+  // Check if user is admin
+  async isAdmin(userId: string): Promise<boolean> {
+    try {
+      const user = await this.findById(userId);
+      return user ? user.isAdmin : false;
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+      return false;
+    }
+  }
+
+  // Find all users
+  async findAll(): Promise<IUser[]> {
+    try {
+      await dbConnect();
+      return await User.find({}).select('-password');
+    } catch (error) {
+      console.error('Error finding all users:', error);
+      throw error;
+    }
   }
 }

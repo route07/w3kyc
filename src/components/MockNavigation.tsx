@@ -72,7 +72,7 @@ export default function MockNavigation() {
             </div>
             <div>
               <h1 className="text-lg font-bold text-gray-900">Web3 KYC Demo</h1>
-              <p className="text-xs text-gray-500">Route07 Blockchain</p>
+              <p className="text-xs text-gray-500">Tractsafe Blockchain</p>
             </div>
           </div>
 

@@ -8,7 +8,7 @@ const PRIVATE_KEY = process.env.PRIVATE_KEY!;
 const LOCAL_RPC_URL = 'http://127.0.0.1:8545';
 const LOCAL_CHAIN_ID = '31337';
 
-// Use Route07 testnet for all environments (since we deployed there)
+// Use Tractsafe testnet for all environments (since we deployed there)
 // Only use local network if explicitly configured
 const useLocalNetwork = process.env.USE_LOCAL_NETWORK === 'true';
 
@@ -22,7 +22,7 @@ if (!effectiveChainId || !effectiveRpcUrl) {
 // Provider for read-only operations
 export const provider = new ethers.JsonRpcProvider(effectiveRpcUrl);
 
-// Deployed Contract Addresses - Route07 Testnet (London EVM)
+// Deployed Contract Addresses - Tractsafe Testnet (London EVM)
 export const CONTRACT_ADDRESSES = {
   local: {
     KYCDataStorage: "0x5eb3bc0a489c5a8288765d2336659ebca68fcd00",
@@ -44,13 +44,16 @@ export const CONTRACT_ADDRESSES = {
     MultisigExample: "0x5081a39b8a5f0e35a8d959395a630b68b74dd30f",
     AuditLogStorage: "0x36C02dA8a0983159322a80FFE9F24b1acfF8B570",
   },
-  // Route07 Testnet - All 21 contracts deployed successfully (London EVM)
+  // Tractsafe Testnet - All 5 contracts deployed successfully (London EVM)
   testnet: {
     // Storage Layer
-    KYCDataStorage: "0x5f4f4a6Ddb4a10AB2842c0414c490Fdc33b9d2Ba",
-    AuditLogStorage: "0xf07BDad5f0Fd8b2f7DA548C2eFB68a699704a5c4",
-    TenantConfigStorage: "0xDdd5B33D7b9D943712ddF5180d0aB472A4dFA07C",
-    DIDCredentialStorage: "0xc7812E5f4Ab5E9Bb2b421c8E8bfE178d81696bC8",
+    KYCDataStorage: "0x16289CfCef6846E20b81E3B195bdb9e474E57AE6",
+    AuditLogStorage: "0x715396D4c332C9b1008B2BED4d42AbabD514F028",
+    TenantConfigStorage: "0x900f0FF6F94099ABd481F8F0F813C7A384C825Cd",
+    
+    // Utility Layer
+    InputValidator: "0x77Ae7460f012390F94CfBd17Be2b020C99B69418",
+    BoundsChecker: "0xFF7eF4f9727C6f15161Faae5E5a06aeD44d30D73",
     
     // Business Logic Layer
     KYCManager: "0x9966fF8E8D04c19B2d3337d7F3b6A27F769B4F85",

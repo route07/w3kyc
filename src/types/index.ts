@@ -12,8 +12,24 @@ export interface User {
   walletAddress?: string;
   kycStatus: KYCStatus;
   riskScore: number;
+  role: UserRole;
+  isAdmin: boolean;
+  adminLevel?: AdminLevel;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export enum UserRole {
+  USER = 'user',
+  ADMIN = 'admin',
+  SUPER_ADMIN = 'super_admin'
+}
+
+export enum AdminLevel {
+  BASIC = 'basic',
+  MODERATOR = 'moderator',
+  MANAGER = 'manager',
+  SUPER_ADMIN = 'super_admin'
 }
 
 export interface Institution {

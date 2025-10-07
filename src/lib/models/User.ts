@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { User as UserType, KYCStatus, Address } from '@/types';
+import { User as UserType, KYCStatus, Address, UserRole, AdminLevel } from '@/types';
 
 export interface UserDocument extends Omit<UserType, '_id'>, Document {
   createdAt: Date;
@@ -89,6 +89,22 @@ const UserSchema = new Schema<UserDocument>({
     min: 0,
     max: 100,
     default: 0
+  },
+  role: {
+    type: String,
+    enum: Object.values(UserRole),
+    default: UserRole.USER,
+    required: true
+  },
+  isAdmin: {
+    type: Boolean,
+    default: false,
+    required: true
+  },
+  adminLevel: {
+    type: String,
+    enum: Object.values(AdminLevel),
+    required: false
   }
 }, {
   timestamps: true,

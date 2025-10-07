@@ -199,38 +199,78 @@ export class ContractFunctionsService {
   async getRecentUserAuditLogs(userAddress: string, limit: number = 10): Promise<AuditLog[]> {
     try {
       const contract = this.contracts.get('KYCManager');
-      if (!contract) throw new Error('KYCManager contract not initialized');
+      if (!contract) {
+        console.warn('KYCManager contract not initialized, returning empty audit logs');
+        return [];
+      }
       
-      const logs = await contract.getRecentUserAuditLogs(userAddress, limit);
-      return logs.map((log: any) => ({
-        user: log.user,
-        action: log.action,
-        jurisdiction: log.jurisdiction,
-        tenantId: log.tenantId,
-        timestamp: log.timestamp,
-        details: log.details
-      }));
+      try {
+        const logs = await contract.getRecentUserAuditLogs(userAddress, limit);
+        
+        // Check if logs is valid
+        if (!logs || !Array.isArray(logs)) {
+          console.warn('KYCManager returned invalid audit logs, returning empty array');
+          return [];
+        }
+        
+        return logs.map((log: any) => ({
+          user: log.user || '',
+          action: log.action || '',
+          jurisdiction: log.jurisdiction || '',
+          tenantId: log.tenantId || '',
+          timestamp: log.timestamp ? Number(log.timestamp) : 0,
+          details: log.details || ''
+        }));
+      } catch (contractError) {
+        console.warn('KYCManager audit logs function call failed, returning empty array:', contractError.message);
+        return [];
+      }
     } catch (error) {
-      console.error('Error getting audit logs:', error);
+      console.warn('Error getting audit logs, returning empty array:', error.message);
       return [];
     }
   }
 
-  async getAuditStatistics(): Promise<{totalLogs: bigint, uniqueUsers: bigint, uniqueTenants: bigint, uniqueJurisdictions: bigint} | null> {
+  async getAuditStatistics(): Promise<{totalLogs: number, uniqueUsers: number, uniqueTenants: number, uniqueJurisdictions: number} | null> {
     try {
       const contract = this.contracts.get('AuditLogStorage');
-      if (!contract) throw new Error('AuditLogStorage contract not initialized');
+      if (!contract) {
+        console.warn('AuditLogStorage contract not initialized, returning default stats');
+        return {
+          totalLogs: 0,
+          uniqueUsers: 0,
+          uniqueTenants: 0,
+          uniqueJurisdictions: 0
+        };
+      }
       
-      const stats = await contract.getAuditStatistics();
-      return {
-        totalLogs: stats.totalLogs,
-        uniqueUsers: stats.uniqueUsers,
-        uniqueTenants: stats.uniqueTenants,
-        uniqueJurisdictions: stats.uniqueJurisdictions
-      };
+      try {
+        const stats = await contract.getAuditStatistics();
+        
+        // Convert BigInt to number for JSON serialization
+        return {
+          totalLogs: stats.totalLogs ? Number(stats.totalLogs) : 0,
+          uniqueUsers: stats.uniqueUsers ? Number(stats.uniqueUsers) : 0,
+          uniqueTenants: stats.uniqueTenants ? Number(stats.uniqueTenants) : 0,
+          uniqueJurisdictions: stats.uniqueJurisdictions ? Number(stats.uniqueJurisdictions) : 0
+        };
+      } catch (contractError) {
+        console.warn('AuditLogStorage function call failed, returning default stats:', contractError.message);
+        return {
+          totalLogs: 0,
+          uniqueUsers: 0,
+          uniqueTenants: 0,
+          uniqueJurisdictions: 0
+        };
+      }
     } catch (error) {
-      console.error('Error getting audit statistics:', error);
-      return null;
+      console.warn('Error getting audit statistics, returning default stats:', error.message);
+      return {
+        totalLogs: 0,
+        uniqueUsers: 0,
+        uniqueTenants: 0,
+        uniqueJurisdictions: 0
+      };
     }
   }
 
@@ -238,29 +278,68 @@ export class ContractFunctionsService {
   async getMultisigConfig(functionName: string): Promise<MultisigConfig | null> {
     try {
       const contract = this.contracts.get('MultisigManager');
-      if (!contract) throw new Error('MultisigManager contract not initialized');
+      if (!contract) {
+        console.warn('MultisigManager contract not initialized');
+        return {
+          isEnabled: false,
+          requiredSignatures: 1,
+          timelockDuration: 0,
+          isActive: false
+        };
+      }
       
-      const config = await contract.getMultisigConfig(functionName);
-      return {
-        isEnabled: config.isEnabled,
-        requiredSignatures: config.requiredSignatures,
-        timelockDuration: config.timelockDuration,
-        isActive: config.isActive
-      };
+      // Check if the contract has the function
+      try {
+        const config = await contract.getMultisigConfig(functionName);
+        
+        // Check if config is valid (not empty)
+        if (!config || config.requiredSignatures === undefined) {
+          console.warn('MultisigManager returned empty config, using defaults');
+          return {
+            isEnabled: false,
+            requiredSignatures: 1,
+            timelockDuration: 0,
+            isActive: false
+          };
+        }
+        
+        return {
+          isEnabled: config.isEnabled,
+          requiredSignatures: config.requiredSignatures,
+          timelockDuration: config.timelockDuration,
+          isActive: config.isActive
+        };
+      } catch (contractError) {
+        console.warn('MultisigManager function call failed, using defaults:', contractError.message);
+        return {
+          isEnabled: false,
+          requiredSignatures: 1,
+          timelockDuration: 0,
+          isActive: false
+        };
+      }
     } catch (error) {
       console.error('Error getting multisig config:', error);
-      return null;
+      return {
+        isEnabled: false,
+        requiredSignatures: 1,
+        timelockDuration: 0,
+        isActive: false
+      };
     }
   }
 
   async getPendingOperations(): Promise<string[]> {
     try {
       const contract = this.contracts.get('MultisigManager');
-      if (!contract) throw new Error('MultisigManager contract not initialized');
+      if (!contract) {
+        console.warn('MultisigManager contract not initialized');
+        return [];
+      }
       
       return await contract.getPendingOperations();
     } catch (error) {
-      console.error('Error getting pending operations:', error);
+      console.warn('Error getting pending operations, returning empty array:', error.message);
       return [];
     }
   }
@@ -268,12 +347,20 @@ export class ContractFunctionsService {
   async getAuthorizedSignerCount(): Promise<number> {
     try {
       const contract = this.contracts.get('MultisigManager');
-      if (!contract) throw new Error('MultisigManager contract not initialized');
+      if (!contract) {
+        console.warn('MultisigManager contract not initialized, returning 0 signers');
+        return 0;
+      }
       
-      const count = await contract.getAuthorizedSignerCount();
-      return Number(count);
+      try {
+        const count = await contract.getAuthorizedSignerCount();
+        return count ? Number(count) : 0;
+      } catch (contractError) {
+        console.warn('MultisigManager signer count function call failed, returning 0:', contractError.message);
+        return 0;
+      }
     } catch (error) {
-      console.error('Error getting authorized signer count:', error);
+      console.warn('Error getting authorized signer count, returning 0:', error.message);
       return 0;
     }
   }

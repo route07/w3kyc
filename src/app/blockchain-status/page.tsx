@@ -114,7 +114,7 @@ export default function BlockchainStatusPage() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Blockchain Status</h1>
-                <p className="text-sm text-gray-600">Route07 Testnet Contract Monitoring</p>
+                <p className="text-sm text-gray-600">Tractsafe Testnet Contract Monitoring</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">

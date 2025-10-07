@@ -30,16 +30,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Check cache first
+    // Always fetch fresh data from database for admin checks
+    // (Skip cache to ensure we get the latest admin status)
     const cacheKey = `user_${decoded.userId}`;
-    const cached = userCache.get(cacheKey);
-    
-    if (cached && cached.expires > Date.now()) {
-      return NextResponse.json({
-        success: true,
-        user: cached.user
-      });
-    }
 
     // Fetch from database
     const user = await DatabaseUserService.findById(decoded.userId);
