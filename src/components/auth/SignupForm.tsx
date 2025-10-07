@@ -23,7 +23,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   
-  const { signupWithEmail } = useAuth();
+  const { signup } = useAuth();
   const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,7 +46,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
     }
 
     try {
-      const result = await signupWithEmail(
+      const result = await signup(
         formData.email,
         formData.password,
         formData.firstName,

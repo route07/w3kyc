@@ -1,13 +1,6 @@
 import { getDefaultConfig } from '@rainbow-me/rainbowkit';
 import { mainnet, polygon, optimism, arbitrum, base, sepolia } from 'wagmi/chains';
 
-export const config = getDefaultConfig({
-  appName: 'W3KYC',
-  projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'your-project-id',
-  chains: [mainnet, polygon, optimism, arbitrum, base, sepolia],
-  ssr: true, // If your dApp uses server side rendering (SSR)
-});
-
 // Add Route07 testnet configuration
 export const route07Chain = {
   id: 3001,
@@ -35,10 +28,25 @@ export const route07Chain = {
   testnet: true,
 };
 
-// Extended config with Route07
-export const extendedConfig = getDefaultConfig({
-  appName: 'W3KYC',
-  projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'your-project-id',
-  chains: [mainnet, polygon, optimism, arbitrum, base, sepolia, route07Chain],
-  ssr: true,
-});
+// Only create config once - use singleton pattern
+let configInstance: any = null;
+
+export const config = (() => {
+  if (!configInstance) {
+    configInstance = getDefaultConfig({
+      appName: 'W3KYC',
+      projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'your-project-id',
+      chains: [mainnet, polygon, optimism, arbitrum, base, sepolia, route07Chain],
+      ssr: true,
+    });
+  }
+  return configInstance;
+})();
+
+// Prevent multiple initializations
+if (typeof window !== 'undefined') {
+  (window as any).__WAGMI_CONFIG_INITIALIZED__ = true;
+}
+
+// Export the same config as extendedConfig to avoid confusion
+export const extendedConfig = config;

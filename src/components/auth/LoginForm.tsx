@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
 
 interface LoginFormProps {
   onSwitchToSignup?: () => void;
@@ -13,32 +12,68 @@ export const LoginForm: React.FC<LoginFormProps> = ({
   onSwitchToSignup, 
   onSwitchToWeb3 
 }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   
-  const { loginWithEmail } = useAuth();
-  const router = useRouter();
+  const { login } = useAuth();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    // Clear error when user starts typing
+    if (error) setError('');
+  }, [error]);
+
+  const handleSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    e.stopPropagation();
+    
+    // Prevent double submission
+    if (isLoading) return;
+    
     setIsLoading(true);
     setError('');
 
     try {
-      const result = await loginWithEmail(email, password);
+      console.log('Attempting login with:', { email: formData.email });
+      
+      const result = await login(formData.email, formData.password);
+      
+      console.log('Login result:', result);
+      
       if (result.success) {
-        router.push('/dashboard');
+        console.log('Login successful, redirecting to dashboard');
+        // Use window.location instead of router.push to ensure clean navigation
+        window.location.href = '/dashboard';
       } else {
+        console.log('Login failed:', result.error);
         setError(result.error || 'Login failed');
       }
     } catch (err) {
-      setError('An unexpected error occurred');
+      console.error('Login error:', err);
+      setError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [formData.email, formData.password, login, isLoading]);
+
+  const handleButtonClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Trigger form submission programmatically
+    const form = document.getElementById('login-form') as HTMLFormElement;
+    if (form) {
+      form.requestSubmit();
+    }
+  }, []);
 
   return (
     <div className="w-full max-w-md mx-auto">
@@ -48,19 +83,27 @@ export const LoginForm: React.FC<LoginFormProps> = ({
           <p className="text-gray-600 mt-2">Sign in to your account</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form 
+          id="login-form"
+          onSubmit={handleSubmit} 
+          className="space-y-6"
+          noValidate
+        >
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
               Email Address
             </label>
             <input
               id="email"
+              name="email"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={formData.email}
+              onChange={handleInputChange}
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              autoComplete="email"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
               placeholder="Enter your email"
+              disabled={isLoading}
             />
           </div>
 
@@ -70,34 +113,47 @@ export const LoginForm: React.FC<LoginFormProps> = ({
             </label>
             <input
               id="password"
+              name="password"
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={formData.password}
+              onChange={handleInputChange}
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              autoComplete="current-password"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
               placeholder="Enter your password"
+              disabled={isLoading}
             />
           </div>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
               {error}
             </div>
           )}
 
           <button
-            type="submit"
-            disabled={isLoading}
+            type="button"
+            onClick={handleButtonClick}
+            disabled={isLoading || !formData.email || !formData.password}
             className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {isLoading ? 'Signing In...' : 'Sign In'}
+            {isLoading ? (
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                Signing In...
+              </div>
+            ) : (
+              'Sign In'
+            )}
           </button>
         </form>
 
         <div className="mt-6 text-center">
           <button
+            type="button"
             onClick={onSwitchToWeb3}
-            className="text-blue-600 hover:text-blue-700 font-medium"
+            disabled={isLoading}
+            className="text-blue-600 hover:text-blue-700 font-medium disabled:opacity-50"
           >
             Connect with Wallet Instead
           </button>
@@ -106,8 +162,10 @@ export const LoginForm: React.FC<LoginFormProps> = ({
         <div className="mt-4 text-center">
           <span className="text-gray-600">Don't have an account? </span>
           <button
+            type="button"
             onClick={onSwitchToSignup}
-            className="text-blue-600 hover:text-blue-700 font-medium"
+            disabled={isLoading}
+            className="text-blue-600 hover:text-blue-700 font-medium disabled:opacity-50"
           >
             Sign up
           </button>

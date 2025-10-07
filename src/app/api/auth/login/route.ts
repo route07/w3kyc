@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
+import { DatabaseUserService } from '@/lib/database-user-service';
 import jwt from 'jsonwebtoken';
-
-// Mock database - in production, use a real database
-const users: any[] = [];
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Find user by email
-    const user = users.find(u => u.email === email);
+    const user = await DatabaseUserService.findByEmail(email);
     if (!user) {
       return NextResponse.json(
         { success: false, error: 'Invalid email or password' },
@@ -27,7 +24,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify password
-    const isValidPassword = await bcrypt.compare(password, user.password);
+    const isValidPassword = await DatabaseUserService.verifyPassword(email, password);
     if (!isValidPassword) {
       return NextResponse.json(
         { success: false, error: 'Invalid email or password' },
@@ -37,13 +34,13 @@ export async function POST(request: NextRequest) {
 
     // Generate JWT token
     const token = jwt.sign(
-      { userId: user.id, email: user.email },
+      { userId: user._id, email: user.email },
       process.env.JWT_SECRET || 'your-secret-key',
       { expiresIn: '7d' }
     );
 
-    // Remove password from response
-    const { password: _, ...userWithoutPassword } = user;
+    // Return user without password
+    const userWithoutPassword = DatabaseUserService.toPublicUser(user);
 
     return NextResponse.json({
       success: true,

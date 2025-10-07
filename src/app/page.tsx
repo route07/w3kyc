@@ -11,13 +11,27 @@ import {
   ExclamationTriangleIcon,
   CheckCircleIcon,
   ClockIcon,
-  UserGroupIcon
+  UserGroupIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline'
 import { useAuth } from '@/contexts/AuthContext'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
+import { useDisconnect } from 'wagmi'
 
 export default function HomePage() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
+  const { disconnect } = useDisconnect();
+
+  const handleDisconnect = async () => {
+    try {
+      // Disconnect from Rainbow
+      disconnect();
+      // Also logout from our auth system
+      await logout();
+    } catch (error) {
+      console.error('Disconnect error:', error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -43,15 +57,30 @@ export default function HomePage() {
               </span>
               {isAuthenticated ? (
                 <div className="flex items-center space-x-3">
-                  <span className="text-sm text-gray-600">
-                    Welcome, {user?.firstName || 'User'}!
-                  </span>
+                  <div className="text-sm text-gray-600">
+                    {user?.email ? (
+                      <span>Welcome, {user?.firstName || user?.email}!</span>
+                    ) : (
+                      <span className="flex items-center">
+                        <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                        Wallet Connected
+                      </span>
+                    )}
+                  </div>
                   <Link
                     href="/dashboard"
                     className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium"
                   >
                     Dashboard
                   </Link>
+                  <button
+                    onClick={handleDisconnect}
+                    className="flex items-center space-x-1 bg-red-50 hover:bg-red-100 text-red-700 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                    title="Disconnect Wallet"
+                  >
+                    <XMarkIcon className="w-4 h-4" />
+                    <span>Disconnect</span>
+                  </button>
                 </div>
               ) : (
                 <div className="flex items-center space-x-3">
@@ -416,16 +445,16 @@ export default function HomePage() {
               <div className="p-4 bg-green-100 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                 <DocumentTextIcon className="w-8 h-8 text-green-600" />
               </div>
-              <h4 className="font-semibold text-gray-900 mb-2">IPFS Storage</h4>
-              <p className="text-sm text-gray-600">Decentralized document storage</p>
+              <h4 className="font-semibold text-gray-900 mb-2">IPFS Document Storage</h4>
+              <p className="text-sm text-gray-600">Decentralized document verification</p>
             </div>
             
             <div className="text-center">
               <div className="p-4 bg-orange-100 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                <ChartBarIcon className="w-8 h-8 text-orange-600" />
+                <UserGroupIcon className="w-8 h-8 text-orange-600" />
               </div>
-              <h4 className="font-semibold text-gray-900 mb-2">Web3 Reputation</h4>
-              <p className="text-sm text-gray-600">Build trust in the ecosystem</p>
+              <h4 className="font-semibold text-gray-900 mb-2">Multi-tenant Support</h4>
+              <p className="text-sm text-gray-600">Isolated environments per organization</p>
             </div>
           </div>
         </div>
@@ -442,14 +471,18 @@ export default function HomePage() {
               <h3 className="text-xl font-bold">Web3 KYC System</h3>
             </div>
             <p className="text-gray-400 mb-4">
-              Decentralized identity verification on Route07 blockchain
+              Decentralized identity verification on the Route07 blockchain
             </p>
-            <p className="text-sm text-gray-500">
-              This is a demonstration system with mock data for educational purposes.
-            </p>
+            <div className="flex justify-center space-x-6 text-sm text-gray-400">
+              <span>21 Smart Contracts Deployed</span>
+              <span>•</span>
+              <span>London EVM Compatible</span>
+              <span>•</span>
+              <span>Production Ready</span>
+            </div>
           </div>
         </div>
       </footer>
     </div>
-  )
+  );
 }

@@ -354,11 +354,31 @@ export default function AdminDashboardPage() {
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      pending: { class: 'status-pending', text: 'Pending Review', icon: ClockIcon },
-      approved: { class: 'status-approved', text: 'Approved', icon: CheckCircleIcon },
-      rejected: { class: 'status-rejected', text: 'Rejected', icon: XCircleIcon },
-      verified: { class: 'status-verified', text: 'Verified', icon: ShieldCheckIcon },
-      not_started: { class: 'status-not-started', text: 'Not Started', icon: ClockIcon }
+      pending: { 
+        class: 'bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-800 border-yellow-200', 
+        text: 'Pending Review', 
+        icon: ClockIcon 
+      },
+      approved: { 
+        class: 'bg-gradient-to-r from-emerald-100 to-green-100 text-emerald-800 border-emerald-200', 
+        text: 'Approved', 
+        icon: CheckCircleIcon 
+      },
+      rejected: { 
+        class: 'bg-gradient-to-r from-red-100 to-pink-100 text-red-800 border-red-200', 
+        text: 'Rejected', 
+        icon: XCircleIcon 
+      },
+      verified: { 
+        class: 'bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 border-blue-200', 
+        text: 'Verified', 
+        icon: ShieldCheckIcon 
+      },
+      not_started: { 
+        class: 'bg-gradient-to-r from-gray-100 to-slate-100 text-gray-800 border-gray-200', 
+        text: 'Not Started', 
+        icon: ClockIcon 
+      }
     }
 
     const config = statusConfig[status as keyof typeof statusConfig]
@@ -367,8 +387,8 @@ export default function AdminDashboardPage() {
     const Icon = config.icon
 
     return (
-      <span className={`status-badge ${config.class}`}>
-        <Icon className="w-4 h-4 mr-1" />
+      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${config.class}`}>
+        <Icon className="w-3 h-3 mr-2" />
         {config.text}
       </span>
     )
@@ -376,15 +396,24 @@ export default function AdminDashboardPage() {
 
   const getRiskLevelBadge = (level: string) => {
     const levelConfig = {
-      low: { class: 'bg-green-100 text-green-800', text: 'Low Risk' },
-      medium: { class: 'bg-yellow-100 text-yellow-800', text: 'Medium Risk' },
-      high: { class: 'bg-red-100 text-red-800', text: 'High Risk' }
+      low: { 
+        class: 'bg-gradient-to-r from-emerald-100 to-green-100 text-emerald-800 border-emerald-200', 
+        text: 'Low Risk' 
+      },
+      medium: { 
+        class: 'bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-800 border-yellow-200', 
+        text: 'Medium Risk' 
+      },
+      high: { 
+        class: 'bg-gradient-to-r from-red-100 to-pink-100 text-red-800 border-red-200', 
+        text: 'High Risk' 
+      }
     }
 
     const config = levelConfig[level as keyof typeof levelConfig]
 
     return (
-      <span className={`status-badge ${config.class}`}>
+      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${config.class}`}>
         {config.text}
       </span>
     )
@@ -412,52 +441,72 @@ export default function AdminDashboardPage() {
   }
 
   const renderOverview = () => (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Blockchain Statistics */}
       {loading ? (
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <span className="ml-2 text-gray-600">Loading blockchain statistics...</span>
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 p-8">
+          <div className="flex items-center justify-center py-12">
+            <div className="relative">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-indigo-200"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-indigo-600 border-t-transparent absolute top-0 left-0"></div>
+            </div>
+            <span className="ml-4 text-gray-600 font-medium">Loading blockchain statistics...</span>
           </div>
         </div>
       ) : contractStats && (
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <ChartBarIcon className="w-5 h-5 text-blue-600 mr-2" />
-            Blockchain Statistics
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <div className="flex items-center">
-                <UserGroupIcon className="w-8 h-8 text-blue-600 mr-3" />
-                <div>
-                  <p className="text-sm font-medium text-blue-600">Total Audit Logs</p>
-                  <p className="text-2xl font-bold text-blue-900">
-                    {auditStats?.totalLogs ? Number(auditStats.totalLogs) : 'N/A'}
-                  </p>
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 overflow-hidden">
+          <div className="bg-gradient-to-r from-indigo-500 to-purple-600 px-8 py-6">
+            <h3 className="text-2xl font-bold text-white flex items-center">
+              <ChartBarIcon className="w-8 h-8 mr-3" />
+              Blockchain Statistics
+            </h3>
+            <p className="text-indigo-100 mt-1">Real-time blockchain data and analytics</p>
+          </div>
+          <div className="p-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="group relative bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-blue-200/50">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-500/5 rounded-2xl"></div>
+                <div className="relative flex items-center">
+                  <div className="p-4 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl shadow-lg">
+                    <UserGroupIcon className="w-8 h-8 text-white" />
+                  </div>
+                  <div className="ml-6">
+                    <p className="text-sm font-semibold text-blue-600 uppercase tracking-wide">Total Audit Logs</p>
+                    <p className="text-3xl font-bold text-gray-900 mt-1">
+                      {auditStats?.totalLogs ? Number(auditStats.totalLogs).toLocaleString() : 'N/A'}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">Blockchain transactions</p>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <div className="flex items-center">
-                <UserIcon className="w-8 h-8 text-green-600 mr-3" />
-                <div>
-                  <p className="text-sm font-medium text-green-600">Unique Users</p>
-                  <p className="text-2xl font-bold text-green-900">
-                    {auditStats?.uniqueUsers ? Number(auditStats.uniqueUsers) : 'N/A'}
-                  </p>
+              <div className="group relative bg-gradient-to-br from-emerald-50 to-green-100 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-emerald-200/50">
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-green-500/5 rounded-2xl"></div>
+                <div className="relative flex items-center">
+                  <div className="p-4 bg-gradient-to-r from-emerald-500 to-green-600 rounded-2xl shadow-lg">
+                    <UserIcon className="w-8 h-8 text-white" />
+                  </div>
+                  <div className="ml-6">
+                    <p className="text-sm font-semibold text-emerald-600 uppercase tracking-wide">Unique Users</p>
+                    <p className="text-3xl font-bold text-gray-900 mt-1">
+                      {auditStats?.uniqueUsers ? Number(auditStats.uniqueUsers).toLocaleString() : 'N/A'}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">Active participants</p>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-              <div className="flex items-center">
-                <ShieldCheckIcon className="w-8 h-8 text-purple-600 mr-3" />
-                <div>
-                  <p className="text-sm font-medium text-purple-600">Authorized Signers</p>
-                  <p className="text-2xl font-bold text-purple-900">
-                    {contractStats?.multisig?.signerCount || 'N/A'}
-                  </p>
+              <div className="group relative bg-gradient-to-br from-purple-50 to-pink-100 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-purple-200/50">
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5 rounded-2xl"></div>
+                <div className="relative flex items-center">
+                  <div className="p-4 bg-gradient-to-r from-purple-500 to-pink-600 rounded-2xl shadow-lg">
+                    <ShieldCheckIcon className="w-8 h-8 text-white" />
+                  </div>
+                  <div className="ml-6">
+                    <p className="text-sm font-semibold text-purple-600 uppercase tracking-wide">Authorized Signers</p>
+                    <p className="text-3xl font-bold text-gray-900 mt-1">
+                      {contractStats?.multisig?.signerCount || 'N/A'}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">Multisig signers</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -466,199 +515,290 @@ export default function AdminDashboardPage() {
       )}
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="card">
-          <div className="flex items-center">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <UserGroupIcon className="w-6 h-6 text-blue-600" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="group relative bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-blue-200/50">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-500/5 rounded-2xl"></div>
+          <div className="relative flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold text-blue-600 uppercase tracking-wide">Total Users</p>
+              <p className="text-3xl font-bold text-gray-900 mt-2">{stats.total}</p>
+              <p className="text-xs text-gray-500 mt-1">Registered accounts</p>
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Users</p>
-              <p className="text-2xl font-semibold text-gray-900">{stats.total}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="card">
-          <div className="flex items-center">
-            <div className="p-2 bg-yellow-100 rounded-lg">
-              <ClockIcon className="w-6 h-6 text-yellow-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Pending Review</p>
-              <p className="text-2xl font-semibold text-gray-900">{stats.pending}</p>
+            <div className="p-4 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl shadow-lg">
+              <UserGroupIcon className="w-8 h-8 text-white" />
             </div>
           </div>
         </div>
 
-        <div className="card">
-          <div className="flex items-center">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <CheckCircleIcon className="w-6 h-6 text-green-600" />
+        <div className="group relative bg-gradient-to-br from-yellow-50 to-orange-100 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-yellow-200/50">
+          <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-orange-500/5 rounded-2xl"></div>
+          <div className="relative flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold text-yellow-600 uppercase tracking-wide">Pending Review</p>
+              <p className="text-3xl font-bold text-gray-900 mt-2">{stats.pending}</p>
+              <p className="text-xs text-gray-500 mt-1">Awaiting approval</p>
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Verified</p>
-              <p className="text-2xl font-semibold text-gray-900">{stats.verified + stats.approved}</p>
+            <div className="p-4 bg-gradient-to-r from-yellow-500 to-orange-600 rounded-2xl shadow-lg">
+              <ClockIcon className="w-8 h-8 text-white" />
             </div>
           </div>
         </div>
 
-        <div className="card">
-          <div className="flex items-center">
-            <div className="p-2 bg-red-100 rounded-lg">
-              <ExclamationTriangleIcon className="w-6 h-6 text-red-600" />
+        <div className="group relative bg-gradient-to-br from-emerald-50 to-green-100 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-emerald-200/50">
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-green-500/5 rounded-2xl"></div>
+          <div className="relative flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold text-emerald-600 uppercase tracking-wide">Verified</p>
+              <p className="text-3xl font-bold text-gray-900 mt-2">{stats.verified + stats.approved}</p>
+              <p className="text-xs text-gray-500 mt-1">Approved users</p>
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">High Risk</p>
-              <p className="text-2xl font-semibold text-gray-900">{stats.highRisk}</p>
+            <div className="p-4 bg-gradient-to-r from-emerald-500 to-green-600 rounded-2xl shadow-lg">
+              <CheckCircleIcon className="w-8 h-8 text-white" />
+            </div>
+          </div>
+        </div>
+
+        <div className="group relative bg-gradient-to-br from-red-50 to-pink-100 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-red-200/50">
+          <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-pink-500/5 rounded-2xl"></div>
+          <div className="relative flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold text-red-600 uppercase tracking-wide">High Risk</p>
+              <p className="text-3xl font-bold text-gray-900 mt-2">{stats.highRisk}</p>
+              <p className="text-xs text-gray-500 mt-1">Requires attention</p>
+            </div>
+            <div className="p-4 bg-gradient-to-r from-red-500 to-pink-600 rounded-2xl shadow-lg">
+              <ExclamationTriangleIcon className="w-8 h-8 text-white" />
             </div>
           </div>
         </div>
       </div>
 
       {/* Risk Distribution */}
-      <div className="card">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Risk Distribution</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="text-center p-4 bg-green-50 rounded-lg">
-            <div className="text-2xl font-bold text-green-600">{stats.lowRisk}</div>
-            <div className="text-sm text-green-600">Low Risk</div>
-          </div>
-          <div className="text-center p-4 bg-yellow-50 rounded-lg">
-            <div className="text-2xl font-bold text-yellow-600">{stats.mediumRisk}</div>
-            <div className="text-sm text-yellow-600">Medium Risk</div>
-          </div>
-          <div className="text-center p-4 bg-red-50 rounded-lg">
-            <div className="text-2xl font-bold text-red-600">{stats.highRisk}</div>
-            <div className="text-sm text-red-600">High Risk</div>
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 overflow-hidden">
+        <div className="bg-gradient-to-r from-emerald-500 to-green-600 px-8 py-6">
+          <h3 className="text-2xl font-bold text-white flex items-center">
+            <ShieldCheckIcon className="w-8 h-8 mr-3" />
+            Risk Distribution
+          </h3>
+          <p className="text-emerald-100 mt-1">User risk assessment overview</p>
+        </div>
+        <div className="p-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="group relative bg-gradient-to-br from-emerald-50 to-green-100 rounded-2xl p-6 text-center shadow-lg hover:shadow-xl transition-all duration-300 border border-emerald-200/50">
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-green-500/5 rounded-2xl"></div>
+              <div className="relative">
+                <div className="w-16 h-16 bg-gradient-to-r from-emerald-500 to-green-600 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg">
+                  <ShieldCheckIcon className="w-8 h-8 text-white" />
+                </div>
+                <div className="text-4xl font-bold text-emerald-600 mb-2">{stats.lowRisk}</div>
+                <div className="text-sm font-semibold text-emerald-700 uppercase tracking-wide">Low Risk</div>
+                <div className="text-xs text-gray-500 mt-1">Safe & verified</div>
+              </div>
+            </div>
+            <div className="group relative bg-gradient-to-br from-yellow-50 to-orange-100 rounded-2xl p-6 text-center shadow-lg hover:shadow-xl transition-all duration-300 border border-yellow-200/50">
+              <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-orange-500/5 rounded-2xl"></div>
+              <div className="relative">
+                <div className="w-16 h-16 bg-gradient-to-r from-yellow-500 to-orange-600 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg">
+                  <ExclamationTriangleIcon className="w-8 h-8 text-white" />
+                </div>
+                <div className="text-4xl font-bold text-yellow-600 mb-2">{stats.mediumRisk}</div>
+                <div className="text-sm font-semibold text-yellow-700 uppercase tracking-wide">Medium Risk</div>
+                <div className="text-xs text-gray-500 mt-1">Needs review</div>
+              </div>
+            </div>
+            <div className="group relative bg-gradient-to-br from-red-50 to-pink-100 rounded-2xl p-6 text-center shadow-lg hover:shadow-xl transition-all duration-300 border border-red-200/50">
+              <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-pink-500/5 rounded-2xl"></div>
+              <div className="relative">
+                <div className="w-16 h-16 bg-gradient-to-r from-red-500 to-pink-600 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg">
+                  <ExclamationTriangleIcon className="w-8 h-8 text-white" />
+                </div>
+                <div className="text-4xl font-bold text-red-600 mb-2">{stats.highRisk}</div>
+                <div className="text-sm font-semibold text-red-700 uppercase tracking-wide">High Risk</div>
+                <div className="text-xs text-gray-500 mt-1">Requires attention</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Recent Activity */}
-      <div className="card">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
-        <div className="space-y-3">
-          {submissions.slice(0, 5).map((submission) => (
-            <div key={submission.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-center space-x-3">
-                <UserIcon className="w-5 h-5 text-gray-400" />
-                <div>
-                  <p className="text-sm font-medium text-gray-900">
-                    {submission.firstName} {submission.lastName}
-                  </p>
-                  <p className="text-xs text-gray-600">{submission.email}</p>
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 overflow-hidden">
+        <div className="bg-gradient-to-r from-purple-500 to-pink-600 px-8 py-6">
+          <h3 className="text-2xl font-bold text-white flex items-center">
+            <ClockIcon className="w-8 h-8 mr-3" />
+            Recent Activity
+          </h3>
+          <p className="text-purple-100 mt-1">Latest user submissions and updates</p>
+        </div>
+        <div className="p-8">
+          <div className="space-y-4">
+            {submissions.slice(0, 5).map((submission, index) => (
+              <div key={submission.id} className="group relative bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl p-6 shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200/50">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                      <UserIcon className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-lg font-semibold text-gray-900">
+                        {submission.firstName} {submission.lastName}
+                      </p>
+                      <p className="text-sm text-gray-600">{submission.email}</p>
+                      {submission.walletAddress && (
+                        <p className="text-xs text-gray-400 font-mono mt-1">
+                          {submission.walletAddress.slice(0, 6)}...{submission.walletAddress.slice(-4)}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    {getStatusBadge(submission.status)}
+                    {submission.riskLevel && getRiskLevelBadge(submission.riskLevel)}
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center space-x-2">
-                {getStatusBadge(submission.status)}
-                {submission.riskLevel && getRiskLevelBadge(submission.riskLevel)}
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </div>
   )
 
   const renderKYCSubmissions = () => (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Filters and Search */}
-      <div className="card">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <FunnelIcon className="w-5 h-5 text-gray-400" />
-              <select
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="all">All Status</option>
-                <option value="pending">Pending</option>
-                <option value="approved">Approved</option>
-                <option value="rejected">Rejected</option>
-                <option value="verified">Verified</option>
-              </select>
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 p-8">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-6 lg:space-y-0">
+          <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-3">
+              <div className="p-3 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl shadow-lg">
+                <FunnelIcon className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Filter by Status</label>
+                <select
+                  value={filter}
+                  onChange={(e) => setFilter(e.target.value)}
+                  className="bg-white border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 shadow-sm hover:shadow-md"
+                >
+                  <option value="all">All Status</option>
+                  <option value="pending">Pending</option>
+                  <option value="approved">Approved</option>
+                  <option value="rejected">Rejected</option>
+                  <option value="verified">Verified</option>
+                </select>
+              </div>
             </div>
           </div>
           
-          <div className="flex items-center space-x-2">
-            <MagnifyingGlassIcon className="w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search users..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
+          <div className="flex items-center space-x-3">
+            <div className="p-3 bg-gradient-to-r from-emerald-500 to-green-600 rounded-xl shadow-lg">
+              <MagnifyingGlassIcon className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Search Users</label>
+              <input
+                type="text"
+                placeholder="Search by name or email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="bg-white border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200 shadow-sm hover:shadow-md w-full lg:w-80"
+              />
+            </div>
           </div>
         </div>
       </div>
 
       {/* Submissions List */}
-      <div className="card">
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 overflow-hidden">
+        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 px-8 py-6">
+          <h3 className="text-2xl font-bold text-white flex items-center">
+            <UserGroupIcon className="w-8 h-8 mr-3" />
+            KYC Submissions
+          </h3>
+          <p className="text-indigo-100 mt-1">Manage and review user verification requests</p>
+        </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200/50">
+            <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  User
+                <th className="px-8 py-6 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                  User Information
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-8 py-6 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-8 py-6 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                   Risk Level
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-8 py-6 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                   Documents
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-8 py-6 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                   Submitted
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-8 py-6 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white divide-y divide-gray-200/50">
               {filteredSubmissions.map((submission) => (
-                <tr key={submission.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">
-                        {submission.firstName} {submission.lastName}
+                <tr key={submission.id} className="group hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 transition-all duration-200">
+                  <td className="px-8 py-6 whitespace-nowrap">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                        <UserIcon className="w-6 h-6 text-white" />
                       </div>
-                      <div className="text-sm text-gray-500">{submission.email}</div>
-                      {submission.walletAddress && (
-                        <div className="text-xs text-gray-400 font-mono">
-                          {submission.walletAddress.slice(0, 6)}...{submission.walletAddress.slice(-4)}
+                      <div>
+                        <div className="text-lg font-semibold text-gray-900">
+                          {submission.firstName} {submission.lastName}
                         </div>
-                      )}
+                        <div className="text-sm text-gray-600">{submission.email}</div>
+                        {submission.walletAddress && (
+                          <div className="text-xs text-gray-400 font-mono mt-1">
+                            {submission.walletAddress.slice(0, 6)}...{submission.walletAddress.slice(-4)}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-8 py-6 whitespace-nowrap">
                     {getStatusBadge(submission.status)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {submission.riskLevel ? getRiskLevelBadge(submission.riskLevel) : '-'}
+                  <td className="px-8 py-6 whitespace-nowrap">
+                    {submission.riskLevel ? getRiskLevelBadge(submission.riskLevel) : (
+                      <span className="text-gray-400 text-sm">-</span>
+                    )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {submission.documents.length} docs
+                  <td className="px-8 py-6 whitespace-nowrap">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-green-600 rounded-lg flex items-center justify-center">
+                        <span className="text-white font-bold text-sm">{submission.documents.length}</span>
+                      </div>
+                      <span className="text-sm font-medium text-gray-700">docs</span>
+                    </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {submission.submittedAt ? new Date(submission.submittedAt).toLocaleDateString() : '-'}
+                  <td className="px-8 py-6 whitespace-nowrap text-sm text-gray-600">
+                    {submission.submittedAt ? new Date(submission.submittedAt).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric'
+                    }) : '-'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <td className="px-8 py-6 whitespace-nowrap text-sm font-medium">
                     <button
                       onClick={() => {
                         setSelectedSubmission(submission)
                         setShowModal(true)
                       }}
-                      className="text-blue-600 hover:text-blue-900"
+                      className="group relative bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-4 py-2 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                     >
-                      <EyeIcon className="w-4 h-4" />
+                      <div className="flex items-center space-x-2">
+                        <EyeIcon className="w-4 h-4" />
+                        <span className="font-semibold">View</span>
+                      </div>
+                      <div className="absolute inset-0 bg-white/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
                     </button>
                   </td>
                 </tr>
@@ -671,92 +811,175 @@ export default function AdminDashboardPage() {
   )
 
   const renderRiskProfiles = () => (
-    <div className="space-y-6">
-      <div className="card">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">AI Risk Assessments</h3>
-        <div className="space-y-4">
-          {riskProfiles.map((profile) => (
-            <div key={profile.id} className="border border-gray-200 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h4 className="font-medium text-gray-900">
-                    {profile.firstName} {profile.lastName}
-                  </h4>
-                  <p className="text-sm text-gray-600">{profile.email}</p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  {getRiskLevelBadge(profile.riskLevel)}
-                  <div className="text-right">
-                    <div className="text-lg font-semibold text-gray-900">{profile.overallScore}/100</div>
-                    <div className="text-xs text-gray-500">Risk Score</div>
+    <div className="space-y-8">
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 overflow-hidden">
+        <div className="bg-gradient-to-r from-purple-500 to-pink-600 px-8 py-6">
+          <h3 className="text-2xl font-bold text-white flex items-center">
+            <ShieldCheckIcon className="w-8 h-8 mr-3" />
+            AI Risk Assessments
+          </h3>
+          <p className="text-purple-100 mt-1">Advanced AI-powered risk analysis and profiling</p>
+        </div>
+        <div className="p-8">
+          <div className="space-y-8">
+            {riskProfiles.map((profile) => (
+              <div key={profile.id} className="group relative bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200/50">
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg">
+                      <UserIcon className="w-8 h-8 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="text-2xl font-bold text-gray-900">
+                        {profile.firstName} {profile.lastName}
+                      </h4>
+                      <p className="text-lg text-gray-600">{profile.email}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-6">
+                    {getRiskLevelBadge(profile.riskLevel)}
+                    <div className="text-center">
+                      <div className="text-4xl font-bold text-gray-900">{profile.overallScore}/100</div>
+                      <div className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Risk Score</div>
+                    </div>
                   </div>
                 </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <h5 className="font-medium text-gray-900 mb-2">Risk Factors</h5>
-                  <div className="space-y-2">
-                    {profile.riskFactors.map((factor, index) => (
-                      <div key={index} className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">{factor.factor}</span>
-                        <span className="font-medium">{factor.score}%</span>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-md">
+                    <h5 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                      <ExclamationTriangleIcon className="w-6 h-6 mr-3 text-orange-500" />
+                      Risk Factors
+                    </h5>
+                    <div className="space-y-4">
+                      {profile.riskFactors.map((factor, index) => (
+                        <div key={index} className="flex items-center justify-between p-4 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl border border-orange-200/50">
+                          <div>
+                            <span className="font-semibold text-gray-900">{factor.factor}</span>
+                            <p className="text-sm text-gray-600 mt-1">{factor.description}</p>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-orange-600">{factor.score}%</div>
+                            <div className={`text-xs font-semibold uppercase tracking-wide ${
+                              factor.severity === 'high' ? 'text-red-600' :
+                              factor.severity === 'medium' ? 'text-yellow-600' :
+                              'text-green-600'
+                            }`}>
+                              {factor.severity} risk
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-md">
+                    <h5 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                      <ChartBarIcon className="w-6 h-6 mr-3 text-blue-500" />
+                      AI Analysis
+                    </h5>
+                    <div className="space-y-6">
+                      <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200/50">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="font-semibold text-gray-900">Document Authenticity</span>
+                          <span className="text-2xl font-bold text-blue-600">{profile.aiAnalysis.documentAuthenticity}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-gradient-to-r from-blue-500 to-indigo-600 h-2 rounded-full transition-all duration-500"
+                            style={{ width: `${profile.aiAnalysis.documentAuthenticity}%` }}
+                          ></div>
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <h5 className="font-medium text-gray-900 mb-2">AI Analysis</h5>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Document Authenticity</span>
-                      <span className="font-medium">{profile.aiAnalysis.documentAuthenticity}%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Identity Consistency</span>
-                      <span className="font-medium">{profile.aiAnalysis.identityConsistency}%</span>
+                      
+                      <div className="p-4 bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl border border-emerald-200/50">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="font-semibold text-gray-900">Identity Consistency</span>
+                          <span className="text-2xl font-bold text-emerald-600">{profile.aiAnalysis.identityConsistency}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-gradient-to-r from-emerald-500 to-green-600 h-2 rounded-full transition-all duration-500"
+                            style={{ width: `${profile.aiAnalysis.identityConsistency}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200/50">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="font-semibold text-gray-900">Social Media Presence</span>
+                          <span className="text-2xl font-bold text-purple-600">{profile.webIntelligence.socialMediaPresence}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-gradient-to-r from-purple-500 to-pink-600 h-2 rounded-full transition-all duration-500"
+                            style={{ width: `${profile.webIntelligence.socialMediaPresence}%` }}
+                          ></div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </div>
   )
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       <MockNavigation />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <p className="text-gray-600 mt-2">
-            Manage KYC submissions, risk assessments, and user verification
-          </p>
+        <div className="relative mb-8">
+          <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-2xl shadow-2xl overflow-hidden">
+            <div className="absolute inset-0 bg-black/10"></div>
+            <div className="relative px-8 py-12">
+              <div className="flex items-center space-x-4 mb-4">
+                <div className="p-4 bg-white/20 backdrop-blur-sm rounded-2xl">
+                  <ChartBarIcon className="w-12 h-12 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-4xl font-bold text-white mb-2">Admin Dashboard</h1>
+                  <p className="text-indigo-100 text-lg">
+                    Comprehensive KYC management and monitoring system
+                  </p>
+                </div>
+              </div>
+              <p className="text-white/90 text-lg max-w-3xl">
+                Manage KYC submissions, risk assessments, user verification, and blockchain analytics 
+                in a secure, decentralized environment.
+              </p>
+            </div>
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-32 translate-x-32"></div>
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-24 -translate-x-24"></div>
+          </div>
         </div>
 
         {/* Navigation Tabs */}
-        <div className="border-b border-gray-200 mb-8">
-          <nav className="-mb-px flex space-x-8">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 mb-8 p-2">
+          <nav className="flex space-x-2">
             {[
-              { id: 'overview', name: 'Overview', icon: ChartBarIcon },
-              { id: 'kyc-submissions', name: 'KYC Submissions', icon: UserGroupIcon },
-              { id: 'risk-profiles', name: 'Risk Profiles', icon: ShieldCheckIcon }
+              { id: 'overview', name: 'Overview', icon: ChartBarIcon, color: 'from-blue-500 to-indigo-600' },
+              { id: 'kyc-submissions', name: 'KYC Submissions', icon: UserGroupIcon, color: 'from-emerald-500 to-green-600' },
+              { id: 'risk-profiles', name: 'Risk Profiles', icon: ShieldCheckIcon, color: 'from-purple-500 to-pink-600' }
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center space-x-2 py-2 px-1 border-b-2 font-medium text-sm ${
+                className={`group relative flex items-center space-x-3 py-4 px-6 rounded-xl font-semibold text-sm transition-all duration-300 ${
                   activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? `bg-gradient-to-r ${tab.color} text-white shadow-lg transform scale-105`
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
               >
-                <tab.icon className="w-4 h-4" />
+                <tab.icon className={`w-5 h-5 ${activeTab === tab.id ? 'text-white' : 'text-gray-500 group-hover:text-gray-700'}`} />
                 <span>{tab.name}</span>
+                {activeTab === tab.id && (
+                  <div className="absolute inset-0 bg-white/20 rounded-xl"></div>
+                )}
               </button>
             ))}
           </nav>
@@ -769,55 +992,138 @@ export default function AdminDashboardPage() {
 
         {/* Detail Modal */}
         {showModal && selectedSubmission && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
-              <div className="mt-3">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
-                  {selectedSubmission.firstName} {selectedSubmission.lastName}
-                </h3>
-                
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm text-gray-600">Email</p>
-                    <p className="text-sm font-medium">{selectedSubmission.email}</p>
-                  </div>
-                  
-                  {selectedSubmission.walletAddress && (
-                    <div>
-                      <p className="text-sm text-gray-600">Wallet Address</p>
-                      <p className="text-sm font-mono">{selectedSubmission.walletAddress}</p>
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
+            <div className="relative bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+              <div className="bg-gradient-to-r from-indigo-500 to-purple-600 px-8 py-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                      <UserIcon className="w-8 h-8 text-white" />
                     </div>
-                  )}
-                  
-                  <div>
-                    <p className="text-sm text-gray-600">Status</p>
-                    {getStatusBadge(selectedSubmission.status)}
-                  </div>
-                  
-                  {selectedSubmission.riskLevel && (
                     <div>
-                      <p className="text-sm text-gray-600">Risk Level</p>
-                      {getRiskLevelBadge(selectedSubmission.riskLevel)}
+                      <h3 className="text-3xl font-bold text-white">
+                        {selectedSubmission.firstName} {selectedSubmission.lastName}
+                      </h3>
+                      <p className="text-indigo-100 text-lg">{selectedSubmission.email}</p>
                     </div>
-                  )}
-                  
-                  <div>
-                    <p className="text-sm text-gray-600">Documents</p>
-                    <div className="space-y-2">
-                      {selectedSubmission.documents.map((doc) => (
-                        <div key={doc.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                          <span className="text-sm">{doc.name}</span>
-                          <span className="text-xs text-gray-500">{doc.status}</span>
+                  </div>
+                  <button
+                    onClick={() => setShowModal(false)}
+                    className="p-3 bg-white/20 backdrop-blur-sm rounded-2xl hover:bg-white/30 transition-all duration-200"
+                  >
+                    <XCircleIcon className="w-6 h-6 text-white" />
+                  </button>
+                </div>
+              </div>
+              
+              <div className="p-8 max-h-[70vh] overflow-y-auto">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <div className="space-y-6">
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200/50">
+                      <h4 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                        Contact Information
+                      </h4>
+                      <div className="space-y-3">
+                        <div>
+                          <p className="text-sm font-semibold text-gray-600">Email Address</p>
+                          <p className="text-lg font-medium text-gray-900">{selectedSubmission.email}</p>
                         </div>
-                      ))}
+                        {selectedSubmission.walletAddress && (
+                          <div>
+                            <p className="text-sm font-semibold text-gray-600">Wallet Address</p>
+                            <p className="text-lg font-mono text-gray-900 break-all">{selectedSubmission.walletAddress}</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
+                    
+                    <div className="bg-gradient-to-r from-emerald-50 to-green-50 rounded-2xl p-6 border border-emerald-200/50">
+                      <h4 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                        <div className="w-2 h-2 bg-emerald-500 rounded-full mr-3"></div>
+                        Verification Status
+                      </h4>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <span className="text-lg font-semibold text-gray-700">Status</span>
+                          {getStatusBadge(selectedSubmission.status)}
+                        </div>
+                        {selectedSubmission.riskLevel && (
+                          <div className="flex items-center justify-between">
+                            <span className="text-lg font-semibold text-gray-700">Risk Level</span>
+                            {getRiskLevelBadge(selectedSubmission.riskLevel)}
+                          </div>
+                        )}
+                        {selectedSubmission.riskScore && (
+                          <div className="flex items-center justify-between">
+                            <span className="text-lg font-semibold text-gray-700">Risk Score</span>
+                            <span className="text-2xl font-bold text-gray-900">{selectedSubmission.riskScore}/100</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-6">
+                    <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-200/50">
+                      <h4 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                        <div className="w-2 h-2 bg-purple-500 rounded-full mr-3"></div>
+                        Documents ({selectedSubmission.documents.length})
+                      </h4>
+                      <div className="space-y-3">
+                        {selectedSubmission.documents.length > 0 ? (
+                          selectedSubmission.documents.map((doc) => (
+                            <div key={doc.id} className="flex items-center justify-between p-4 bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 shadow-sm">
+                              <div>
+                                <span className="font-semibold text-gray-900">{doc.name}</span>
+                                <p className="text-sm text-gray-600 capitalize">{doc.type.replace('_', ' ')}</p>
+                              </div>
+                              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                doc.status === 'verified' ? 'bg-green-100 text-green-800' :
+                                doc.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                'bg-red-100 text-red-800'
+                              }`}>
+                                {doc.status}
+                              </span>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-gray-500 italic">No documents uploaded</p>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {selectedSubmission.blockchainCredentials && (
+                      <div className="bg-gradient-to-r from-cyan-50 to-blue-50 rounded-2xl p-6 border border-cyan-200/50">
+                        <h4 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                          <div className="w-2 h-2 bg-cyan-500 rounded-full mr-3"></div>
+                          Blockchain Credentials
+                        </h4>
+                        <div className="space-y-3">
+                          <div>
+                            <p className="text-sm font-semibold text-gray-600">Credential ID</p>
+                            <p className="text-lg font-mono text-gray-900">{selectedSubmission.blockchainCredentials.credentialId}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-gray-600">Issuer</p>
+                            <p className="text-lg font-medium text-gray-900">{selectedSubmission.blockchainCredentials.issuer}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-gray-600">Issued At</p>
+                            <p className="text-lg text-gray-900">
+                              {new Date(selectedSubmission.blockchainCredentials.issuedAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
                 
-                <div className="flex justify-end space-x-3 mt-6">
+                <div className="flex justify-end space-x-4 mt-8 pt-6 border-t border-gray-200">
                   <button
                     onClick={() => setShowModal(false)}
-                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
+                    className="px-6 py-3 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-xl hover:from-gray-200 hover:to-gray-300 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl"
                   >
                     Close
                   </button>
@@ -825,13 +1131,13 @@ export default function AdminDashboardPage() {
                     <>
                       <button
                         onClick={() => handleApprove(selectedSubmission.id)}
-                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                        className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-xl hover:from-emerald-600 hover:to-green-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
                       >
                         Approve
                       </button>
                       <button
                         onClick={() => handleReject(selectedSubmission.id)}
-                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                        className="px-6 py-3 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-xl hover:from-red-600 hover:to-pink-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
                       >
                         Reject
                       </button>

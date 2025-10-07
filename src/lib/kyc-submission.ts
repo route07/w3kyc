@@ -159,14 +159,29 @@ export class KYCSubmissionService {
       const kycData = await contractFunctions.getKYCData(walletAddress);
       const kycStatus = await contractFunctions.getKYCStatus(walletAddress);
 
+      // Helper function to convert BigInt to string for JSON serialization
+      const serializeBigInt = (obj: any): any => {
+        if (obj === null || obj === undefined) return obj;
+        if (typeof obj === 'bigint') return obj.toString();
+        if (Array.isArray(obj)) return obj.map(serializeBigInt);
+        if (typeof obj === 'object') {
+          const serialized: any = {};
+          for (const [key, value] of Object.entries(obj)) {
+            serialized[key] = serializeBigInt(value);
+          }
+          return serialized;
+        }
+        return obj;
+      };
+
       return {
         success: true,
-        data: {
+        data: serializeBigInt({
           walletAddress,
           kycData,
           status: kycStatus,
           lastChecked: new Date().toISOString()
-        }
+        })
       };
     } catch (error) {
       console.error('KYC status check error:', error);

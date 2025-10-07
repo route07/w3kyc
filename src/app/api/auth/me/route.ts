@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { DatabaseUserService } from '@/lib/database-user-service';
 import jwt from 'jsonwebtoken';
 
-// Mock database - in production, use a real database
-const users: any[] = [];
+// Simple in-memory cache for user sessions
+const userCache = new Map<string, { user: any; expires: number }>();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,43 +12,72 @@ export async function GET(request: NextRequest) {
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json(
-        { success: false, error: 'Authentication required' },
+        { success: false, error: 'No authorization token provided' },
         { status: 401 }
       );
     }
 
     const token = authHeader.substring(7);
     
-    // Verify token
+    // Verify JWT token
     let decoded: any;
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
     } catch (error) {
       return NextResponse.json(
-        { success: false, error: 'Invalid token' },
+        { success: false, error: 'Invalid or expired token' },
         { status: 401 }
       );
     }
 
-    // Find user
-    const user = users.find(u => u.id === decoded.userId);
+    // Check cache first
+    const cacheKey = `user_${decoded.userId}`;
+    const cached = userCache.get(cacheKey);
+    
+    if (cached && cached.expires > Date.now()) {
+      return NextResponse.json({
+        success: true,
+        user: cached.user
+      });
+    }
+
+    // Fetch from database
+    const user = await DatabaseUserService.findById(decoded.userId);
+    
     if (!user) {
+      // Clear invalid token and user data
+      userCache.delete(cacheKey);
       return NextResponse.json(
         { success: false, error: 'User not found' },
         { status: 404 }
       );
     }
 
-    // Remove password from response
-    const { password: _, ...userWithoutPassword } = user;
+    // Convert to public user object
+    const publicUser = DatabaseUserService.toPublicUser(user);
+    
+    // Cache the result
+    userCache.set(cacheKey, {
+      user: publicUser,
+      expires: Date.now() + CACHE_DURATION
+    });
+
+    // Clean up expired cache entries periodically
+    if (Math.random() < 0.1) { // 10% chance
+      for (const [key, value] of userCache.entries()) {
+        if (value.expires <= Date.now()) {
+          userCache.delete(key);
+        }
+      }
+    }
 
     return NextResponse.json({
       success: true,
-      user: userWithoutPassword,
-    }, { status: 200 });
+      user: publicUser
+    });
 
   } catch (error) {
-    console.error('Get user error:', error);
+    console.error('Auth me error:', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }

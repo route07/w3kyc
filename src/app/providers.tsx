@@ -7,7 +7,7 @@ import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import { SessionProvider } from 'next-auth/react';
 import { config } from '@/lib/wagmi';
 import { AuthProvider } from '@/contexts/AuthContext';
-import '@rainbow-me/rainbowkit/styles.css';
+// RainbowKit styles imported in layout.tsx
 
 const queryClient = new QueryClient();
 

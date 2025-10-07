@@ -1,140 +1,137 @@
-import { KYCStatus } from '@/types';
 import dbConnect from './mongodb';
-import { User } from './models/User';
-
-export interface DatabaseUser {
-  _id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  walletAddress: string | null;
-  kycStatus: KYCStatus;
-  riskScore: number;
-  createdAt: string;
-  updatedAt: string;
-}
+import { User, IUser } from './models/User';
+import bcrypt from 'bcryptjs';
+import { KYCStatus } from '@/types';
 
 export class DatabaseUserService {
-  static async findByEmail(email: string): Promise<DatabaseUser | null> {
+  private static async getModel() {
     await dbConnect();
-    const user = await User.findOne({ email: email.toLowerCase() }).select('-password');
-    return user ? this.toDatabaseUser(user) : null;
+    return User;
   }
 
-  static async findByWalletAddress(walletAddress: string): Promise<DatabaseUser | null> {
-    await dbConnect();
-    const user = await User.findOne({ walletAddress: walletAddress.toLowerCase() }).select('-password');
-    return user ? this.toDatabaseUser(user) : null;
+  static async findByEmail(email: string): Promise<IUser | null> {
+    try {
+      const UserModel = await this.getModel();
+      return await UserModel.findOne({ email }).lean();
+    } catch (error) {
+      console.error('Database error in findByEmail:', error);
+      throw error;
+    }
   }
 
-  static async findById(id: string): Promise<DatabaseUser | null> {
-    await dbConnect();
-    const user = await User.findById(id).select('-password');
-    return user ? this.toDatabaseUser(user) : null;
+  static async findById(id: string): Promise<IUser | null> {
+    try {
+      const UserModel = await this.getModel();
+      
+      // Check if the ID is a valid MongoDB ObjectId
+      if (!/^[0-9a-fA-F]{24}$/.test(id)) {
+        console.error('Invalid ObjectId format:', id);
+        return null;
+      }
+      
+      return await UserModel.findById(id).lean();
+    } catch (error) {
+      console.error('Database error in findById:', error);
+      return null; // Return null instead of throwing to prevent crashes
+    }
+  }
+
+  static async findByWalletAddress(walletAddress: string): Promise<IUser | null> {
+    try {
+      const UserModel = await this.getModel();
+      return await UserModel.findOne({ walletAddress }).lean();
+    } catch (error) {
+      console.error('Database error in findByWalletAddress:', error);
+      throw error;
+    }
   }
 
   static async create(userData: {
     email: string;
     password: string;
-    firstName: string;
-    lastName: string;
-    walletAddress?: string | null;
-    kycStatus?: KYCStatus;
-  }): Promise<DatabaseUser> {
-    await dbConnect();
-    
-    const newUser = new User({
-      email: userData.email.toLowerCase(),
-      password: userData.password, // Will be hashed by pre-save middleware
-      firstName: userData.firstName,
-      lastName: userData.lastName,
-      walletAddress: userData.walletAddress?.toLowerCase() || null,
-      kycStatus: userData.kycStatus || KYCStatus.NOT_STARTED,
-      riskScore: 0
-    });
+    firstName?: string;
+    lastName?: string;
+    walletAddress?: string;
+  }): Promise<IUser> {
+    try {
+      const UserModel = await this.getModel();
+      
+      // Create user with all required fields
+      const user = new UserModel({
+        email: userData.email,
+        password: userData.password, // Raw password - will be hashed by pre-save middleware
+        firstName: userData.firstName || '',
+        lastName: userData.lastName || '',
+        dateOfBirth: '', // Required by schema but can be empty for MVP
+        nationality: '', // Required by schema but can be empty for MVP
+        address: {
+          street: '',
+          city: '',
+          state: '',
+          postalCode: '',
+          country: ''
+        },
+        phoneNumber: '', // Required by schema but can be empty for MVP
+        walletAddress: userData.walletAddress || null,
+        kycStatus: KYCStatus.NOT_STARTED,
+        riskScore: 0,
+      });
 
-    const savedUser = await newUser.save();
-    return this.toDatabaseUser(savedUser);
+      return await user.save();
+    } catch (error) {
+      console.error('Database error in create:', error);
+      throw error;
+    }
   }
 
-  static async update(id: string, updates: Partial<DatabaseUser>): Promise<DatabaseUser | null> {
-    await dbConnect();
-    
-    const user = await User.findByIdAndUpdate(
-      id, 
-      { ...updates, updatedAt: new Date() },
-      { new: true, runValidators: true }
-    ).select('-password');
-    
-    return user ? this.toDatabaseUser(user) : null;
-  }
-
-  static async updateByEmail(email: string, updates: Partial<DatabaseUser>): Promise<DatabaseUser | null> {
-    await dbConnect();
-    
-    const user = await User.findOneAndUpdate(
-      { email: email.toLowerCase() },
-      { ...updates, updatedAt: new Date() },
-      { new: true, runValidators: true }
-    ).select('-password');
-    
-    return user ? this.toDatabaseUser(user) : null;
-  }
-
-  static async updateByWalletAddress(walletAddress: string, updates: Partial<DatabaseUser>): Promise<DatabaseUser | null> {
-    await dbConnect();
-    
-    const user = await User.findOneAndUpdate(
-      { walletAddress: walletAddress.toLowerCase() },
-      { ...updates, updatedAt: new Date() },
-      { new: true, runValidators: true }
-    ).select('-password');
-    
-    return user ? this.toDatabaseUser(user) : null;
+  static async update(id: string, updateData: Partial<IUser>): Promise<IUser | null> {
+    try {
+      const UserModel = await this.getModel();
+      
+      updateData.updatedAt = new Date();
+      
+      return await UserModel.findByIdAndUpdate(
+        id,
+        updateData,
+        { new: true, runValidators: true }
+      ).lean();
+    } catch (error) {
+      console.error('Database error in update:', error);
+      throw error;
+    }
   }
 
   static async verifyPassword(email: string, password: string): Promise<boolean> {
-    await dbConnect();
-    
-    const user = await User.findOne({ email: email.toLowerCase() });
-    if (!user) return false;
-    
-    return await user.comparePassword(password);
+    try {
+      const user = await this.findByEmail(email);
+      if (!user) {
+        return false;
+      }
+
+      return await bcrypt.compare(password, user.password);
+    } catch (error) {
+      console.error('Database error in verifyPassword:', error);
+      throw error;
+    }
   }
 
-  static async getAll(): Promise<DatabaseUser[]> {
-    await dbConnect();
-    const users = await User.find({}).select('-password');
-    return users.map(user => this.toDatabaseUser(user));
-  }
-
-  static async delete(id: string): Promise<boolean> {
-    await dbConnect();
-    const result = await User.findByIdAndDelete(id);
-    return !!result;
-  }
-
-  static async count(): Promise<number> {
-    await dbConnect();
-    return await User.countDocuments();
-  }
-
-  private static toDatabaseUser(user: any): DatabaseUser {
+  static toPublicUser(user: IUser): any {
     return {
-      _id: user._id.toString(),
+      id: user._id.toString(),
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
       walletAddress: user.walletAddress,
       kycStatus: user.kycStatus,
-      riskScore: user.riskScore || 0,
-      createdAt: user.createdAt.toISOString(),
-      updatedAt: user.updatedAt.toISOString(),
+      riskScore: user.riskScore,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
     };
   }
 
-  static toPublicUser(user: DatabaseUser): Omit<DatabaseUser, '_id'> & { id: string } {
-    const { _id, ...rest } = user;
-    return { id: _id, ...rest };
+  // Add a method to clear user cache when user data changes
+  static clearUserCache(userId: string): void {
+    // This would be called when user data is updated
+    // For now, we'll implement this in the API routes
   }
 }

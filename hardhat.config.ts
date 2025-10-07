@@ -21,6 +21,28 @@ module.exports = {
       url: "http://127.0.0.1:8545",
       chainId: 1337,
     },
+    route07: {
+      url: "https://rpc.route07.com",
+      chainId: 35935,
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      gas: "auto",
+      gasPrice: "auto",
+      timeout: 60000,
+      httpHeaders: {
+        "Content-Type": "application/json",
+      }
+    },
+    tractsafe: {
+      url: "https://tapi.tractsafe.com",
+      chainId: 35935,
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      gas: "auto",
+      gasPrice: "auto",
+      timeout: 60000, // 60 seconds timeout for Besu
+      httpHeaders: {
+        "Content-Type": "application/json",
+      }
+    },
     // Add other networks as needed
     // sepolia: {
     //   url: process.env.SEPOLIA_URL || "",

@@ -16,37 +16,33 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
-          // Check if user exists in database
-          const response = await fetch(`${process.env.NEXTAUTH_URL}/api/auth/user`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: credentials.email }),
-          });
-
-          if (!response.ok) {
-            return null;
-          }
-
-          const result = await response.json();
-          if (!result.success || !result.user) {
-            return null;
-          }
-
-          // Verify password using database service
+          // Import database service
           const { DatabaseUserService } = await import('@/lib/database-user-service');
+          
+          // Find user in database
+          const user = await DatabaseUserService.findByEmail(credentials.email);
+          if (!user) {
+            console.log('User not found:', credentials.email);
+            return null;
+          }
+
+          // Verify password
           const isValidPassword = await DatabaseUserService.verifyPassword(credentials.email, credentials.password);
           if (!isValidPassword) {
+            console.log('Invalid password for:', credentials.email);
             return null;
           }
 
+          console.log('Authentication successful for:', credentials.email);
+
           return {
-            id: result.user.id,
-            email: result.user.email,
-            firstName: result.user.firstName,
-            lastName: result.user.lastName,
-            kycStatus: result.user.kycStatus,
-            createdAt: result.user.createdAt,
-            updatedAt: result.user.updatedAt,
+            id: user._id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            kycStatus: user.kycStatus,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
           };
         } catch (error) {
           console.error('Auth error:', error);

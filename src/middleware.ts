@@ -2,29 +2,25 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  const token = request.cookies.get('auth_token')?.value || 
-                request.headers.get('authorization')?.replace('Bearer ', '')
-  
   const { pathname } = request.nextUrl
 
   // Protected routes that require authentication
-  const protectedRoutes = ['/dashboard', '/onboarding']
+  const protectedRoutes = ['/dashboard', '/onboarding', '/profile']
   const authRoutes = ['/auth/login', '/auth/signup', '/auth/connect']
 
   // Check if the current path is protected
   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
   const isAuthRoute = authRoutes.some(route => pathname.startsWith(route))
 
-  // If accessing a protected route without a token, redirect to login
-  if (isProtectedRoute && !token) {
-    const loginUrl = new URL('/auth/login', request.url)
-    loginUrl.searchParams.set('redirect', pathname)
-    return NextResponse.redirect(loginUrl)
+  // For protected routes, let the client-side handle authentication
+  // The middleware will not redirect, allowing the page to load and check auth state
+  if (isProtectedRoute) {
+    return NextResponse.next()
   }
 
-  // If accessing auth routes with a token, redirect to dashboard
-  if (isAuthRoute && token) {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+  // For auth routes, also let client-side handle the logic
+  if (isAuthRoute) {
+    return NextResponse.next()
   }
 
   return NextResponse.next()
