@@ -13,6 +13,9 @@ export interface User {
   isEmailVerified: boolean;
   isWalletConnected: boolean;
   kycStatus?: string;
+  role?: string;
+  isAdmin?: boolean;
+  adminLevel?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -100,6 +103,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           lastName: result.user.lastName,
           walletAddress: result.user.walletAddress,
           kycStatus: result.user.kycStatus,
+          role: result.user.role,
+          isAdmin: result.user.isAdmin,
+          adminLevel: result.user.adminLevel,
           authMethod: 'web2' as const,
           isEmailVerified: true,
           isWalletConnected: false,
@@ -134,8 +140,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const result = await response.json();
       
       if (result.success) {
-        setUser(result.user);
+        const userData = {
+          ...result.user,
+          authMethod: 'web2' as const,
+          isEmailVerified: true,
+          isWalletConnected: false,
+        };
+        setUser(userData);
         localStorage.setItem('auth_token', result.token);
+        localStorage.setItem('auth_user', JSON.stringify(userData));
         return { success: true };
       } else {
         return { success: false, error: result.error };
@@ -173,7 +186,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const result = await response.json();
       
       if (result.success) {
-        setUser(result.user);
+        const userData = {
+          ...result.user,
+          authMethod: 'hybrid' as const,
+          isEmailVerified: true,
+          isWalletConnected: true,
+        };
+        setUser(userData);
+        localStorage.setItem('auth_user', JSON.stringify(userData));
         return { success: true };
       } else {
         return { success: false, error: result.error };
@@ -217,7 +237,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const result = await response.json();
       
       if (result.success) {
-        setUser(result.user);
+        const userData = {
+          ...result.user,
+          authMethod: user?.authMethod || 'web2' as const,
+          isEmailVerified: user?.isEmailVerified || false,
+          isWalletConnected: user?.isWalletConnected || false,
+        };
+        setUser(userData);
+        localStorage.setItem('auth_user', JSON.stringify(userData));
         return { success: true };
       } else {
         return { success: false, error: result.error };
@@ -275,8 +302,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (result.success) {
           if (result.user) {
             // Existing user with this wallet
-            setUser(result.user);
+            const userData = {
+              ...result.user,
+              authMethod: 'web3' as const,
+              isEmailVerified: false,
+              isWalletConnected: true,
+            };
+            setUser(userData);
             localStorage.setItem('auth_token', result.token);
+            localStorage.setItem('auth_user', JSON.stringify(userData));
           } else {
             // New wallet user - create in database first
             try {
@@ -291,9 +325,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               const result = await response.json();
               
               if (result.success && result.user) {
-                setUser(result.user);
+                const userData = {
+                  ...result.user,
+                  authMethod: 'web3' as const,
+                  isEmailVerified: false,
+                  isWalletConnected: true,
+                };
+                setUser(userData);
                 localStorage.setItem('auth_token', result.token);
-                localStorage.setItem('auth_user', JSON.stringify(result.user));
+                localStorage.setItem('auth_user', JSON.stringify(userData));
               } else {
                 // Fallback: create temporary user without database
                 const newUser: User = {

@@ -52,6 +52,13 @@ export class DatabaseUserService {
     firstName?: string;
     lastName?: string;
     walletAddress?: string;
+    dateOfBirth?: string;
+    nationality?: string;
+    address?: any;
+    phoneNumber?: string;
+    role?: string;
+    isAdmin?: boolean;
+    adminLevel?: string;
   }): Promise<IUser> {
     try {
       const UserModel = await this.getModel();
@@ -62,19 +69,22 @@ export class DatabaseUserService {
         password: userData.password, // Raw password - will be hashed by pre-save middleware
         firstName: userData.firstName || '',
         lastName: userData.lastName || '',
-        dateOfBirth: '', // Required by schema but can be empty for MVP
-        nationality: '', // Required by schema but can be empty for MVP
-        address: {
+        dateOfBirth: userData.dateOfBirth || '', // Required by schema but can be empty for MVP
+        nationality: userData.nationality || '', // Required by schema but can be empty for MVP
+        address: userData.address || {
           street: '',
           city: '',
           state: '',
           postalCode: '',
           country: ''
         },
-        phoneNumber: '', // Required by schema but can be empty for MVP
+        phoneNumber: userData.phoneNumber || '', // Required by schema but can be empty for MVP
         walletAddress: userData.walletAddress || null,
         kycStatus: KYCStatus.NOT_STARTED,
         riskScore: 0,
+        role: userData.role || 'user',
+        isAdmin: userData.isAdmin || false,
+        adminLevel: userData.adminLevel || undefined,
       });
 
       return await user.save();
