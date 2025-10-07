@@ -24,7 +24,7 @@ export default function RootLayout({
       <body className={`${inter.className} bg-gray-50 min-h-screen`}>
         <Providers>
           <Navbar />
-          <main className="min-h-screen">
+          <main>
             {children}
           </main>
           <Footer />

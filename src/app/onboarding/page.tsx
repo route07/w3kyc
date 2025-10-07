@@ -361,94 +361,140 @@ export default function OnboardingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <header className="bg-gradient-to-r from-white to-blue-50 shadow-lg border-b border-blue-100">
+        <div className="w-full px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg">
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg">
                 <ShieldCheckIcon className="w-8 h-8 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Web3 KYC</h1>
-                <p className="text-sm text-gray-600">Identity Verification</p>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  Web3 KYC
+                </h1>
+                <p className="text-sm text-gray-600 font-medium">Identity Verification Process</p>
               </div>
             </div>
-            <div className="text-sm text-gray-500">
-              Step {currentStep + 1} of {steps.length}
+            <div className="text-right">
+              <div className="text-sm font-semibold text-gray-700">
+                Step {currentStep + 1} of {steps.length}
+              </div>
+              <div className="text-xs text-gray-500 mt-1">
+                {Math.round(((currentStep + 1) / steps.length) * 100)}% Complete
+              </div>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="w-full px-6 lg:px-8 py-8">
         {/* Progress Steps */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            {steps.map((step, index) => (
-              <div key={step.id} className="flex items-center">
-                <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
-                  step.status === 'completed' ? 'bg-green-500 border-green-500 text-white' :
-                  step.status === 'current' ? 'bg-blue-500 border-blue-500 text-white' :
-                  'bg-white border-gray-300 text-gray-400'
-                }`}>
-                  {step.status === 'completed' ? (
-                    <CheckCircleIcon className="w-6 h-6" />
-                  ) : (
-                    <step.icon className="w-6 h-6" />
-                  )}
+        <div className="mb-16">
+          <div className="relative">
+            {/* Progress Line */}
+            <div className="absolute top-8 left-0 right-0 h-1 bg-gray-200 rounded-full">
+              <div 
+                className="h-full bg-gradient-to-r from-green-500 to-blue-500 transition-all duration-500 rounded-full"
+                style={{ 
+                  width: `${((currentStep) / (steps.length - 1)) * 100}%` 
+                }}
+              />
+            </div>
+            
+            {/* Steps */}
+            <div className="relative flex justify-between px-4">
+              {steps.map((step, index) => (
+                <div key={step.id} className="flex flex-col items-center group flex-1">
+                  {/* Step Circle */}
+                  <div className={`relative flex items-center justify-center w-16 h-16 rounded-full border-4 transition-all duration-300 ${
+                    step.status === 'completed' 
+                      ? 'bg-gradient-to-r from-green-500 to-emerald-500 border-green-500 text-white shadow-xl shadow-green-200' 
+                    : step.status === 'current' 
+                      ? 'bg-gradient-to-r from-blue-500 to-indigo-500 border-blue-500 text-white shadow-xl shadow-blue-200 animate-pulse' 
+                    : 'bg-white border-gray-300 text-gray-400 hover:border-gray-400 hover:shadow-lg'
+                  }`}>
+                    {step.status === 'completed' ? (
+                      <CheckCircleIcon className="w-8 h-8" />
+                    ) : (
+                      <step.icon className={`w-8 h-8 ${
+                        step.status === 'current' ? 'text-white' : 'text-gray-400'
+                      }`} />
+                    )}
+                    
+                    {/* Step Number */}
+                    <div className={`absolute -top-3 -right-3 w-8 h-8 rounded-full text-sm font-bold flex items-center justify-center ${
+                      step.status === 'completed' 
+                        ? 'bg-green-600 text-white' 
+                        : step.status === 'current' 
+                        ? 'bg-blue-600 text-white' 
+                        : 'bg-gray-300 text-gray-600'
+                    }`}>
+                      {index + 1}
+                    </div>
+                  </div>
+                  
+                  {/* Step Content */}
+                  <div className="mt-6 text-center max-w-40">
+                    <p className={`text-base font-bold transition-colors duration-300 ${
+                      step.status === 'current' 
+                        ? 'text-blue-600' 
+                        : step.status === 'completed' 
+                        ? 'text-green-600' 
+                        : 'text-gray-400 group-hover:text-gray-600'
+                    }`}>
+                      {step.title}
+                    </p>
+                    <p className={`text-sm mt-2 transition-colors duration-300 ${
+                      step.status === 'current' 
+                        ? 'text-blue-500' 
+                        : step.status === 'completed' 
+                        ? 'text-green-500' 
+                        : 'text-gray-400 group-hover:text-gray-500'
+                    }`}>
+                      {step.description}
+                    </p>
+                  </div>
                 </div>
-                {index < steps.length - 1 && (
-                  <div className={`w-16 h-0.5 mx-2 ${
-                    step.status === 'completed' ? 'bg-green-500' : 'bg-gray-300'
-                  }`} />
-                )}
-              </div>
-            ))}
-          </div>
-          
-          {/* Step Labels */}
-          <div className="flex justify-between mt-4">
-            {steps.map((step) => (
-              <div key={step.id} className="text-center max-w-24">
-                <p className={`text-sm font-medium ${
-                  step.status === 'current' ? 'text-blue-600' :
-                  step.status === 'completed' ? 'text-green-600' :
-                  'text-gray-400'
-                }`}>
-                  {step.title}
-                </p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
 
         {/* Step Content */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-          {renderStepContent()}
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-12 relative overflow-hidden">
+          {/* Background Pattern */}
+          <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-blue-50 to-purple-50 rounded-full -translate-y-20 translate-x-20 opacity-50"></div>
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-green-50 to-blue-50 rounded-full translate-y-16 -translate-x-16 opacity-50"></div>
+          <div className="absolute top-1/2 left-1/2 w-24 h-24 bg-gradient-to-br from-purple-50 to-pink-50 rounded-full -translate-x-1/2 -translate-y-1/2 opacity-30"></div>
+          
+          {/* Content */}
+          <div className="relative z-10">
+            {renderStepContent()}
+          </div>
         </div>
 
         {/* Navigation */}
-        <div className="flex justify-between mt-8">
+        <div className="flex justify-between mt-16 px-4">
           <button
             onClick={handlePrevious}
             disabled={currentStep === 0}
-            className={`flex items-center px-4 py-2 rounded-lg ${
+            className={`flex items-center px-8 py-4 rounded-xl font-semibold transition-all duration-300 ${
               currentStep === 0 
                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                : 'bg-gradient-to-r from-gray-200 to-gray-300 text-gray-700 hover:from-gray-300 hover:to-gray-400 hover:shadow-lg transform hover:-translate-y-0.5'
             }`}
           >
-            <ArrowLeftIcon className="w-4 h-4 mr-2" />
-            Previous
+            <ArrowLeftIcon className="w-6 h-6 mr-3" />
+            Previous Step
           </button>
           
           {currentStep < steps.length - 1 && (
             <button
               onClick={handleNext}
-              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="flex items-center px-10 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300"
             >
-              Next
-              <ArrowRightIcon className="w-4 h-4 ml-2" />
+              Next Step
+              <ArrowRightIcon className="w-6 h-6 ml-3" />
             </button>
           )}
         </div>
