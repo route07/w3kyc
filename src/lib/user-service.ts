@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import { KYCStatus } from '@/types';
 
 export interface User {
   id: string;
@@ -7,7 +8,7 @@ export interface User {
   firstName: string;
   lastName: string;
   walletAddress: string | null;
-  kycStatus: string;
+  kycStatus: KYCStatus;
   createdAt: string;
   updatedAt: string;
 }
@@ -21,7 +22,7 @@ let users: User[] = [
     firstName: 'Demo',
     lastName: 'User',
     walletAddress: null,
-    kycStatus: 'APPROVED',
+    kycStatus: KYCStatus.VERIFIED,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -32,7 +33,7 @@ let users: User[] = [
     firstName: 'Alice',
     lastName: 'Johnson',
     walletAddress: '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6',
-    kycStatus: 'PENDING',
+    kycStatus: KYCStatus.PENDING,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   }

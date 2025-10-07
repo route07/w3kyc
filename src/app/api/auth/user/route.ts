@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { UserService } from '@/lib/user-service';
+import { DatabaseUserService } from '@/lib/database-user-service';
 
 export async function GET(request: NextRequest) {
   try {
@@ -8,21 +8,21 @@ export async function GET(request: NextRequest) {
     const walletAddress = searchParams.get('walletAddress');
 
     if (email) {
-      const user = await UserService.findByEmail(email);
+      const user = await DatabaseUserService.findByEmail(email);
       if (user) {
         return NextResponse.json({
           success: true,
-          user: UserService.toPublicUser(user)
+          user: DatabaseUserService.toPublicUser(user)
         });
       }
     }
 
     if (walletAddress) {
-      const user = await UserService.findByWalletAddress(walletAddress);
+      const user = await DatabaseUserService.findByWalletAddress(walletAddress);
       if (user) {
         return NextResponse.json({
           success: true,
-          user: UserService.toPublicUser(user)
+          user: DatabaseUserService.toPublicUser(user)
         });
       }
     }
@@ -53,11 +53,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const user = await UserService.findByEmail(email);
+    const user = await DatabaseUserService.findByEmail(email);
     if (user) {
       return NextResponse.json({
         success: true,
-        user: UserService.toPublicUser(user)
+        user: DatabaseUserService.toPublicUser(user)
       });
     }
 

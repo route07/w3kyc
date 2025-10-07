@@ -1,39 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-
-// Mock database - in production, use a real database
-const users: any[] = [];
+import { DatabaseUserService } from '@/lib/database-user-service';
+import { KYCStatus } from '@/types';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json();
-    const authHeader = request.headers.get('authorization');
-    
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json(
-        { success: false, error: 'Authentication required' },
-        { status: 401 }
-      );
-    }
-
-    const token = authHeader.substring(7);
-    
-    // Verify token
-    let decoded: any;
-    try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-    } catch (error) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid token' },
-        { status: 401 }
-      );
-    }
+    const body = await request.json();
+    const { email, password, walletAddress } = body;
 
     // Validate required fields
-    if (!email || !password) {
+    if (!email || !password || !walletAddress) {
       return NextResponse.json(
-        { success: false, error: 'Email and password are required' },
+        { success: false, error: 'Email, password, and wallet address are required' },
         { status: 400 }
       );
     }
@@ -47,6 +24,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate wallet address format
+    if (!/^0x[a-fA-F0-9]{40}$/.test(walletAddress)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid wallet address format' },
+        { status: 400 }
+      );
+    }
+
     // Validate password strength
     if (password.length < 8) {
       return NextResponse.json(
@@ -55,61 +40,45 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find current user
-    const currentUser = users.find(u => u.id === decoded.userId);
-    if (!currentUser) {
+    // Check if email is already taken
+    const existingEmailUser = await DatabaseUserService.findByEmail(email);
+    if (existingEmailUser) {
       return NextResponse.json(
-        { success: false, error: 'User not found' },
-        { status: 404 }
-      );
-    }
-
-    // Check if email is already taken by another user
-    const emailExists = users.find(u => u.email === email && u.id !== currentUser.id);
-    if (emailExists) {
-      return NextResponse.json(
-        { success: false, error: 'Email is already associated with another account' },
+        { success: false, error: 'Email is already taken' },
         { status: 409 }
       );
     }
 
-    // Hash password
-    const saltRounds = 12;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    // Check if wallet is already connected to another account
+    const existingWalletUser = await DatabaseUserService.findByWalletAddress(walletAddress);
+    if (existingWalletUser) {
+      return NextResponse.json(
+        { success: false, error: 'Wallet is already connected to another account' },
+        { status: 409 }
+      );
+    }
 
-    // Update user with email and password
-    const updatedUser = {
-      ...currentUser,
+    // Create new user with both email and wallet
+    const newUser = await DatabaseUserService.create({
       email,
-      password: hashedPassword,
-      authMethod: 'hybrid' as const,
-      isEmailVerified: false,
-      updatedAt: new Date().toISOString(),
-    };
+      password,
+      firstName: '',
+      lastName: '',
+      walletAddress,
+      kycStatus: KYCStatus.NOT_STARTED,
+    });
 
-    // Update user in database
-    const userIndex = users.findIndex(u => u.id === currentUser.id);
-    users[userIndex] = updatedUser;
-
-    // Generate new token
-    const newToken = jwt.sign(
-      { userId: updatedUser.id, email: updatedUser.email, walletAddress: updatedUser.walletAddress },
-      process.env.JWT_SECRET || 'your-secret-key',
-      { expiresIn: '7d' }
-    );
-
-    // Remove password from response
-    const { password: _, ...userWithoutPassword } = updatedUser;
+    // Return user without password hash
+    const userWithoutPassword = DatabaseUserService.toPublicUser(newUser);
 
     return NextResponse.json({
       success: true,
       message: 'Email connected successfully',
-      user: userWithoutPassword,
-      token: newToken,
-    }, { status: 200 });
+      user: userWithoutPassword
+    }, { status: 201 });
 
   } catch (error) {
-    console.error('Email connection error:', error);
+    console.error('Connect email error:', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }

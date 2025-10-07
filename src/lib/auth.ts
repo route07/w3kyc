@@ -32,8 +32,9 @@ export const authOptions: NextAuthOptions = {
             return null;
           }
 
-          // Verify password
-          const isValidPassword = await bcrypt.compare(credentials.password, result.user.passwordHash);
+          // Verify password using database service
+          const { DatabaseUserService } = await import('@/lib/database-user-service');
+          const isValidPassword = await DatabaseUserService.verifyPassword(credentials.email, credentials.password);
           if (!isValidPassword) {
             return null;
           }

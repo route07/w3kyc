@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { UserService } from '@/lib/user-service';
+import { DatabaseUserService } from '@/lib/database-user-service';
+import { KYCStatus } from '@/types';
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,7 +33,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user already exists
-    const existingUser = await UserService.findByEmail(email);
+    const existingUser = await DatabaseUserService.findByEmail(email);
     if (existingUser) {
       return NextResponse.json(
         { success: false, error: 'User already exists with this email' },
@@ -40,21 +41,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Hash password
-    const passwordHash = await UserService.hashPassword(password);
-
-    // Create new user
-    const newUser = await UserService.create({
+    // Create new user (password will be hashed by mongoose pre-save middleware)
+    const newUser = await DatabaseUserService.create({
       email,
-      passwordHash,
+      password,
       firstName,
       lastName,
       walletAddress: null,
-      kycStatus: 'NONE',
+      kycStatus: KYCStatus.NOT_STARTED,
     });
 
     // Return user without password hash
-    const userWithoutPassword = UserService.toPublicUser(newUser);
+    const userWithoutPassword = DatabaseUserService.toPublicUser(newUser);
 
     return NextResponse.json({
       success: true,

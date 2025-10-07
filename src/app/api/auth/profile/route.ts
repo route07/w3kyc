@@ -1,62 +1,64 @@
 import { NextRequest, NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
-
-// Mock database - in production, use a real database
-const users: any[] = [];
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { DatabaseUserService } from '@/lib/database-user-service';
 
 export async function PUT(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization');
+    const session = await getServerSession(authOptions);
     
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!session?.user?.id) {
       return NextResponse.json(
-        { success: false, error: 'Authentication required' },
+        { success: false, error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    const token = authHeader.substring(7);
-    
-    // Verify token
-    let decoded: any;
-    try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-    } catch (error) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid token' },
-        { status: 401 }
-      );
+    const body = await request.json();
+    const { firstName, lastName, email } = body;
+
+    // Validate email if provided
+    if (email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return NextResponse.json(
+          { success: false, error: 'Invalid email format' },
+          { status: 400 }
+        );
+      }
+
+      // Check if email is already taken by another user
+      const existingUser = await DatabaseUserService.findByEmail(email);
+      if (existingUser && existingUser._id !== session.user.id) {
+        return NextResponse.json(
+          { success: false, error: 'Email is already taken' },
+          { status: 409 }
+        );
+      }
     }
 
-    const updateData = await request.json();
+    // Update user
+    const updatedUser = await DatabaseUserService.update(session.user.id, {
+      ...(firstName && { firstName }),
+      ...(lastName && { lastName }),
+      ...(email && { email }),
+    });
 
-    // Find user
-    const userIndex = users.findIndex(u => u.id === decoded.userId);
-    if (userIndex === -1) {
+    if (!updatedUser) {
       return NextResponse.json(
         { success: false, error: 'User not found' },
         { status: 404 }
       );
     }
 
-    // Update user data
-    const updatedUser = {
-      ...users[userIndex],
-      ...updateData,
-      updatedAt: new Date().toISOString(),
-    };
-
-    // Save updated user
-    users[userIndex] = updatedUser;
-
-    // Remove password from response
-    const { password: _, ...userWithoutPassword } = updatedUser;
+    // Return user without password hash
+    const userWithoutPassword = DatabaseUserService.toPublicUser(updatedUser);
 
     return NextResponse.json({
       success: true,
       message: 'Profile updated successfully',
-      user: userWithoutPassword,
-    }, { status: 200 });
+      user: userWithoutPassword
+    });
 
   } catch (error) {
     console.error('Profile update error:', error);
