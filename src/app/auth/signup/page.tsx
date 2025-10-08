@@ -75,6 +75,11 @@ export default function SignupPage() {
               sign in to your existing account
             </Link>
           </p>
+          <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+            <p className="text-xs text-green-800 text-center">
+              <strong>After registration:</strong> You can connect your Web3 wallet to enable wallet login for future sign-ins.
+            </p>
+          </div>
         </div>
 
         <div className="bg-white py-8 px-6 shadow-xl rounded-lg">

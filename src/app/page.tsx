@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link'
+import { useEffect } from 'react'
 import { 
   ShieldCheckIcon, 
   DocumentTextIcon, 
@@ -15,9 +16,43 @@ import {
 } from '@heroicons/react/24/outline'
 import { useAuth } from '@/contexts/AuthContext'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
+import { useAccount } from 'wagmi'
 
 export default function HomePage() {
   const { user, isAuthenticated } = useAuth()
+  const { address, isConnected } = useAccount()
+
+  // Auto-connect wallet to user account when wallet connects and user is authenticated
+  useEffect(() => {
+    const autoConnectWallet = async () => {
+      if (isConnected && address && isAuthenticated && user?.email && !user?.walletAddress) {
+        console.log('Auto-connecting wallet to user account on main page...');
+        try {
+          const response = await fetch('/api/auth/connect-wallet', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+            },
+            body: JSON.stringify({ walletAddress: address })
+          });
+
+          const data = await response.json();
+          if (data.success) {
+            console.log('Wallet automatically connected to user account');
+            // Refresh user data to show updated wallet address
+            window.location.reload();
+          } else {
+            console.log('Auto-connect failed:', data.error);
+          }
+        } catch (error) {
+          console.log('Auto-connect error:', error);
+        }
+      }
+    };
+
+    autoConnectWallet();
+  }, [isConnected, address, isAuthenticated, user?.email, user?.walletAddress]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">

@@ -129,6 +129,23 @@ export default function OnboardingPage() {
     }
   }, [isAuthenticated, router])
 
+  // Check if user already has wallet connected and skip wallet step
+  useEffect(() => {
+    if (isAuthenticated && user?.walletAddress) {
+      console.log('User already has wallet connected:', user.walletAddress);
+      setUserData(prev => ({
+        ...prev,
+        walletAddress: user.walletAddress
+      }));
+      
+      // Skip wallet step if user already has wallet
+      if (currentStep === 1) {
+        console.log('Skipping wallet step - user already has wallet');
+        setCurrentStep(2); // Move to next step
+      }
+    }
+  }, [isAuthenticated, user?.walletAddress, currentStep]);
+
   // Update wallet address when wallet connects
   useEffect(() => {
     if (isConnected && address) {
@@ -153,7 +170,7 @@ export default function OnboardingPage() {
       title: 'Connect Wallet',
       description: 'Connect your Web3 wallet to begin',
       icon: WalletIcon,
-      status: currentStep === 1 ? 'current' : currentStep > 1 ? 'completed' : 'pending',
+      status: user?.walletAddress ? 'completed' : currentStep === 1 ? 'current' : currentStep > 1 ? 'completed' : 'pending',
       component: 'wallet'
     },
     {

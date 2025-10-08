@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useAccount, useDisconnect } from 'wagmi';
-import { UserIcon, ShieldCheckIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import { UserIcon, ShieldCheckIcon, DocumentTextIcon, WalletIcon } from '@heroicons/react/24/outline';
 
 export default function DashboardPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -13,6 +13,8 @@ export default function DashboardPage() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [kycStatus, setKycStatus] = useState<any>(null);
+  const [walletConnecting, setWalletConnecting] = useState(false);
+  const [walletError, setWalletError] = useState<string | null>(null);
 
   // Ensure component is mounted on client side
   useEffect(() => {
@@ -27,6 +29,41 @@ export default function DashboardPage() {
       router.push('/auth');
     }
   }, [mounted, isLoading, isAuthenticated, user, router]);
+
+  // Auto-connect wallet to user account when wallet connects and user is authenticated
+  // Temporarily disabled to debug manual connection
+  // useEffect(() => {
+  //   const autoConnectWallet = async () => {
+  //     if (isConnected && address && isAuthenticated && user?.email && !user?.walletAddress) {
+  //       console.log('Auto-connecting wallet to user account in dashboard...');
+  //       try {
+  //         const response = await fetch('/api/auth/connect-wallet', {
+  //           method: 'POST',
+  //           headers: {
+  //             'Content-Type': 'application/json',
+  //             'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+  //           },
+  //           body: JSON.stringify({ walletAddress: address })
+  //         });
+
+  //         const data = await response.json();
+  //         if (data.success) {
+  //           console.log('Wallet automatically connected to user account');
+  //           // Refresh user data to show updated wallet address
+  //           window.location.reload();
+  //         } else {
+  //           console.log('Auto-connect failed:', data.error);
+  //         }
+  //       } catch (error) {
+  //         console.log('Auto-connect error:', error);
+  //       }
+  //     }
+  //   };
+
+  //   if (mounted && isAuthenticated && user) {
+  //     autoConnectWallet();
+  //   }
+  // }, [mounted, isConnected, address, isAuthenticated, user?.email, user?.walletAddress]);
 
   // Fetch KYC status
   useEffect(() => {
@@ -50,6 +87,74 @@ export default function DashboardPage() {
     }
   }, [mounted, isAuthenticated, user, address]);
 
+  // Handle wallet connection (same logic as KYC onboarding)
+  const handleWalletConnect = async () => {
+    try {
+      console.log('Dashboard wallet connection started');
+      setWalletConnecting(true);
+      setWalletError(null);
+      
+      // Check if wallet is available
+      if (typeof window !== 'undefined' && window.ethereum) {
+        console.log('Wallet provider detected, requesting accounts...');
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        console.log('Accounts received:', accounts);
+        
+        if (accounts.length > 0) {
+          const walletAddress = accounts[0];
+          console.log('Wallet address:', walletAddress);
+          
+          // Save to database if user is authenticated
+          const token = localStorage.getItem('auth_token');
+          console.log('Auth token found:', !!token);
+          
+          if (token) {
+            try {
+              console.log('Sending wallet address to database...');
+              const response = await fetch('/api/auth/connect-wallet', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ walletAddress })
+              });
+
+              console.log('Database response status:', response.status);
+              const result = await response.json();
+              console.log('Database response:', result);
+              
+              if (result.success) {
+                console.log('✅ Wallet connected and saved to database successfully');
+                // Refresh the page to show updated user data
+                window.location.reload();
+              } else {
+                console.error('❌ Database save failed:', result.error);
+                setWalletError(result.error || 'Failed to save wallet to database');
+              }
+            } catch (dbError) {
+              console.error('❌ Database save error:', dbError);
+              setWalletError('Failed to save wallet to database');
+            }
+          } else {
+            console.error('❌ No authentication token found');
+            setWalletError('No authentication token found');
+          }
+        } else {
+          console.error('❌ No accounts returned from wallet');
+          setWalletError('No accounts returned from wallet');
+        }
+      } else {
+        console.error('❌ No wallet provider detected');
+        setWalletError('Please install MetaMask or another Web3 wallet');
+      }
+    } catch (error) {
+      console.error('❌ Wallet connection error:', error);
+      setWalletError('Failed to connect wallet. Please try again.');
+    } finally {
+      setWalletConnecting(false);
+    }
+  };
 
   // Show loading while checking auth
   if (!mounted || isLoading) {
@@ -278,10 +383,11 @@ export default function DashboardPage() {
                     </span>
                     {!user?.walletAddress && !address && (
                       <button
-                        onClick={() => router.push('/connect-wallet')}
-                        className="ml-4 px-3 py-1 bg-purple-600 text-white text-xs font-medium rounded-lg hover:bg-purple-700 transition-colors"
+                        onClick={handleWalletConnect}
+                        disabled={walletConnecting}
+                        className="ml-4 px-3 py-1 bg-purple-600 text-white text-xs font-medium rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
                       >
-                        Connect Wallet
+                        {walletConnecting ? 'Connecting...' : 'Connect Wallet'}
                       </button>
                     )}
                     {(user?.walletAddress || address) && (
@@ -402,12 +508,37 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <button
-                  onClick={() => router.push('/connect-wallet')}
-                  className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-300 transform hover:-translate-y-0.5"
+                  onClick={handleWalletConnect}
+                  disabled={walletConnecting}
+                  className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Connect Wallet
+                  {walletConnecting ? (
+                    <div className="flex items-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Connecting...
+                    </div>
+                  ) : (
+                    'Connect Wallet'
+                  )}
                 </button>
               </div>
+              
+              {/* Wallet Connection Error */}
+              {walletError && (
+                <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium text-red-800">Connection Failed</h3>
+                      <p className="text-sm text-red-700 mt-1">{walletError}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
