@@ -1,59 +1,56 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { verifyToken } from '@/lib/auth'
-import { getMockKYCSubmissions } from '@/lib/mock-data'
+import { NextRequest, NextResponse } from 'next/server';
+import { KYCSubmissionService } from '@/lib/kyc-submission-service';
+import { requireAdmin } from '@/lib/admin-middleware';
 
 export async function GET(request: NextRequest) {
   try {
-    // Verify authentication
-    const authHeader = request.headers.get('authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // Check admin authentication
+    const adminCheck = await requireAdmin(request);
+    if (!adminCheck.success) {
+      return NextResponse.json(
+        { success: false, error: adminCheck.error },
+        { status: adminCheck.status }
+      );
     }
 
-    const token = authHeader.substring(7)
-    const decoded = verifyToken(token)
-    
-    if (!decoded) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
-    }
+    const { searchParams } = new URL(request.url);
+    const status = searchParams.get('status');
 
-    // Check if user is admin (for MVP, assume all users are admin)
-    // In production, you'd check user roles in the database
+    console.log('Fetching KYC submissions, status filter:', status);
 
-    // Get query parameters for filtering
-    const { searchParams } = new URL(request.url)
-    const status = searchParams.get('status')
-    const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '10')
+    const submissions = await KYCSubmissionService.findAll(status || undefined);
 
-    // For MVP, use mock data
-    const submissions = getMockKYCSubmissions()
-
-    // Filter by status if provided
-    let filteredSubmissions = submissions
-    if (status) {
-      filteredSubmissions = submissions.filter(sub => sub.status === status)
-    }
-
-    // Pagination
-    const startIndex = (page - 1) * limit
-    const endIndex = startIndex + limit
-    const paginatedSubmissions = filteredSubmissions.slice(startIndex, endIndex)
+    console.log(`Found ${submissions.length} KYC submissions`);
 
     return NextResponse.json({
-      submissions: paginatedSubmissions,
-      pagination: {
-        page,
-        limit,
-        total: filteredSubmissions.length,
-        totalPages: Math.ceil(filteredSubmissions.length / limit)
-      }
-    })
+      success: true,
+      submissions: submissions.map(submission => ({
+        id: submission._id,
+        userId: submission.userId,
+        email: submission.email,
+        currentStep: submission.currentStep,
+        status: submission.status,
+        submittedAt: submission.submittedAt,
+        reviewedAt: submission.reviewedAt,
+        reviewedBy: submission.reviewedBy,
+        rejectionReason: submission.rejectionReason,
+        createdAt: submission.createdAt,
+        updatedAt: submission.updatedAt,
+        userData: {
+          firstName: submission.userData.firstName,
+          lastName: submission.userData.lastName,
+          investorType: submission.userData.investorType,
+          jurisdiction: submission.userData.jurisdiction,
+          kycStatus: submission.userData.kycStatus
+        }
+      }))
+    });
+
   } catch (error) {
-    console.error('Error fetching KYC submissions:', error)
+    console.error('Get KYC submissions error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { success: false, error: 'Internal server error' },
       { status: 500 }
-    )
+    );
   }
-} 
+}

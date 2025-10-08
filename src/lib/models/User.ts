@@ -105,6 +105,20 @@ const UserSchema = new Schema<UserDocument>({
     type: String,
     enum: Object.values(AdminLevel),
     required: false
+  },
+  kycProgress: {
+    currentStep: {
+      type: Number,
+      default: 0
+    },
+    userData: {
+      type: Schema.Types.Mixed,
+      default: {}
+    },
+    lastSaved: {
+      type: Date,
+      default: Date.now
+    }
   }
 }, {
   timestamps: true,

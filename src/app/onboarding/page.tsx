@@ -4,6 +4,13 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { useAccount } from 'wagmi'
+
+// Extend Window interface for global callback
+declare global {
+  interface Window {
+    updateUserDataCallback?: (data: UserData) => void;
+  }
+}
 import { 
   ShieldCheckIcon, 
   DocumentTextIcon, 
@@ -108,6 +115,14 @@ export default function OnboardingPage() {
     jurisdiction: 'UK',
     investorType: 'individual',
     eligibilityAnswers: {},
+    institutionDetails: {
+      name: '',
+      registrationNumber: '',
+      country: '',
+      address: { street: '', city: '', state: '', postalCode: '', country: '' },
+      businessType: '',
+      website: ''
+    },
     uboDeclaration: {
       hasUBO: false,
       uboDetails: []
@@ -121,6 +136,8 @@ export default function OnboardingPage() {
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [saveMessage, setSaveMessage] = useState<string | null>(null)
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -155,6 +172,100 @@ export default function OnboardingPage() {
       }))
     }
   }, [isConnected, address])
+
+  // Load saved KYC progress on component mount
+  useEffect(() => {
+    const loadProgress = async () => {
+      if (!isAuthenticated || !user?.email) return;
+
+      try {
+        const token = localStorage.getItem('auth_token');
+        if (!token) return;
+
+        const response = await fetch('/api/kyc/load-progress', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const data = await response.json();
+        if (data.success && data.hasProgress) {
+          console.log('Loading saved KYC progress:', data.progress);
+          
+          // Ensure all required fields have default values
+          const savedUserData = {
+            firstName: data.progress.userData.firstName || '',
+            lastName: data.progress.userData.lastName || '',
+            email: data.progress.userData.email || user?.email || '',
+            walletAddress: data.progress.userData.walletAddress || user?.walletAddress || address || '',
+            jurisdiction: data.progress.userData.jurisdiction || 'UK',
+            investorType: data.progress.userData.investorType || 'individual',
+            eligibilityAnswers: data.progress.userData.eligibilityAnswers || {},
+            institutionDetails: data.progress.userData.institutionDetails || {
+              name: '',
+              registrationNumber: '',
+              country: '',
+              address: { street: '', city: '', state: '', postalCode: '', country: '' },
+              businessType: '',
+              website: ''
+            },
+            uboDeclaration: data.progress.userData.uboDeclaration || {
+              hasUBO: false,
+              uboDetails: []
+            },
+            directorsDeclaration: data.progress.userData.directorsDeclaration || {
+              hasDirectors: false,
+              directors: []
+            },
+            documents: data.progress.userData.documents || {},
+            kycStatus: data.progress.userData.kycStatus || 'in_progress'
+          };
+          
+          setUserData(savedUserData);
+          setCurrentStep(data.progress.currentStep);
+          setSaveMessage(`Resuming from step ${data.progress.currentStep + 1} (saved ${new Date(data.progress.lastSaved).toLocaleString()})`);
+        }
+      } catch (error) {
+        console.error('Error loading KYC progress:', error);
+      }
+    };
+
+    loadProgress();
+  }, [isAuthenticated, user?.email]);
+
+  // Set up global callback for step components to update userData
+  useEffect(() => {
+    window.updateUserDataCallback = (updatedData: UserData) => {
+      setUserData(updatedData);
+    };
+
+    return () => {
+      delete window.updateUserDataCallback;
+    };
+  }, []);
+
+  // Auto-save progress when userData changes (debounced)
+  useEffect(() => {
+    if (!isAuthenticated || !user?.email || currentStep === 0) return;
+
+    const timeoutId = setTimeout(() => {
+      saveProgress();
+    }, 1000); // Auto-save after 1 second of inactivity
+
+    return () => clearTimeout(timeoutId);
+  }, [userData, currentStep, isAuthenticated, user?.email]);
+
+  // Immediate save when step changes (user completes a step)
+  useEffect(() => {
+    if (!isAuthenticated || !user?.email || currentStep === 0) return;
+    
+    // Save immediately when step changes (user moved to next step)
+    const timeoutId = setTimeout(() => {
+      saveProgress();
+    }, 500); // Quick save when step changes
+
+    return () => clearTimeout(timeoutId);
+  }, [currentStep, isAuthenticated, user?.email]);
 
   const steps: OnboardingStep[] = [
     {
@@ -311,36 +422,50 @@ export default function OnboardingPage() {
 
   const handlePersonalInfoSubmit = (data: { firstName: string, lastName: string, email: string, jurisdiction: string }) => {
     setUserData(prev => ({ ...prev, ...data }))
+    // Save immediately after personal info is submitted
+    setTimeout(() => saveProgress(), 100)
     handleNext()
   }
 
   const handleDocumentUpload = (documents: any) => {
     setUserData(prev => ({ ...prev, documents: { ...prev.documents, ...documents } }))
+    // Save immediately after documents are uploaded
+    setTimeout(() => saveProgress(), 100)
     handleNext()
   }
 
   const handleInvestorTypeSubmit = (investorType: string) => {
     setUserData(prev => ({ ...prev, investorType: investorType as any }))
+    // Save immediately after investor type is selected
+    setTimeout(() => saveProgress(), 100)
     handleNext()
   }
 
   const handleEligibilitySubmit = (answers: { [key: string]: boolean | string }) => {
     setUserData(prev => ({ ...prev, eligibilityAnswers: { ...prev.eligibilityAnswers, ...answers } }))
+    // Save immediately after eligibility answers are submitted
+    setTimeout(() => saveProgress(), 100)
     handleNext()
   }
 
   const handleInstitutionSubmit = (institutionDetails: any) => {
     setUserData(prev => ({ ...prev, institutionDetails }))
+    // Save immediately after institution details are submitted
+    setTimeout(() => saveProgress(), 100)
     handleNext()
   }
 
   const handleUBOSubmit = (uboDeclaration: any) => {
     setUserData(prev => ({ ...prev, uboDeclaration }))
+    // Save immediately after UBO declaration is submitted
+    setTimeout(() => saveProgress(), 100)
     handleNext()
   }
 
   const handleDirectorsSubmit = (directorsDeclaration: any) => {
     setUserData(prev => ({ ...prev, directorsDeclaration }))
+    // Save immediately after directors declaration is submitted
+    setTimeout(() => saveProgress(), 100)
     handleNext()
   }
 
@@ -372,6 +497,75 @@ export default function OnboardingPage() {
     }
   }
 
+  // Save KYC progress to database
+  const saveProgress = async (isManual = false) => {
+    if (!isAuthenticated || !user?.email) return;
+
+    try {
+      setSaving(true);
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        console.warn('No auth token found for saving progress');
+        return;
+      }
+
+      console.log(`Saving KYC progress (${isManual ? 'manual' : 'auto'}) - Step: ${currentStep}`, {
+        hasFirstName: !!userData.firstName,
+        hasLastName: !!userData.lastName,
+        hasEmail: !!userData.email,
+        hasWallet: !!userData.walletAddress,
+        hasInvestorType: !!userData.investorType,
+        hasEligibilityAnswers: Object.keys(userData.eligibilityAnswers || {}).length > 0,
+        hasInstitutionDetails: !!userData.institutionDetails,
+        hasUBO: !!userData.uboDeclaration,
+        hasDirectors: !!userData.directorsDeclaration,
+        userDataKeys: Object.keys(userData)
+      });
+
+      const response = await fetch('/api/kyc/save-progress', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          currentStep,
+          userData
+        })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        console.log('✅ KYC progress saved successfully to database');
+        if (isManual) {
+          setSaveMessage('Progress saved successfully!');
+        } else {
+          setSaveMessage('Progress saved automatically');
+        }
+        setTimeout(() => setSaveMessage(null), 3000);
+      } else {
+        console.error('❌ Failed to save KYC progress:', data.error);
+        if (isManual) {
+          setSaveMessage('Failed to save progress. Please try again.');
+          setTimeout(() => setSaveMessage(null), 5000);
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error saving KYC progress:', error);
+      if (isManual) {
+        setSaveMessage('Error saving progress. Please try again.');
+        setTimeout(() => setSaveMessage(null), 5000);
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Manual save progress function
+  const handleSaveProgress = async () => {
+    await saveProgress(true);
+  };
+
   const renderStepContent = () => {
     const currentStepData = steps[currentStep]
     
@@ -381,17 +575,59 @@ export default function OnboardingPage() {
       case 'wallet':
         return <WalletStep onConnect={handleWalletConnect} loading={loading} error={error} />
       case 'personal':
-        return <PersonalInfoStep onSubmit={handlePersonalInfoSubmit} userData={userData} />
+        return <PersonalInfoStep 
+          onSubmit={handlePersonalInfoSubmit} 
+          userData={userData}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          currentStep={currentStep}
+          totalSteps={steps.length}
+        />
       case 'investor-type':
-        return <InvestorTypeStep onSubmit={handleInvestorTypeSubmit} userData={userData} />
+        return <InvestorTypeStep 
+          onSubmit={handleInvestorTypeSubmit} 
+          userData={userData}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          currentStep={currentStep}
+          totalSteps={steps.length}
+        />
       case 'eligibility':
-        return <EligibilityStep onSubmit={handleEligibilitySubmit} userData={userData} />
+        return <EligibilityStep 
+          onSubmit={handleEligibilitySubmit} 
+          userData={userData}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          currentStep={currentStep}
+          totalSteps={steps.length}
+        />
       case 'institution':
-        return <InstitutionStep onSubmit={handleInstitutionSubmit} userData={userData} />
+        return <InstitutionStep 
+          onSubmit={handleInstitutionSubmit} 
+          userData={userData}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          currentStep={currentStep}
+          totalSteps={steps.length}
+        />
       case 'ubo':
-        return <UBOStep onSubmit={handleUBOSubmit} userData={userData} />
+        return <UBOStep 
+          onSubmit={handleUBOSubmit} 
+          userData={userData}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          currentStep={currentStep}
+          totalSteps={steps.length}
+        />
       case 'directors':
-        return <DirectorsStep onSubmit={handleDirectorsSubmit} userData={userData} />
+        return <DirectorsStep 
+          onSubmit={handleDirectorsSubmit} 
+          userData={userData}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          currentStep={currentStep}
+          totalSteps={steps.length}
+        />
       case 'documents':
         return <DocumentUploadStep onUpload={handleDocumentUpload} userData={userData} />
       case 'verification':
@@ -518,20 +754,55 @@ export default function OnboardingPage() {
           </div>
         </div>
 
+        {/* Save Progress Status */}
+        {saveMessage && (
+          <div className="mt-8 px-4">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="flex items-center">
+                <CheckCircleIcon className="w-5 h-5 text-green-400 mr-2" />
+                <span className="text-sm text-green-800">{saveMessage}</span>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Navigation */}
-        <div className="flex justify-between mt-16 px-4">
-          <button
-            onClick={handlePrevious}
-            disabled={currentStep === 0}
-            className={`flex items-center px-8 py-4 rounded-xl font-semibold transition-all duration-300 ${
-              currentStep === 0 
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                : 'bg-gradient-to-r from-gray-200 to-gray-300 text-gray-700 hover:from-gray-300 hover:to-gray-400 hover:shadow-lg transform hover:-translate-y-0.5'
-            }`}
-          >
-            <ArrowLeftIcon className="w-6 h-6 mr-3" />
-            Previous Step
-          </button>
+        <div className="flex justify-between items-center mt-16 px-4">
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={handlePrevious}
+              disabled={currentStep === 0}
+              className={`flex items-center px-8 py-4 rounded-xl font-semibold transition-all duration-300 ${
+                currentStep === 0 
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                  : 'bg-gradient-to-r from-gray-200 to-gray-300 text-gray-700 hover:from-gray-300 hover:to-gray-400 hover:shadow-lg transform hover:-translate-y-0.5'
+              }`}
+            >
+              <ArrowLeftIcon className="w-6 h-6 mr-3" />
+              Previous Step
+            </button>
+
+            {/* Save Progress Button */}
+            {currentStep > 0 && currentStep < steps.length - 1 && (
+              <button
+                onClick={handleSaveProgress}
+                disabled={saving}
+                className="flex items-center px-6 py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-semibold hover:from-green-600 hover:to-emerald-600 hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {saving ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <DocumentTextIcon className="w-5 h-5 mr-2" />
+                    Save Progress
+                  </>
+                )}
+              </button>
+            )}
+          </div>
           
           {currentStep < steps.length - 1 && (
             <button
@@ -646,9 +917,13 @@ function WalletStep({ onConnect, loading, error }: {
   )
 }
 
-function PersonalInfoStep({ onSubmit, userData }: { 
+function PersonalInfoStep({ onSubmit, userData, onPrevious, onNext, currentStep, totalSteps }: { 
   onSubmit: (data: any) => void
   userData: UserData
+  onPrevious: () => void
+  onNext: () => void
+  currentStep: number
+  totalSteps: number
 }) {
   const [formData, setFormData] = useState({
     firstName: userData.firstName,
@@ -656,6 +931,20 @@ function PersonalInfoStep({ onSubmit, userData }: {
     email: userData.email,
     jurisdiction: userData.jurisdiction
   })
+
+  // Auto-save as user types (debounced)
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      // Update userData with current form data for auto-save
+      const updatedUserData = { ...userData, ...formData }
+      // Update the parent component's userData to trigger auto-save
+      if (window.updateUserDataCallback) {
+        window.updateUserDataCallback(updatedUserData)
+      }
+    }, 1000)
+
+    return () => clearTimeout(timeoutId)
+  }, [formData, userData])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -670,6 +959,35 @@ function PersonalInfoStep({ onSubmit, userData }: {
         <p className="text-lg text-gray-600">
           Please provide your basic information for KYC verification.
         </p>
+      </div>
+
+      {/* Top Navigation Buttons */}
+      <div className="flex justify-between mb-8">
+        <button
+          onClick={onPrevious}
+          disabled={currentStep === 0}
+          className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+            currentStep === 0
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+        >
+          Previous
+        </button>
+        <button
+          onClick={() => {
+            handleSubmit(new Event('submit') as any)
+            onNext()
+          }}
+          disabled={!formData.firstName || !formData.lastName || !formData.email}
+          className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+            !formData.firstName || !formData.lastName || !formData.email
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-blue-600 text-white hover:bg-blue-700'
+          }`}
+        >
+          Next
+        </button>
       </div>
       
       <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-6">
@@ -930,7 +1248,9 @@ function CompleteStep({ userData }: { userData: UserData }) {
           </div>
           <div className="flex justify-between">
             <span className="text-sm text-gray-600">Wallet:</span>
-            <span className="text-sm font-mono text-gray-900">{userData.walletAddress.slice(0, 6)}...{userData.walletAddress.slice(-4)}</span>
+            <span className="text-sm font-mono text-gray-900">
+              {userData.walletAddress ? `${userData.walletAddress.slice(0, 6)}...${userData.walletAddress.slice(-4)}` : 'Not connected'}
+            </span>
           </div>
           <div className="flex justify-between">
             <span className="text-sm text-gray-600">Jurisdiction:</span>
@@ -960,11 +1280,15 @@ function CompleteStep({ userData }: { userData: UserData }) {
 }
 
 // New Step Components
-function InvestorTypeStep({ onSubmit, userData }: { 
+function InvestorTypeStep({ onSubmit, userData, onPrevious, onNext, currentStep, totalSteps }: { 
   onSubmit: (investorType: string) => void
-  userData: UserData 
+  userData: UserData
+  onPrevious: () => void
+  onNext: () => void
+  currentStep: number
+  totalSteps: number
 }) {
-  const [selectedType, setSelectedType] = useState(userData.investorType)
+  const [selectedType, setSelectedType] = useState(userData.investorType || 'individual')
 
   const investorTypes = [
     {
@@ -1009,6 +1333,35 @@ function InvestorTypeStep({ onSubmit, userData }: {
         </p>
       </div>
 
+      {/* Top Navigation Buttons */}
+      <div className="flex justify-between mb-8">
+        <button
+          onClick={onPrevious}
+          disabled={currentStep === 0}
+          className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+            currentStep === 0
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+        >
+          Previous
+        </button>
+        <button
+          onClick={() => {
+            onSubmit(selectedType)
+            onNext()
+          }}
+          disabled={!selectedType}
+          className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+            !selectedType
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-blue-600 text-white hover:bg-blue-700'
+          }`}
+        >
+          Next
+        </button>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         {investorTypes.map((type) => (
           <button
@@ -1033,23 +1386,33 @@ function InvestorTypeStep({ onSubmit, userData }: {
         ))}
       </div>
 
-      <div className="flex justify-end">
-        <button
-          onClick={() => onSubmit(selectedType)}
-          className="px-8 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          Continue
-        </button>
-      </div>
     </div>
   )
 }
 
-function EligibilityStep({ onSubmit, userData }: { 
+function EligibilityStep({ onSubmit, userData, onPrevious, onNext, currentStep, totalSteps }: { 
   onSubmit: (answers: { [key: string]: boolean | string }) => void
-  userData: UserData 
+  userData: UserData
+  onPrevious: () => void
+  onNext: () => void
+  currentStep: number
+  totalSteps: number
 }) {
-  const [answers, setAnswers] = useState<{ [key: string]: boolean | string }>(userData.eligibilityAnswers)
+  const [answers, setAnswers] = useState<{ [key: string]: boolean | string }>(userData.eligibilityAnswers || {})
+
+  // Auto-save as user answers questions (debounced)
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      // Update userData with current answers for auto-save
+      const updatedUserData = { ...userData, eligibilityAnswers: answers }
+      // Update the parent component's userData to trigger auto-save
+      if (window.updateUserDataCallback) {
+        window.updateUserDataCallback(updatedUserData)
+      }
+    }, 1000)
+
+    return () => clearTimeout(timeoutId)
+  }, [answers, userData])
 
   const questions = [
     {
@@ -1099,6 +1462,30 @@ function EligibilityStep({ onSubmit, userData }: {
         </p>
       </div>
 
+      {/* Top Navigation Buttons */}
+      <div className="flex justify-between mb-8">
+        <button
+          onClick={onPrevious}
+          disabled={currentStep === 0}
+          className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+            currentStep === 0
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+        >
+          Previous
+        </button>
+        <button
+          onClick={() => {
+            onSubmit(answers)
+            onNext()
+          }}
+          className="px-6 py-2 rounded-lg font-medium transition-colors bg-blue-600 text-white hover:bg-blue-700"
+        >
+          Next
+        </button>
+      </div>
+
       <div className="space-y-6 mb-8">
         {questions.map((question) => (
           <div key={question.id} className="bg-white p-6 rounded-lg border border-gray-200">
@@ -1143,21 +1530,17 @@ function EligibilityStep({ onSubmit, userData }: {
         ))}
       </div>
 
-      <div className="flex justify-end">
-        <button
-          onClick={() => onSubmit(answers)}
-          className="px-8 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          Continue
-        </button>
-      </div>
     </div>
   )
 }
 
-function InstitutionStep({ onSubmit, userData }: { 
+function InstitutionStep({ onSubmit, userData, onPrevious, onNext, currentStep, totalSteps }: { 
   onSubmit: (institutionDetails: any) => void
-  userData: UserData 
+  userData: UserData
+  onPrevious: () => void
+  onNext: () => void
+  currentStep: number
+  totalSteps: number
 }) {
   const [institutionDetails, setInstitutionDetails] = useState(userData.institutionDetails || {
     name: '',
@@ -1197,6 +1580,30 @@ function InstitutionStep({ onSubmit, userData }: {
         <p className="text-lg text-gray-600">
           Provide information about your institution or organization.
         </p>
+      </div>
+
+      {/* Top Navigation Buttons */}
+      <div className="flex justify-between mb-8">
+        <button
+          onClick={onPrevious}
+          disabled={currentStep === 0}
+          className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+            currentStep === 0
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+        >
+          Previous
+        </button>
+        <button
+          onClick={() => {
+            onSubmit(institutionDetails)
+            onNext()
+          }}
+          className="px-6 py-2 rounded-lg font-medium transition-colors bg-blue-600 text-white hover:bg-blue-700"
+        >
+          Next
+        </button>
       </div>
 
       <div className="space-y-6 mb-8">
@@ -1334,23 +1741,22 @@ function InstitutionStep({ onSubmit, userData }: {
         </div>
       </div>
 
-      <div className="flex justify-end">
-        <button
-          onClick={() => onSubmit(institutionDetails)}
-          className="px-8 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          Continue
-        </button>
-      </div>
     </div>
   )
 }
 
-function UBOStep({ onSubmit, userData }: { 
+function UBOStep({ onSubmit, userData, onPrevious, onNext, currentStep, totalSteps }: { 
   onSubmit: (uboDeclaration: any) => void
-  userData: UserData 
+  userData: UserData
+  onPrevious: () => void
+  onNext: () => void
+  currentStep: number
+  totalSteps: number
 }) {
-  const [uboDeclaration, setUboDeclaration] = useState(userData.uboDeclaration)
+  const [uboDeclaration, setUboDeclaration] = useState(userData.uboDeclaration || {
+    hasUBO: false,
+    uboDetails: []
+  })
 
   const addUBO = () => {
     setUboDeclaration(prev => ({
@@ -1400,6 +1806,30 @@ function UBOStep({ onSubmit, userData }: {
         <p className="text-lg text-gray-600">
           Declare all Ultimate Beneficial Owners (UBOs) with 25% or more ownership.
         </p>
+      </div>
+
+      {/* Top Navigation Buttons */}
+      <div className="flex justify-between mb-8">
+        <button
+          onClick={onPrevious}
+          disabled={currentStep === 0}
+          className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+            currentStep === 0
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+        >
+          Previous
+        </button>
+        <button
+          onClick={() => {
+            onSubmit(uboDeclaration)
+            onNext()
+          }}
+          className="px-6 py-2 rounded-lg font-medium transition-colors bg-blue-600 text-white hover:bg-blue-700"
+        >
+          Next
+        </button>
       </div>
 
       <div className="mb-6">
@@ -1559,23 +1989,22 @@ function UBOStep({ onSubmit, userData }: {
         </div>
       )}
 
-      <div className="flex justify-end">
-        <button
-          onClick={() => onSubmit(uboDeclaration)}
-          className="px-8 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          Continue
-        </button>
-      </div>
     </div>
   )
 }
 
-function DirectorsStep({ onSubmit, userData }: { 
+function DirectorsStep({ onSubmit, userData, onPrevious, onNext, currentStep, totalSteps }: { 
   onSubmit: (directorsDeclaration: any) => void
-  userData: UserData 
+  userData: UserData
+  onPrevious: () => void
+  onNext: () => void
+  currentStep: number
+  totalSteps: number
 }) {
-  const [directorsDeclaration, setDirectorsDeclaration] = useState(userData.directorsDeclaration)
+  const [directorsDeclaration, setDirectorsDeclaration] = useState(userData.directorsDeclaration || {
+    hasDirectors: false,
+    directors: []
+  })
 
   const addDirector = () => {
     setDirectorsDeclaration(prev => ({
@@ -1626,6 +2055,30 @@ function DirectorsStep({ onSubmit, userData }: {
         <p className="text-lg text-gray-600">
           Provide information about all directors and key personnel.
         </p>
+      </div>
+
+      {/* Top Navigation Buttons */}
+      <div className="flex justify-between mb-8">
+        <button
+          onClick={onPrevious}
+          disabled={currentStep === 0}
+          className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+            currentStep === 0
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+        >
+          Previous
+        </button>
+        <button
+          onClick={() => {
+            onSubmit(directorsDeclaration)
+            onNext()
+          }}
+          className="px-6 py-2 rounded-lg font-medium transition-colors bg-blue-600 text-white hover:bg-blue-700"
+        >
+          Next
+        </button>
       </div>
 
       <div className="mb-6">
@@ -1793,14 +2246,6 @@ function DirectorsStep({ onSubmit, userData }: {
         </div>
       )}
 
-      <div className="flex justify-end">
-        <button
-          onClick={() => onSubmit(directorsDeclaration)}
-          className="px-8 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          Continue
-        </button>
-      </div>
     </div>
   )
 }
