@@ -250,7 +250,7 @@ export default function OnboardingPage() {
 
     const timeoutId = setTimeout(() => {
       saveProgress();
-    }, 1000); // Auto-save after 1 second of inactivity
+    }, 10000); // Auto-save after 10 seconds of inactivity
 
     return () => clearTimeout(timeoutId);
   }, [userData, currentStep, isAuthenticated, user?.email]);
@@ -941,7 +941,7 @@ function PersonalInfoStep({ onSubmit, userData, onPrevious, onNext, currentStep,
       if (window.updateUserDataCallback) {
         window.updateUserDataCallback(updatedUserData)
       }
-    }, 1000)
+    }, 10000)
 
     return () => clearTimeout(timeoutId)
   }, [formData, userData])
@@ -1409,7 +1409,7 @@ function EligibilityStep({ onSubmit, userData, onPrevious, onNext, currentStep, 
       if (window.updateUserDataCallback) {
         window.updateUserDataCallback(updatedUserData)
       }
-    }, 1000)
+    }, 10000)
 
     return () => clearTimeout(timeoutId)
   }, [answers, userData])
