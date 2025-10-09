@@ -70,15 +70,6 @@ export default function HomePage() {
             AI risk assessment, and reusable credentials on the Tractsafe blockchain.
           </p>
           
-          <div className="mb-8 p-4 bg-green-50 border border-green-200 rounded-lg max-w-2xl mx-auto">
-            <div className="flex items-center justify-center space-x-2 text-green-800">
-              <CheckCircleIcon className="w-5 h-5" />
-              <span className="font-medium">All 5 smart contracts successfully deployed on Tractsafe testnet!</span>
-            </div>
-            <p className="text-sm text-green-700 mt-2 text-center">
-              London EVM compatibility resolved • 100% deployment success • Production ready
-            </p>
-          </div>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             {isAuthenticated ? (
