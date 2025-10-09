@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     console.log('Token received:', token.substring(0, 20) + '...');
 
     // Verify JWT token
-    let decoded: any;
+    let decoded: { userId: string; email: string };
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
       console.log('Token decoded successfully, userId:', decoded.userId);

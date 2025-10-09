@@ -188,7 +188,7 @@ export default function LoginPage() {
                 <div className="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                   <p className="text-xs text-blue-800">
                     <strong>Note:</strong> Your wallet must be connected to an existing account. 
-                    If you haven't registered yet, please sign up with email first, then connect your wallet.
+                    If you haven&apos;t registered yet, please sign up with email first, then connect your wallet.
                   </p>
                 </div>
                 
@@ -288,7 +288,7 @@ export default function LoginPage() {
                   Or sign in with email
                 </button>
                 <div className="text-xs text-gray-500">
-                  Don't have an account?{' '}
+                  Don&apos;t have an account?{' '}
                   <Link href="/auth/signup" className="text-indigo-600 hover:text-indigo-500">
                     Sign up here
                   </Link>

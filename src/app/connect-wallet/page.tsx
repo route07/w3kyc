@@ -14,7 +14,7 @@ export default function ConnectWalletPage() {
   const router = useRouter()
   
   const [connecting, setConnecting] = useState(false)
-  const [result, setResult] = useState<any>(null)
+  const [result, setResult] = useState<{ success: boolean; message: string } | null>(null)
   const [step, setStep] = useState<'connect' | 'verify' | 'success'>('connect')
 
   // Redirect if not authenticated

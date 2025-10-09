@@ -12,7 +12,7 @@ export default function DashboardPage() {
   const { disconnect } = useDisconnect();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
-  const [kycStatus, setKycStatus] = useState<any>(null);
+  const [kycStatus, setKycStatus] = useState<{ status: string; verified: boolean } | null>(null);
   const [walletConnecting, setWalletConnecting] = useState(false);
   const [walletError, setWalletError] = useState<string | null>(null);
 

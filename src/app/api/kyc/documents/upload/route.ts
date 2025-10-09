@@ -29,7 +29,7 @@ async function handler(request: NextRequest) {
     await dbConnect();
 
     // Get authenticated user
-    const user = (request as any).user;
+    const user = (request as { user: { _id: string; email: string } }).user;
 
     // Parse and validate request body
     const body = await request.json();
