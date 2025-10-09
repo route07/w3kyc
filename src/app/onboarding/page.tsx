@@ -1068,10 +1068,85 @@ function DocumentUploadStep({ onUpload, userData }: {
     addressProof: null as File | null,
     selfie: null as File | null
   })
+  const [showCamera, setShowCamera] = useState(false)
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null)
+  const [capturedImage, setCapturedImage] = useState<string | null>(null)
 
   const handleFileUpload = (type: string, file: File) => {
     setDocuments(prev => ({ ...prev, [type]: file }))
   }
+
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: 'user', // Front camera for selfie
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        } 
+      })
+      setCameraStream(stream)
+      setShowCamera(true)
+    } catch (error) {
+      console.error('Error accessing camera:', error)
+      alert('Unable to access camera. Please check permissions and try again.')
+    }
+  }
+
+  const stopCamera = () => {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => track.stop())
+      setCameraStream(null)
+    }
+    setShowCamera(false)
+  }
+
+  const capturePhoto = () => {
+    const video = document.getElementById('camera-video') as HTMLVideoElement
+    const canvas = document.createElement('canvas')
+    const context = canvas.getContext('2d')
+    
+    if (video && context) {
+      canvas.width = video.videoWidth
+      canvas.height = video.videoHeight
+      context.drawImage(video, 0, 0)
+      
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const file = new File([blob], 'selfie.jpg', { type: 'image/jpeg' })
+          handleFileUpload('selfie', file)
+          setCapturedImage(canvas.toDataURL())
+        }
+      }, 'image/jpeg', 0.8)
+      
+      stopCamera()
+    }
+  }
+
+  const retakePhoto = () => {
+    setCapturedImage(null)
+    setDocuments(prev => ({ ...prev, selfie: null }))
+    startCamera()
+  }
+
+  // Set up camera video element when camera starts
+  useEffect(() => {
+    if (showCamera && cameraStream) {
+      const video = document.getElementById('camera-video') as HTMLVideoElement
+      if (video) {
+        video.srcObject = cameraStream
+      }
+    }
+  }, [showCamera, cameraStream])
+
+  // Clean up camera stream on unmount
+  useEffect(() => {
+    return () => {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop())
+      }
+    }
+  }, [cameraStream])
 
   const handleSubmit = () => {
     onUpload(documents)
@@ -1124,13 +1199,104 @@ function DocumentUploadStep({ onUpload, userData }: {
         <div className="border border-gray-200 rounded-lg p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Selfie Verification</h3>
           <p className="text-sm text-gray-600 mb-4">Take a selfie holding your ID document for verification</p>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => e.target.files?.[0] && handleFileUpload('selfie', e.target.files[0])}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
-          {documents.selfie && (
+          
+          {!showCamera && !capturedImage && (
+            <div className="space-y-4">
+              <div className="flex space-x-4">
+                <button
+                  onClick={startCamera}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <span>Take Photo with Camera</span>
+                </button>
+              </div>
+              
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300" />
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-gray-500">or</span>
+                </div>
+              </div>
+              
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => e.target.files?.[0] && handleFileUpload('selfie', e.target.files[0])}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+          )}
+
+          {showCamera && (
+            <div className="space-y-4">
+              <div className="relative bg-black rounded-lg overflow-hidden">
+                <video
+                  id="camera-video"
+                  autoPlay
+                  playsInline
+                  className="w-full h-64 object-cover"
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-32 h-32 border-4 border-white rounded-full opacity-50"></div>
+                </div>
+              </div>
+              <div className="flex space-x-4">
+                <button
+                  onClick={capturePhoto}
+                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center space-x-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <span>Capture Photo</span>
+                </button>
+                <button
+                  onClick={stopCamera}
+                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
+          {capturedImage && (
+            <div className="space-y-4">
+              <div className="relative bg-gray-100 rounded-lg overflow-hidden">
+                <img
+                  src={capturedImage}
+                  alt="Captured selfie"
+                  className="w-full h-64 object-cover"
+                />
+              </div>
+              <div className="flex space-x-4">
+                <button
+                  onClick={retakePhoto}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Retake Photo
+                </button>
+                <button
+                  onClick={() => {
+                    setCapturedImage(null)
+                    setDocuments(prev => ({ ...prev, selfie: null }))
+                  }}
+                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+          )}
+
+          {documents.selfie && !capturedImage && (
             <p className="text-sm text-green-600 mt-2">✓ {documents.selfie.name}</p>
           )}
         </div>

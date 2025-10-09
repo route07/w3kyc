@@ -1,0 +1,10 @@
+{
+  "network": "Tractsafe",
+  "chainId": 35935,
+  "deployer": "0x97a362bC0d128E008E2E2eD7Fc10CFDdDF54ed55",
+  "timestamp": "2025-10-08T18:34:29.865Z",
+  "contracts": {
+    "KYCManager": "0x8d6c862136A215feb99F7D163563Ddd0A9Fe4FC9"
+  },
+  "deploymentLog": []
+}

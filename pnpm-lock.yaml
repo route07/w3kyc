@@ -83,6 +83,9 @@ importers:
       sharp:
         specifier: ^0.34.3
         version: 0.34.3
+      solc:
+        specifier: ^0.8.30
+        version: 0.8.30
       tesseract.js:
         specifier: ^6.0.1
         version: 6.0.1(encoding@0.1.13)
@@ -5334,6 +5337,11 @@ packages:
   solc@0.8.26:
     resolution: {integrity: sha512-yiPQNVf5rBFHwN6SIf3TUUvVAFKcQqmSUFeq+fb6pNRCo0ZCgpYOZDi3BVoezCPIAcKrVYd/qXlBLUP9wVrZ9g==}
     engines: {node: '>=10.0.0'}
+    hasBin: true
+
+  solc@0.8.30:
+    resolution: {integrity: sha512-9Srk/gndtBmoUbg4CE6ypAzPQlElv8ntbnl6SigUBAzgXKn35v87sj04uZeoZWjtDkdzT0qKFcIo/wl63UMxdw==}
+    engines: {node: '>=12.0.0'}
     hasBin: true
 
   solidity-coverage@0.8.16:
@@ -13169,6 +13177,18 @@ snapshots:
       - supports-color
 
   solc@0.8.26(debug@4.4.1):
+    dependencies:
+      command-exists: 1.2.9
+      commander: 8.3.0
+      follow-redirects: 1.15.9(debug@4.4.1)
+      js-sha3: 0.8.0
+      memorystream: 0.3.1
+      semver: 5.7.2
+      tmp: 0.0.33
+    transitivePeerDependencies:
+      - debug
+
+  solc@0.8.30:
     dependencies:
       command-exists: 1.2.9
       commander: 8.3.0

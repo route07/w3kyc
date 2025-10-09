@@ -88,9 +88,20 @@ export const CONTRACT_ADDRESSES = {
 
 // Get contract addresses based on environment
 export function getContractAddresses() {
-  // Use testnet addresses by default (since we deployed there)
-  // Only use local addresses if explicitly configured
-  return useLocalNetwork ? CONTRACT_ADDRESSES.local : CONTRACT_ADDRESSES.testnet;
+  // Use environment variables for contract addresses
+  return {
+    KYCDataStorage: process.env.NEXT_PUBLIC_KYCDATASTORAGE_ADDRESS || '0x0000000000000000000000000000000000000000',
+    AuditLogStorage: process.env.NEXT_PUBLIC_AUDITLOGSTORAGE_ADDRESS || '0x0000000000000000000000000000000000000000',
+    TenantConfigStorage: process.env.NEXT_PUBLIC_TENANTCONFIGSTORAGE_ADDRESS || '0x0000000000000000000000000000000000000000',
+    InputValidator: process.env.NEXT_PUBLIC_INPUTVALIDATOR_ADDRESS || '0x0000000000000000000000000000000000000000',
+    BoundsChecker: process.env.NEXT_PUBLIC_BOUNDSCHECKER_ADDRESS || '0x0000000000000000000000000000000000000000',
+    MultisigManager: process.env.NEXT_PUBLIC_MULTISIGMANAGER_ADDRESS || '0x0000000000000000000000000000000000000000',
+    KYCManager: process.env.NEXT_PUBLIC_KYCMANAGER_ADDRESS || '0x0000000000000000000000000000000000000000',
+    DIDManager: process.env.NEXT_PUBLIC_DIDMANAGER_ADDRESS || '0x0000000000000000000000000000000000000000',
+    DIDCredentialStorage: process.env.NEXT_PUBLIC_DIDCREDENTIALSTORAGE_ADDRESS || '0x0000000000000000000000000000000000000000',
+    AuthorizationManager: process.env.NEXT_PUBLIC_AUTHORIZATIONMANAGER_ADDRESS || '0x0000000000000000000000000000000000000000',
+    ComplianceChecker: process.env.NEXT_PUBLIC_COMPLIANCECHECKER_ADDRESS || '0x0000000000000000000000000000000000000000',
+  };
 }
 
 // For development, prefer local network if available
@@ -363,19 +374,17 @@ export function getDeployedKYCDataStorageWithSigner() {
 }
 
 export function getDeployedKYCManager() {
-  // For development, always use local addresses since that's where all contracts are deployed
-  const addresses = CONTRACT_ADDRESSES.local;
-  if (!addresses.KYCManager) {
-    throw new Error('KYCManager contract address not found in local addresses');
+  const addresses = getContractAddresses();
+  if (!addresses.KYCManager || addresses.KYCManager === '0x0000000000000000000000000000000000000000') {
+    throw new Error('KYCManager contract address not found or not deployed');
   }
   return getKYCManagerContract(addresses.KYCManager);
 }
 
 export function getDeployedKYCManagerWithSigner() {
-  // For development, always use local addresses since that's where all contracts are deployed
-  const addresses = CONTRACT_ADDRESSES.local;
-  if (!addresses.KYCManager) {
-    throw new Error('KYCManager contract address not found in local addresses');
+  const addresses = getContractAddresses();
+  if (!addresses.KYCManager || addresses.KYCManager === '0x0000000000000000000000000000000000000000') {
+    throw new Error('KYCManager contract address not found or not deployed');
   }
   return getKYCManagerContractWithSigner(addresses.KYCManager);
 }
