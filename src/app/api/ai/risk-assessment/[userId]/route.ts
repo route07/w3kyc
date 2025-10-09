@@ -8,7 +8,7 @@ async function handler(
 ) {
   try {
     // Get authenticated user
-    const authenticatedUser = (request as any).user;
+    const authenticatedUser = (request as { user: { _id: string; role: string } }).user;
 
     // Check if user is requesting their own assessment or is admin
     if (authenticatedUser._id.toString() !== params.userId && authenticatedUser.role !== 'admin') {
@@ -41,7 +41,7 @@ async function handler(
           confidence: result.webIntelligence.confidence,
           sources: result.webIntelligence.sources,
         },
-        documentAnalyses: result.documentAnalyses.map((analysis: any) => ({
+        documentAnalyses: result.documentAnalyses.map((analysis: { documentType: string; analysis?: unknown; error?: unknown }) => ({
           documentType: analysis.documentType,
           hasAnalysis: !!analysis.analysis,
           hasError: !!analysis.error,

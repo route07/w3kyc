@@ -8,7 +8,7 @@ async function handler(
 ) {
   try {
     // Get authenticated user
-    const authenticatedUser = (request as any).user;
+    const authenticatedUser = (request as { user: { _id: string; role: string } }).user;
 
     // Check if user is requesting their own summary or is admin
     if (authenticatedUser._id.toString() !== params.userId && authenticatedUser.role !== 'admin') {

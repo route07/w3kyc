@@ -1,6 +1,8 @@
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
+import { NextRequest, NextResponse } from 'next/server';
+import jwt from 'jsonwebtoken';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -84,3 +86,45 @@ export const authOptions: NextAuthOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET,
 };
+
+// Auth utility functions
+export async function verifyToken(token: string) {
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret');
+    return decoded;
+  } catch (error) {
+    return null;
+  }
+}
+
+export async function generateToken(payload: any) {
+  return jwt.sign(payload, process.env.JWT_SECRET || 'fallback-secret', { expiresIn: '7d' });
+}
+
+export async function authenticateRequest(request: NextRequest) {
+  const token = request.headers.get('authorization')?.replace('Bearer ', '');
+  if (!token) {
+    return null;
+  }
+  return await verifyToken(token);
+}
+
+export function withAuth(handler: any) {
+  return async (request: NextRequest, context: any) => {
+    const user = await authenticateRequest(request);
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    return handler(request, context, user);
+  };
+}
+
+export function withAdminAuth(handler: any) {
+  return async (request: NextRequest, context: any) => {
+    const user = await authenticateRequest(request);
+    if (!user || !user.isAdmin) {
+      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
+    }
+    return handler(request, context, user);
+  };
+}

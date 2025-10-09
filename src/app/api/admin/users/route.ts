@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DatabaseUserService } from '@/lib/database-user-service';
+import jwt from 'jsonwebtoken';
 
 const userService = new DatabaseUserService();
 
@@ -17,8 +18,7 @@ export async function GET(request: NextRequest) {
     const token = authHeader.substring(7);
     
     // Verify the JWT token
-    const jwt = require('jsonwebtoken');
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret');
     
     if (!decoded || !decoded.userId) {
       return NextResponse.json(

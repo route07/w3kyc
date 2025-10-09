@@ -1,7 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getWeb3ContractServicesServer } from '@/lib/web3-contract-services-server';
+import { NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Since the contracts don't have statistics functions, return mock data for now
     // In a real implementation, you would need to either:

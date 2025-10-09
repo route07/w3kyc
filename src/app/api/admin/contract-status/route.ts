@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getWeb3ContractServicesServer } from '@/lib/web3-contract-services-server';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const contractServices = getWeb3ContractServicesServer();
     const contractStatus = contractServices.getContractStatus();

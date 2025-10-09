@@ -4,10 +4,21 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 
+interface User {
+  _id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  isAdmin: boolean;
+  kycStatus: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export default function AdminDashboardPage() {
   const { user, isAuthenticated, isLoading } = useAuth()
   const router = useRouter()
-  const [users, setUsers] = useState([])
+  const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(false)
 
   // Simple admin check
@@ -164,7 +175,7 @@ export default function AdminDashboardPage() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Admin Users</p>
                 <p className="text-2xl font-semibold text-gray-900">
-                  {users.filter((u: any) => u.isAdmin).length}
+                  {users.filter((u: User) => u.isAdmin).length}
                 </p>
               </div>
             </div>
@@ -180,7 +191,7 @@ export default function AdminDashboardPage() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Verified Users</p>
                 <p className="text-2xl font-semibold text-gray-900">
-                  {users.filter((u: any) => u.kycStatus === 'verified').length}
+                  {users.filter((u: User) => u.kycStatus === 'verified').length}
                 </p>
               </div>
             </div>
@@ -224,7 +235,7 @@ export default function AdminDashboardPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {users.map((user: any) => (
+                {users.map((user: User) => (
                   <tr key={user.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">

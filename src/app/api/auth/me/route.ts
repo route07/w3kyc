@@ -3,7 +3,18 @@ import { DatabaseUserService } from '@/lib/database-user-service';
 import jwt from 'jsonwebtoken';
 
 // Simple in-memory cache for user sessions
-const userCache = new Map<string, { user: any; expires: number }>();
+interface CachedUser {
+  user: {
+    _id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    isAdmin: boolean;
+    kycStatus: string;
+  };
+  expires: number;
+}
+const userCache = new Map<string, CachedUser>();
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 export async function GET(request: NextRequest) {
@@ -20,7 +31,7 @@ export async function GET(request: NextRequest) {
     const token = authHeader.substring(7);
     
     // Verify JWT token
-    let decoded: any;
+    let decoded: { userId: string; email: string };
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
     } catch (error) {
