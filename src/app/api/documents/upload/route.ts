@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { authenticateRequest } from '@/lib/auth'
 import { connectDB } from '@/lib/db'
-import { uploadToIPFS } from '@/lib/ipfs-simple'
+import { uploadToIPFS, pinToIPFS } from '@/lib/ipfs-simple'
 import { documentProcessor, DocumentAnalysisResult } from '@/lib/ocr/document-processor'
 
 export async function POST(request: NextRequest) {
@@ -12,7 +12,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const user = authResult.user
+    // The authResult is the decoded JWT token, not a user object
+    const user = {
+      id: authResult.userId,
+      email: authResult.email
+    }
+
+    console.log('Authenticated user:', user)
 
     // Connect to database
     await connectDB()
@@ -58,10 +64,18 @@ export async function POST(request: NextRequest) {
       file.name,
       file.type
     )
+    console.log('🔓 Field requirements bypassed - document will be accepted for manual review')
 
     // Upload to IPFS
     console.log('Uploading to IPFS...')
     const ipfsResult = await uploadToIPFS(buffer, file.name)
+    
+    // Pin the file to ensure persistence
+    console.log('Pinning file to IPFS for persistence...')
+    const pinResult = await pinToIPFS(ipfsResult.hash)
+    if (!pinResult) {
+      console.warn('Warning: Failed to pin file to IPFS, file may not persist')
+    }
 
     // Create document record in database
     const { default: Document } = await import('@/lib/models/Document')
@@ -75,6 +89,7 @@ export async function POST(request: NextRequest) {
       size: file.size,
       ipfsHash: ipfsResult.hash,
       ipfsUrl: ipfsResult.url,
+      ipfsNode: ipfsResult.node,
       ocrResult: {
         extractedText: analysisResult.extractedText,
         confidence: analysisResult.confidence,
@@ -99,10 +114,20 @@ export async function POST(request: NextRequest) {
     await document.save()
 
     // Update user's document count
-    const { default: User } = await import('@/lib/models/User')
-    await User.findByIdAndUpdate(user.id, {
-      $inc: { documentCount: 1 }
-    })
+    try {
+      const { default: User } = await import('@/lib/models/User')
+      if (User && User.findByIdAndUpdate) {
+        await User.findByIdAndUpdate(user.id, {
+          $inc: { documentCount: 1 }
+        })
+        console.log('User document count updated successfully')
+      } else {
+        console.warn('User model not available, skipping document count update')
+      }
+    } catch (error) {
+      console.warn('Failed to update user document count:', error)
+      // Don't fail the entire upload for this
+    }
 
     // Return success response with analysis results
     return NextResponse.json({
@@ -139,7 +164,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const user = authResult.user
+    // The authResult is the decoded JWT token, not a user object
+    const user = {
+      id: authResult.userId,
+      email: authResult.email
+    }
+
+    console.log('Authenticated user:', user)
 
     // Connect to database
     await connectDB()

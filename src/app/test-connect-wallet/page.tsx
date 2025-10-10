@@ -14,8 +14,24 @@ export default function TestConnectWalletPage() {
   const router = useRouter()
   
   const [connecting, setConnecting] = useState(false)
-  const [result, setResult] = useState<any>(null)
-  const [debugInfo, setDebugInfo] = useState<any>(null)
+  const [result, setResult] = useState<{
+    success?: boolean;
+    message?: string;
+    data?: unknown;
+    error?: string;
+    [key: string]: unknown;
+  } | null>(null)
+  const [debugInfo, setDebugInfo] = useState<{
+    isAuthenticated: boolean;
+    user?: {
+      id: string;
+      email: string;
+      [key: string]: unknown;
+    };
+    isConnected: boolean;
+    address?: string;
+    [key: string]: unknown;
+  } | null>(null)
 
   // Debug info
   useEffect(() => {

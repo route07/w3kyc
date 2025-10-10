@@ -1,0 +1,374 @@
+{
+  "address": "0x9190CA3098bA190c8c546cc1764AbD02d29C5a85",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_kycStorage",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_auditStorage",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_kycManager",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_didManager",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "SessionCompleted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "reason",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "SessionFailed",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "SessionStarted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "enum SimpleKYCOnboardingOrchestratorV2.OnboardingStep",
+          "name": "step",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "StepCompleted",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "auditStorage",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "cancelSession",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "didManager",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "enum SimpleKYCOnboardingOrchestratorV2.OnboardingStep",
+          "name": "step",
+          "type": "uint8"
+        }
+      ],
+      "name": "executeStep",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        }
+      ],
+      "name": "forceCompleteSession",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "internalType": "string",
+          "name": "reason",
+          "type": "string"
+        }
+      ],
+      "name": "forceFailSession",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        }
+      ],
+      "name": "getSession",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "sessionUser",
+          "type": "address"
+        },
+        {
+          "internalType": "enum SimpleKYCOnboardingOrchestratorV2.OnboardingStep",
+          "name": "currentStep",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint256",
+          "name": "startTime",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "lastUpdate",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "isActive",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "hasActiveSession",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "internalType": "enum SimpleKYCOnboardingOrchestratorV2.OnboardingStep",
+          "name": "step",
+          "type": "uint8"
+        }
+      ],
+      "name": "isStepCompleted",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "kycManager",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "kycStorage",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "sessions",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "internalType": "enum SimpleKYCOnboardingOrchestratorV2.OnboardingStep",
+          "name": "currentStep",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint256",
+          "name": "startTime",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "lastUpdate",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "isActive",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "startSession",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "608060405234801561000f575f5ffd5b50604051610e21380380610e2183398101604081905261002e916100a5565b60068054336001600160a01b0319918216179091555f805482166001600160a01b0396871617905560018054821694861694909417909355600280548416928516929092179091556003805490921692169190911790556100f6565b80516001600160a01b03811681146100a0575f5ffd5b919050565b5f5f5f5f608085870312156100b8575f5ffd5b6100c18561008a565b93506100cf6020860161008a565b92506100dd6040860161008a565b91506100eb6060860161008a565b905092959194509250565b610d1e806101035f395ff3fe608060405234801561000f575f5ffd5b50600436106100e5575f3560e01c80637afea44f1161008857806397b7573d1161006357806397b7573d14610262578063acbeaa0714610275578063e6d5535014610288578063fe0ae1651461029a575f5ffd5b80637afea44f146101ea5780638c8e13b9146101fd5780638da5cb5b1461024f575f5ffd5b8063431a1b97116100c3578063431a1b971461012e5780634fe2fd811461018a57806350609c7d146101b55780636d9d7d0b146101d7575f5ffd5b8063081222d7146100e95780632cf5bd60146100fe5780632e37eb5214610126575b5f5ffd5b6100fc6100f7366004610a7a565b6102a2565b005b61011161010c366004610b4c565b610397565b60405190151581526020015b60405180910390f35b6100fc6103ef565b61017961013c366004610b7d565b60046020525f908152604090208054600182015460028301546003909301546001600160a01b0383169360ff600160a01b90940484169390911685565b60405161011d959493929190610bd1565b60035461019d906001600160a01b031681565b6040516001600160a01b03909116815260200161011d565b6101116101c3366004610b7d565b60056020525f908152604090205460ff1681565b6100fc6101e5366004610b7d565b6104ae565b60025461019d906001600160a01b031681565b61017961020b366004610b7d565b6001600160a01b039081165f90815260046020526040902080546001820154600283015460039093015493821694600160a01b90920460ff90811694919392911690565b60065461019d906001600160a01b031681565b60015461019d906001600160a01b031681565b6100fc610283366004610c0c565b61058f565b5f5461019d906001600160a01b031681565b6100fc610806565b6006546001600160a01b031633146102d55760405162461bcd60e51b81526004016102cc90610c25565b60405180910390fd5b6001600160a01b0382165f9081526005602052604090205460ff1661030c5760405162461bcd60e51b81526004016102cc90610c66565b6001600160a01b0382165f818152600460209081526040808320805460ff60a01b1916600760a01b17815560038101805460ff199081169091556005909352928190208054909216909155519091907fa94b99c518d5042f91ecaac6142801c9d0a488ef3e695cb83166628336a5177a9061038a9085904290610c91565b60405180910390a2505050565b6001600160a01b0382165f908152600460208190526040822001818360078111156103c4576103c4610b9d565b60078111156103d5576103d5610b9d565b815260208101919091526040015f205460ff169392505050565b335f9081526005602052604090205460ff1661041d5760405162461bcd60e51b81526004016102cc90610c66565b335f81815260046020908152604080832060038101805460ff19908116909155600584529382902080549094169093558051818152600e918101919091526d155cd95c8818d85b98d95b1b195960921b606082015242918101919091529091907fa94b99c518d5042f91ecaac6142801c9d0a488ef3e695cb83166628336a5177a906080015b60405180910390a250565b6006546001600160a01b031633146104d85760405162461bcd60e51b81526004016102cc90610c25565b6001600160a01b0381165f9081526005602052604090205460ff1661050f5760405162461bcd60e51b81526004016102cc90610c66565b6001600160a01b0381165f818152600460209081526040808320805460ff60a01b1916600360a11b17815560038101805460ff1990811690915560058452938290208054909416909355514281529192917f314c29be5bf997e43ebbffd393742605d0b83e3648ae2c25390d36645f4967ab910160405180910390a25050565b335f9081526005602052604090205460ff166105bd5760405162461bcd60e51b81526004016102cc90610c66565b335f9081526004602052604090206003015460ff166106135760405162461bcd60e51b815260206004820152601260248201527153657373696f6e206e6f742061637469766560701b60448201526064016102cc565b335f90815260046020526040902081600781111561063357610633610b9d565b8154600160a01b900460ff16600781111561065057610650610b9d565b146106955760405162461bcd60e51b8152602060048201526015602482015274496e76616c696420737465702073657175656e636560581b60448201526064016102cc565b806004015f8360078111156106ac576106ac610b9d565b60078111156106bd576106bd610b9d565b815260208101919091526040015f205460ff16156107165760405162461bcd60e51b815260206004820152601660248201527514dd195c08185b1c9958591e4818dbdb5c1b195d195960521b60448201526064016102cc565b6001816004015f84600781111561072f5761072f610b9d565b600781111561074057610740610b9d565b815260208101919091526040015f908120805460ff191692151592909217909155426002830155610770826108ef565b82549091508190839060ff60a01b1916600160a01b83600781111561079757610797610b9d565b0217905550336001600160a01b03167ff25fe1e28ed8cd9ad1b08220c2e544defb223dea50531d9d68f6572216d777f384426040516107d7929190610ccd565b60405180910390a260068160078111156107f3576107f3610b9d565b0361080157610801826109d4565b505050565b335f9081526005602052604090205460ff161561085e5760405162461bcd60e51b815260206004820152601660248201527553657373696f6e20616c72656164792061637469766560501b60448201526064016102cc565b335f8181526004602090815260408083208054600160a01b6001600160a81b031990911660ff60a01b198716171781554260018083018290556002830182905560038301805460ff1990811683179091556005865295849020805490961617909455905192835292917f6479f44bef3ce31847397612fb476f7f382288003bdebea81c5302f8bd819dd191016104a3565b5f60018254600160a01b900460ff16600781111561090f5761090f610b9d565b0361091c57506002919050565b60028254600160a01b900460ff16600781111561093b5761093b610b9d565b0361094857506003919050565b60038254600160a01b900460ff16600781111561096757610967610b9d565b0361097457506004919050565b60048254600160a01b900460ff16600781111561099357610993610b9d565b036109a057506005919050565b60058254600160a01b900460ff1660078111156109bf576109bf610b9d565b036109cc57506006919050565b506007919050565b8054600360a11b60ff60a01b19821617825560038201805460ff199081169091556001600160a01b039182165f908152600560209081526040918290208054909316909255835490514281529216917f314c29be5bf997e43ebbffd393742605d0b83e3648ae2c25390d36645f4967ab91016104a3565b80356001600160a01b0381168114610a61575f5ffd5b919050565b634e487b7160e01b5f52604160045260245ffd5b5f5f60408385031215610a8b575f5ffd5b610a9483610a4b565b9150602083013567ffffffffffffffff811115610aaf575f5ffd5b8301601f81018513610abf575f5ffd5b803567ffffffffffffffff811115610ad957610ad9610a66565b604051601f8201601f19908116603f0116810167ffffffffffffffff81118282101715610b0857610b08610a66565b604052818152828201602001871015610b1f575f5ffd5b816020840160208301375f602083830101528093505050509250929050565b803560088110610a61575f5ffd5b5f5f60408385031215610b5d575f5ffd5b610b6683610a4b565b9150610b7460208401610b3e565b90509250929050565b5f60208284031215610b8d575f5ffd5b610b9682610a4b565b9392505050565b634e487b7160e01b5f52602160045260245ffd5b60088110610bcd57634e487b7160e01b5f52602160045260245ffd5b9052565b6001600160a01b038616815260a08101610bee6020830187610bb1565b84604083015283606083015282151560808301529695505050505050565b5f60208284031215610c1c575f5ffd5b610b9682610b3e565b60208082526021908201527f4f6e6c79206f776e65722063616e2063616c6c20746869732066756e6374696f6040820152603760f91b606082015260800190565b60208082526011908201527027379030b1ba34bb329039b2b9b9b4b7b760791b604082015260600190565b604081525f83518060408401528060208601606085015e5f606082850101526060601f19601f8301168401019150508260208301529392505050565b60408101610cdb8285610bb1565b826020830152939250505056fea2646970667358221220e62689791df994ec35e0ad994e2245140e1cc124ccd9f1ef62972b0233a5eca064736f6c634300081e0033",
+  "deploymentTx": "0xa32ee5c5e0470b2a21bfe9a1e9c2243a2f06c60051a168dd1aa3dbb75cdd1a7f",
+  "deployer": "0x97a362bC0d128E008E2E2eD7Fc10CFDdDF54ed55",
+  "network": "tractsafe",
+  "timestamp": "2025-10-09T14:07:50.266Z",
+  "constructorArgs": [
+    "0xB4fD24799074a3303143F7b9FaDcdd23E8432B1e",
+    "0x2bC6b014F33E9235Bd2258533f927fDB52E2ebB5",
+    "0x8d6c862136A215feb99F7D163563Ddd0A9Fe4FC9",
+    "0x2bFE9850F2167278e1D756ad2342BB5ed16d8a98"
+  ]
+}

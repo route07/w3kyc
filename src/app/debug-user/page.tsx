@@ -4,7 +4,17 @@ import { useState } from 'react'
 
 export default function DebugUserPage() {
   const [email, setEmail] = useState('ayoubshadi75@gmail.com')
-  const [userData, setUserData] = useState<any>(null)
+  const [userData, setUserData] = useState<{
+    user?: {
+      id: string;
+      email: string;
+      firstName?: string;
+      lastName?: string;
+      [key: string]: unknown;
+    };
+    error?: string;
+    [key: string]: unknown;
+  } | null>(null)
   const [loading, setLoading] = useState(false)
 
   const fetchUser = async () => {

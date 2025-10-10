@@ -9,10 +9,6 @@ import {
   CubeIcon,
   ArrowRightIcon,
   CogIcon,
-  ExclamationTriangleIcon,
-  CheckCircleIcon,
-  ClockIcon,
-  UserGroupIcon
 } from '@heroicons/react/24/outline'
 import { useAuth } from '@/contexts/AuthContext'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
@@ -171,6 +167,32 @@ export default function HomePage() {
                 <li>• Multi-chain support</li>
                 <li>• Gas optimization</li>
               </ul>
+            </div>
+
+            {/* Feature 4 - Web3 KYC Onboarding */}
+            <div className="bg-gradient-to-br from-orange-50 to-red-100 p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
+              <div className="w-12 h-12 bg-orange-600 rounded-lg flex items-center justify-center mb-6">
+                <CogIcon className="w-6 h-6 text-white" />
+              </div>
+              <h4 className="text-xl font-semibold text-gray-900 mb-4">Web3 KYC Orchestrator</h4>
+              <p className="text-gray-600 mb-4">
+                Complete blockchain-powered KYC onboarding with smart contract orchestration.
+              </p>
+              <ul className="text-sm text-gray-500 space-y-1">
+                <li>• Smart contract orchestration</li>
+                <li>• Step-by-step verification</li>
+                <li>• Real-time progress tracking</li>
+                <li>• Immutable audit trail</li>
+              </ul>
+              <div className="mt-4">
+                <Link 
+                  href="/kyc/web3-onboarding"
+                  className="inline-flex items-center text-orange-600 hover:text-orange-700 font-medium text-sm"
+                >
+                  Try Web3 KYC Onboarding
+                  <ArrowRightIcon className="w-4 h-4 ml-1" />
+                </Link>
+              </div>
             </div>
           </div>
         </div>

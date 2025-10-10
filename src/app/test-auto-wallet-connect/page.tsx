@@ -130,8 +130,8 @@ export default function TestAutoWalletConnectPage() {
             <div className="p-4 bg-blue-50 rounded-lg">
               <h3 className="font-semibold text-blue-900 mb-2">How to Test Auto-Connect</h3>
               <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
-                <li>Make sure you're logged in (authenticated)</li>
-                <li>Disconnect your wallet if it's connected</li>
+                <li>Make sure you&apos;re logged in (authenticated)</li>
+                <li>Disconnect your wallet if it&apos;s connected</li>
                 <li>Connect your wallet using the button below</li>
                 <li>Watch the logs - auto-connect should trigger automatically</li>
                 <li>Check if wallet gets saved to database</li>

@@ -73,10 +73,12 @@ export interface KYCSubmissionDocument extends Document {
     };
     kycStatus: 'not_started' | 'in_progress' | 'pending_review' | 'approved' | 'rejected';
   };
-  status: 'draft' | 'submitted' | 'under_review' | 'approved' | 'rejected';
+  status: 'draft' | 'submitted' | 'under_review' | 'approved' | 'rejected' | 'blockchain_submitted';
   submittedAt?: Date;
   reviewedAt?: Date;
   reviewedBy?: string;
+  blockchainTxHash?: string;
+  blockchainSubmittedAt?: Date;
   rejectionReason?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -178,7 +180,7 @@ const KYCSubmissionSchema = new Schema<KYCSubmissionDocument>({
   },
   status: {
     type: String,
-    enum: ['draft', 'submitted', 'under_review', 'approved', 'rejected'],
+    enum: ['draft', 'submitted', 'under_review', 'approved', 'rejected', 'blockchain_submitted'],
     default: 'draft',
     required: true
   },
@@ -192,6 +194,14 @@ const KYCSubmissionSchema = new Schema<KYCSubmissionDocument>({
   },
   reviewedBy: {
     type: String,
+    required: false
+  },
+  blockchainTxHash: {
+    type: String,
+    required: false
+  },
+  blockchainSubmittedAt: {
+    type: Date,
     required: false
   },
   rejectionReason: {

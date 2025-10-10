@@ -80,7 +80,7 @@ export default function Navbar() {
                 )}
                 
                 <Link 
-                  href="/onboarding" 
+                  href="/kyc/web3-onboarding" 
                   className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
                 >
                   KYC
@@ -199,7 +199,7 @@ export default function Navbar() {
                   )}
                   
                   <Link 
-                    href="/onboarding" 
+                    href="/kyc/web3-onboarding" 
                     className="text-gray-700 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium"
                     onClick={() => setIsMenuOpen(false)}
                   >

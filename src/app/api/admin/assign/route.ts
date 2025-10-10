@@ -5,12 +5,12 @@ import { requireAdmin } from '@/lib/admin-middleware';
 
 const userService = new DatabaseUserService();
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     // Check admin authentication
     const adminCheck = await requireAdmin(request);
     if (!adminCheck.success) {
-      return adminCheck;
+      return adminCheck as NextResponse;
     }
 
     const { email, adminLevel } = await request.json();
@@ -87,12 +87,12 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     // Check admin authentication
     const adminCheck = await requireAdmin(request);
     if (!adminCheck.success) {
-      return adminCheck;
+      return adminCheck as NextResponse;
     }
 
     // Get all admin users

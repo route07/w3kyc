@@ -10,7 +10,14 @@ export default function DebugWalletPage() {
   const { connect, connectors } = useConnect()
   const { disconnect } = useDisconnect()
   
-  const [debugInfo, setDebugInfo] = useState<any>(null)
+  const [debugInfo, setDebugInfo] = useState<{
+    connectors: Array<{
+      id: string;
+      name: string;
+      [key: string]: unknown;
+    }>;
+    [key: string]: unknown;
+  } | null>(null)
   const [logs, setLogs] = useState<string[]>([])
 
   const addLog = (message: string) => {
@@ -102,7 +109,7 @@ export default function DebugWalletPage() {
             <h3 className="font-semibold text-yellow-800 mb-2">Troubleshooting</h3>
             <ul className="text-sm text-yellow-700 space-y-1">
               <li>• Make sure you have a wallet extension installed (MetaMask, Coinbase Wallet, etc.)</li>
-              <li>• Refresh the page if connectors don't appear</li>
+              <li>• Refresh the page if connectors don&apos;t appear</li>
               <li>• Check browser console for errors</li>
               <li>• Try a different browser if issues persist</li>
             </ul>

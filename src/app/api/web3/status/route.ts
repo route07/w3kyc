@@ -127,7 +127,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function getRecommendations(contractStatus: any): string[] {
+function getRecommendations(contractStatus: Record<string, boolean>): string[] {
   const recommendations: string[] = [];
   const deployedCount = Object.values(contractStatus).filter(Boolean).length;
   const totalCount = Object.keys(contractStatus).length;

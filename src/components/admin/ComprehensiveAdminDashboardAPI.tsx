@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import KYCManagementPanel from './KYCManagementPanel';
 import DIDManagementPanel from './DIDManagementPanel';
 import SystemManagementPanel from './SystemManagementPanel';
+import OrchestratorManagementPanel from './OrchestratorManagementPanel';
 
 interface ContractStatus {
   [key: string]: boolean;
@@ -24,7 +25,7 @@ const ComprehensiveAdminDashboardAPI: React.FC = () => {
   const [features, setFeatures] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'kyc' | 'did' | 'system'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'kyc' | 'did' | 'system' | 'orchestrator'>('overview');
 
   useEffect(() => {
     loadDashboardData();
@@ -165,7 +166,8 @@ const ComprehensiveAdminDashboardAPI: React.FC = () => {
               { id: 'overview', name: 'Overview', description: 'System overview and status' },
               { id: 'kyc', name: 'KYC Management', description: 'KYC verification and data management' },
               { id: 'did', name: 'DID Management', description: 'Decentralized identity management' },
-              { id: 'system', name: 'System Management', description: 'System controls and configuration' }
+              { id: 'system', name: 'System Management', description: 'System controls and configuration' },
+              { id: 'orchestrator', name: 'Orchestrator', description: 'KYC onboarding orchestration' }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -427,6 +429,16 @@ const ComprehensiveAdminDashboardAPI: React.FC = () => {
 
         {activeTab === 'system' && (
           <SystemManagementPanel 
+            onError={setError}
+            onSuccess={(message) => {
+              setError(null);
+              // You could add a success state here
+            }}
+          />
+        )}
+
+        {activeTab === 'orchestrator' && (
+          <OrchestratorManagementPanel 
             onError={setError}
             onSuccess={(message) => {
               setError(null);

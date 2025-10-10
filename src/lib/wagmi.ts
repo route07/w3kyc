@@ -33,12 +33,22 @@ let configInstance: any = null;
 
 export const config = (() => {
   if (!configInstance) {
-    configInstance = getDefaultConfig({
-      appName: 'W3KYC',
-      projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'your-project-id',
-      chains: [mainnet, polygon, optimism, arbitrum, base, sepolia, tractsafeChain],
-      ssr: true,
-    });
+    try {
+      configInstance = getDefaultConfig({
+        appName: 'W3KYC',
+        projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'your-project-id',
+        chains: [mainnet, polygon, optimism, arbitrum, base, sepolia, tractsafeChain],
+        ssr: true,
+      });
+    } catch (error) {
+      console.error('Failed to initialize wagmi config:', error);
+      // Return a minimal config for SSR
+      return {
+        chains: [tractsafeChain],
+        connectors: [],
+        transports: {}
+      };
+    }
   }
   return configInstance;
 })();

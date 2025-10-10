@@ -9,6 +9,7 @@ export interface IDocument extends MongoDocument {
   size: number
   ipfsHash: string
   ipfsUrl: string
+  ipfsNode?: string
   ocrResult: {
     extractedText: string
     confidence: number
@@ -68,6 +69,10 @@ const DocumentSchema = new Schema<IDocument>({
     type: String,
     required: true
   },
+  ipfsNode: {
+    type: String,
+    required: false
+  },
   ocrResult: {
     extractedText: {
       type: String,
@@ -79,7 +84,7 @@ const DocumentSchema = new Schema<IDocument>({
     },
     documentType: {
       type: String,
-      default: 'unknown'
+      default: 'other'
     }
   },
   validation: {

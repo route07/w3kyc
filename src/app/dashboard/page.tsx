@@ -1,20 +1,220 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { useAccount, useDisconnect } from 'wagmi';
-import { UserIcon, ShieldCheckIcon, DocumentTextIcon, WalletIcon } from '@heroicons/react/24/outline';
+import { useAccount, useDisconnect, useWalletClient } from 'wagmi';
+import { UserIcon, ShieldCheckIcon, DocumentTextIcon, WalletIcon, CheckCircleIcon, ExclamationTriangleIcon, ClockIcon, XCircleIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
+import Web3KYCLink from '@/components/Web3KYCLink';
+
+// Status configuration for comprehensive display
+const statusConfig = {
+  'not_started': {
+    title: 'Not Started',
+    description: 'KYC verification has not been initiated',
+    icon: DocumentTextIcon,
+    color: 'gray',
+    bgColor: 'bg-gray-50',
+    borderColor: 'border-gray-200',
+    textColor: 'text-gray-800',
+    iconColor: 'text-gray-500',
+    dotColor: 'bg-gray-400',
+    progress: 0
+  },
+  'draft': {
+    title: 'Draft',
+    description: 'KYC form is being filled out',
+    icon: DocumentTextIcon,
+    color: 'blue',
+    bgColor: 'bg-blue-50',
+    borderColor: 'border-blue-200',
+    textColor: 'text-blue-800',
+    iconColor: 'text-blue-500',
+    dotColor: 'bg-blue-400',
+    progress: 20
+  },
+  'in_progress': {
+    title: 'In Progress',
+    description: 'KYC verification is currently being completed',
+    icon: ClockIcon,
+    color: 'blue',
+    bgColor: 'bg-blue-50',
+    borderColor: 'border-blue-200',
+    textColor: 'text-blue-800',
+    iconColor: 'text-blue-500',
+    dotColor: 'bg-blue-400',
+    progress: 40
+  },
+  'submitted': {
+    title: 'Submitted',
+    description: 'KYC application has been submitted for review',
+    icon: ClockIcon,
+    color: 'yellow',
+    bgColor: 'bg-yellow-50',
+    borderColor: 'border-yellow-200',
+    textColor: 'text-yellow-800',
+    iconColor: 'text-yellow-500',
+    dotColor: 'bg-yellow-400',
+    progress: 60
+  },
+  'under_review': {
+    title: 'Under Review',
+    description: 'KYC application is being reviewed by administrators',
+    icon: ClockIcon,
+    color: 'orange',
+    bgColor: 'bg-orange-50',
+    borderColor: 'border-orange-200',
+    textColor: 'text-orange-800',
+    iconColor: 'text-orange-500',
+    dotColor: 'bg-orange-400',
+    progress: 70
+  },
+  'pending_review': {
+    title: 'Pending Review',
+    description: 'KYC application is awaiting administrative review',
+    icon: ClockIcon,
+    color: 'orange',
+    bgColor: 'bg-orange-50',
+    borderColor: 'border-orange-200',
+    textColor: 'text-orange-800',
+    iconColor: 'text-orange-500',
+    dotColor: 'bg-orange-400',
+    progress: 70
+  },
+  'approved': {
+    title: 'Approved',
+    description: 'KYC verification has been approved',
+    icon: CheckCircleIcon,
+    color: 'green',
+    bgColor: 'bg-green-50',
+    borderColor: 'border-green-200',
+    textColor: 'text-green-800',
+    iconColor: 'text-green-500',
+    dotColor: 'bg-green-400',
+    progress: 90
+  },
+  'verified': {
+    title: 'Verified',
+    description: 'KYC verification is complete and verified',
+    icon: ShieldCheckIcon,
+    color: 'emerald',
+    bgColor: 'bg-emerald-50',
+    borderColor: 'border-emerald-200',
+    textColor: 'text-emerald-800',
+    iconColor: 'text-emerald-500',
+    dotColor: 'bg-emerald-400',
+    progress: 95
+  },
+  'rejected': {
+    title: 'Rejected',
+    description: 'KYC verification has been rejected',
+    icon: XCircleIcon,
+    color: 'red',
+    bgColor: 'bg-red-50',
+    borderColor: 'border-red-200',
+    textColor: 'text-red-800',
+    iconColor: 'text-red-500',
+    dotColor: 'bg-red-400',
+    progress: 0
+  },
+  'blockchain_submitted': {
+    title: 'Blockchain Submitted',
+    description: 'KYC verification has been submitted to the blockchain',
+    icon: WalletIcon,
+    color: 'purple',
+    bgColor: 'bg-purple-50',
+    borderColor: 'border-purple-200',
+    textColor: 'text-purple-800',
+    iconColor: 'text-purple-500',
+    dotColor: 'bg-purple-400',
+    progress: 100
+  }
+};
 
 export default function DashboardPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { address, isConnected } = useAccount();
   const { disconnect } = useDisconnect();
+  const { data: walletClient } = useWalletClient();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
+
+  // Helper function to get status configuration
+  const getStatusConfig = (status: string) => {
+    return statusConfig[status as keyof typeof statusConfig] || statusConfig['not_started'];
+  };
+
+  // Helper function to get primary status
+  const getPrimaryStatus = () => {
+    // Priority order: applicationStatus.status > applicationStatus.kycStatus > user.kycStatus > 'not_started'
+    if (applicationStatus) {
+      const primaryStatus = applicationStatus.status || applicationStatus.kycStatus || 'not_started';
+      console.log('🔍 Application Status Debug:', {
+        status: applicationStatus.status,
+        kycStatus: applicationStatus.kycStatus,
+        submittedAt: applicationStatus.submittedAt,
+        reviewedAt: applicationStatus.reviewedAt,
+        determinedPrimaryStatus: primaryStatus
+      });
+      return primaryStatus;
+    }
+    
+    console.log('🔍 No applicationStatus found, using user.kycStatus:', user?.kycStatus);
+    return user?.kycStatus || 'not_started';
+  };
+
+  // Helper function to format dates
+  const formatDate = (date: Date | null | undefined) => {
+    if (!date) return null;
+    return new Date(date).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  // Test function to verify status mapping (for debugging)
+  const testStatusMapping = useCallback(() => {
+    console.log('🧪 Testing Status Mapping:');
+    const testCases = [
+      { status: 'submitted', kycStatus: 'pending_review', expected: 'submitted' },
+      { status: 'under_review', kycStatus: 'pending_review', expected: 'under_review' },
+      { status: 'approved', kycStatus: 'approved', expected: 'approved' },
+      { status: 'rejected', kycStatus: 'rejected', expected: 'rejected' },
+      { status: null, kycStatus: 'pending_review', expected: 'pending_review' },
+      { status: '', kycStatus: 'in_progress', expected: 'in_progress' }
+    ];
+
+    testCases.forEach(testCase => {
+      const result = testCase.status || testCase.kycStatus || 'not_started';
+      const config = getStatusConfig(result);
+      console.log(`  ${testCase.status || 'null'}/${testCase.kycStatus} → ${result} → ${config.title} (${config.progress}%)`);
+    });
+  }, []);
+
+  // Run status mapping test on mount (for debugging)
+  useEffect(() => {
+    if (mounted) {
+      testStatusMapping();
+    }
+  }, [mounted, testStatusMapping]);
   const [kycStatus, setKycStatus] = useState<{ status: string; verified: boolean } | null>(null);
+  const [applicationStatus, setApplicationStatus] = useState<{
+    status: string;
+    kycStatus: string;
+    submittedAt?: Date;
+    reviewedAt?: Date;
+    rejectionReason?: string;
+    blockchainTxHash?: string;
+  } | null>(null);
   const [walletConnecting, setWalletConnecting] = useState(false);
   const [walletError, setWalletError] = useState<string | null>(null);
+  const [blockchainSubmitting, setBlockchainSubmitting] = useState(false);
+  const [blockchainTxHash, setBlockchainTxHash] = useState<string | null>(null);
+  const [blockchainError, setBlockchainError] = useState<string | null>(null);
+  const [isTimelineCollapsed, setIsTimelineCollapsed] = useState(false);
 
   // Ensure component is mounted on client side
   useEffect(() => {
@@ -65,27 +265,148 @@ export default function DashboardPage() {
   //   }
   // }, [mounted, isConnected, address, isAuthenticated, user?.email, user?.walletAddress]);
 
-  // Fetch KYC status
+  // Fetch KYC status and submission data
   useEffect(() => {
-    const fetchKYCStatus = async () => {
+    const fetchKYCData = async () => {
       if (user?.walletAddress || address) {
         try {
           const walletAddr = user?.walletAddress || address;
-          const response = await fetch(`/api/kyc/submit?walletAddress=${walletAddr}`);
-          if (response.ok) {
-            const data = await response.json();
-            setKycStatus(data);
+          
+          // Fetch KYC status
+          const statusResponse = await fetch(`/api/kyc/submit?walletAddress=${walletAddr}`);
+          if (statusResponse.ok) {
+            const statusData = await statusResponse.json();
+            setKycStatus(statusData);
+          }
+
+          // Fetch latest KYC submission details
+          console.log('🔍 Fetching KYC submission details for wallet:', walletAddr);
+          console.log('🔍 User wallet address:', user?.walletAddress);
+          console.log('🔍 Connected wallet address:', address);
+          console.log('🔍 Using wallet address for query:', walletAddr);
+          
+          const submissionResponse = await fetch(`/api/kyc/submission-details?walletAddress=${walletAddr}`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+            }
+          });
+          
+          console.log('🔍 Submission response status:', submissionResponse.status);
+          console.log('🔍 Submission response headers:', Object.fromEntries(submissionResponse.headers.entries()));
+          
+          if (submissionResponse.ok) {
+            const submissionData = await submissionResponse.json();
+            console.log('🔍 Submission data received:', submissionData);
+            console.log('🔍 Submission found:', !!submissionData.submission);
+            if (submissionData.submission) {
+              console.log('🔍 Submission details:', {
+                id: submissionData.submission.id,
+                status: submissionData.submission.status,
+                kycStatus: submissionData.submission.kycStatus,
+                walletAddress: submissionData.submission.userData?.walletAddress,
+                submittedAt: submissionData.submission.submittedAt
+              });
+            }
+            
+            if (submissionData.submission?.blockchainTxHash) {
+              setBlockchainTxHash(submissionData.submission.blockchainTxHash);
+            }
+            
+            // Set comprehensive application status
+            const appStatus = {
+              status: submissionData.submission?.status || 'not_started',
+              kycStatus: submissionData.submission?.userData?.kycStatus || 'not_started',
+              submittedAt: submissionData.submission?.submittedAt ? new Date(submissionData.submission.submittedAt) : undefined,
+              reviewedAt: submissionData.submission?.reviewedAt ? new Date(submissionData.submission.reviewedAt) : undefined,
+              rejectionReason: submissionData.submission?.rejectionReason,
+              blockchainTxHash: submissionData.submission?.blockchainTxHash
+            };
+            
+            console.log('🔍 Setting application status:', appStatus);
+            setApplicationStatus(appStatus);
+            
+            // Show success message if submission found
+            if (submissionData.submission) {
+              console.log('✅ KYC submission found in database:', {
+                id: submissionData.submission.id,
+                status: submissionData.submission.status,
+                kycStatus: submissionData.submission.kycStatus,
+                submittedAt: submissionData.submission.submittedAt
+              });
+            }
+          } else {
+            console.log('🔍 No submission found or error:', submissionResponse.status);
+            // If no submission found, set applicationStatus to null to fall back to user.kycStatus
+            setApplicationStatus(null);
           }
         } catch (error) {
-          console.error('Error fetching KYC status:', error);
+          console.error('Error fetching KYC data:', error);
         }
       }
     };
 
     if (mounted && isAuthenticated && user) {
-      fetchKYCStatus();
+      fetchKYCData();
     }
   }, [mounted, isAuthenticated, user, address]);
+
+  // Handle blockchain submission
+  const handleBlockchainSubmission = async () => {
+    if (!isConnected || !address) {
+      setBlockchainError('Wallet not connected. Please connect your wallet first.');
+      return;
+    }
+
+    setBlockchainSubmitting(true);
+    setBlockchainError(null);
+
+    try {
+      console.log('🚀 Submitting approved KYC to blockchain...');
+      
+      // Import orchestrator service dynamically
+      const { orchestratorService } = await import('@/lib/orchestrator-service');
+      
+      // Set up signer
+      if (!walletClient) {
+        throw new Error('Wallet client not available');
+      }
+      
+      await orchestratorService.setSigner(walletClient);
+      
+      // Start session
+      const startResult = await orchestratorService.startSession();
+      if (!startResult.success) {
+        throw new Error('Failed to start blockchain session: ' + startResult.error);
+      }
+      
+      // Submit KYC data to blockchain
+      const submitResult = await fetch('/api/kyc/submit-to-blockchain', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        },
+        body: JSON.stringify({
+          walletAddress: address
+        })
+      });
+      
+      if (!submitResult.ok) {
+        throw new Error('Failed to submit to blockchain');
+      }
+      
+      const data = await submitResult.json();
+      setBlockchainTxHash(data.txHash);
+      
+      console.log('✅ KYC successfully submitted to blockchain');
+      
+    } catch (err) {
+      console.error('❌ Blockchain submission error:', err);
+      setBlockchainError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setBlockchainSubmitting(false);
+    }
+  };
 
   // Handle wallet connection (same logic as KYC onboarding)
   const handleWalletConnect = async () => {
@@ -182,78 +503,9 @@ export default function DashboardPage() {
   // Show dashboard content
   return (
     <div className="bg-gradient-to-br from-indigo-50 via-white to-cyan-50 min-h-screen">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm shadow-lg border-b border-gray-200/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center space-x-4">
-              <div className="p-3 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl shadow-lg">
-                <ShieldCheckIcon className="w-8 h-8 text-white" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                  Dashboard
-                </h1>
-                <p className="text-sm text-gray-500">Your Web3 Identity Hub</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-3 bg-gradient-to-r from-green-50 to-emerald-50 px-4 py-2 rounded-full border border-green-200">
-                <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center">
-                  <span className="text-white font-semibold text-sm">
-                    {user?.firstName?.charAt(0) || user?.email?.charAt(0)}
-                  </span>
-                </div>
-                <span className="text-sm font-medium text-gray-700">
-                  Welcome, {user?.firstName || user?.email}!
-                </span>
-              </div>
-              {(user?.walletAddress || address) && (
-                <div className="flex items-center space-x-3 bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-2 rounded-full border border-blue-200">
-                  <div className="w-2 h-2 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full animate-pulse"></div>
-                  <span className="text-sm font-medium text-gray-700">Wallet Connected</span>
-                  <button
-                    onClick={() => disconnect()}
-                    className="ml-2 text-blue-600 hover:text-blue-800 text-xs font-medium"
-                    title="Disconnect Wallet"
-                  >
-                    Disconnect
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
-
       {/* Main Content */}
       <main className="max-w-7xl mx-auto py-8 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          {/* Welcome Section */}
-          <div className="relative overflow-hidden bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-2xl shadow-2xl mb-8">
-            <div className="absolute inset-0 bg-black/10"></div>
-            <div className="relative px-8 py-12">
-              <div className="flex items-center space-x-4 mb-6">
-                <div className="p-4 bg-white/20 backdrop-blur-sm rounded-2xl">
-                  <ShieldCheckIcon className="w-12 h-12 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-3xl font-bold text-white mb-2">
-                    Welcome to your W3KYC Dashboard
-                  </h2>
-                  <p className="text-indigo-100 text-lg">
-                    Your decentralized identity verification hub
-                  </p>
-                </div>
-              </div>
-              <p className="text-white/90 text-lg max-w-2xl">
-                Manage your identity verification, view your KYC status, and access your blockchain credentials 
-                in a secure, decentralized environment.
-              </p>
-            </div>
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-32 translate-x-32"></div>
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-24 -translate-x-24"></div>
-          </div>
 
           {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -282,34 +534,97 @@ export default function DashboardPage() {
             </div>
 
             {/* KYC Status Card */}
-            <div className="group relative bg-gradient-to-br from-emerald-50 to-green-100 overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-emerald-200/50">
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-green-500/5"></div>
-              <div className="relative p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 bg-gradient-to-r from-emerald-500 to-green-600 rounded-xl shadow-lg">
-                    <ShieldCheckIcon className="h-6 w-6 text-white" />
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-gray-900">
-                      {user?.kycStatus || 'Not Started'}
+            {(() => {
+              const primaryStatus = getPrimaryStatus();
+              const config = getStatusConfig(primaryStatus);
+              const Icon = config.icon;
+              
+              // Show additional info if no database record found
+              const showDataSourceInfo = !applicationStatus && user?.kycStatus;
+              
+              return (
+                <div className={`group relative ${config.bgColor} overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 ${config.borderColor} border-2`}>
+                  <div className="absolute inset-0 bg-gradient-to-br from-opacity-5 to-opacity-10"></div>
+                  <div className="relative p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className={`p-3 bg-gradient-to-r ${config.color === 'gray' ? 'from-gray-500 to-gray-600' :
+                        config.color === 'blue' ? 'from-blue-500 to-blue-600' :
+                        config.color === 'yellow' ? 'from-yellow-500 to-yellow-600' :
+                        config.color === 'orange' ? 'from-orange-500 to-orange-600' :
+                        config.color === 'green' ? 'from-green-500 to-green-600' :
+                        config.color === 'emerald' ? 'from-emerald-500 to-emerald-600' :
+                        config.color === 'red' ? 'from-red-500 to-red-600' :
+                        config.color === 'purple' ? 'from-purple-500 to-purple-600' :
+                        'from-gray-500 to-gray-600'} rounded-xl shadow-lg`}>
+                        <Icon className="h-6 w-6 text-white" />
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-gray-900">
+                          {config.title}
+                        </div>
+                        <div className="text-sm text-gray-600">Application Status</div>
+                        {showDataSourceInfo && (
+                          <div className="text-xs text-orange-600 mt-1">
+                            ⚠️ Using user profile data
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div className="text-sm text-gray-600">KYC Status</div>
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-2 h-2 rounded-full ${config.dotColor} animate-pulse`}></div>
+                        <span className={`text-sm font-medium ${config.textColor}`}>
+                          {config.description}
+                        </span>
+                      </div>
+                      {/* Progress Bar */}
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className={`h-2 rounded-full transition-all duration-500 ${
+                            config.color === 'gray' ? 'bg-gray-400' :
+                            config.color === 'blue' ? 'bg-blue-400' :
+                            config.color === 'yellow' ? 'bg-yellow-400' :
+                            config.color === 'orange' ? 'bg-orange-400' :
+                            config.color === 'green' ? 'bg-green-400' :
+                            config.color === 'emerald' ? 'bg-emerald-400' :
+                            config.color === 'red' ? 'bg-red-400' :
+                            config.color === 'purple' ? 'bg-purple-400' :
+                            'bg-gray-400'
+                          }`}
+                          style={{ width: `${config.progress}%` }}
+                        ></div>
+                      </div>
+                      <div className="text-xs text-gray-500 text-right">
+                        {config.progress}% Complete
+                      </div>
+                      {showDataSourceInfo && (
+                        <div className="text-xs text-orange-600 bg-orange-50 p-2 rounded border border-orange-200">
+                          <strong>Note:</strong> No recent KYC submission found in database. Showing status from user profile. 
+                          If you have submitted a KYC application, please ensure your wallet address matches exactly.
+                        </div>
+                      )}
+                      
+                      {applicationStatus && (
+                        <div className="text-xs text-green-600 bg-green-50 p-2 rounded border border-green-200">
+                          <strong>✅ Database Record Found:</strong> Status from KYC submission in database.
+                          <div className="mt-1 text-xs text-gray-600">
+                            Using: <strong>{applicationStatus.status || applicationStatus.kycStatus || 'not_started'}</strong>
+                            {applicationStatus.status && applicationStatus.kycStatus && applicationStatus.status !== applicationStatus.kycStatus && (
+                              <span> (status: {applicationStatus.status}, kycStatus: {applicationStatus.kycStatus})</span>
+                            )}
+                          </div>
+                          {applicationStatus.submittedAt && (
+                            <div className="mt-1 text-xs text-gray-600">
+                              Submitted: {formatDate(applicationStatus.submittedAt)}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <div className={`w-2 h-2 rounded-full ${
-                    user?.kycStatus === 'verified' ? 'bg-gradient-to-r from-green-400 to-emerald-500' :
-                    user?.kycStatus === 'pending' ? 'bg-gradient-to-r from-yellow-400 to-orange-500' :
-                    'bg-gradient-to-r from-gray-400 to-gray-500'
-                  }`}></div>
-                  <span className="text-sm font-medium text-gray-700">
-                    {user?.kycStatus === 'verified' ? 'Verified' :
-                     user?.kycStatus === 'pending' ? 'Under Review' :
-                     'Not Started'}
-                  </span>
-                </div>
-              </div>
-            </div>
+              );
+            })()}
 
             {/* Wallet Status Card */}
             <div className="group relative bg-gradient-to-br from-purple-50 to-pink-100 overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-purple-200/50">
@@ -338,111 +653,489 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* User Details */}
-          <div className="bg-white/80 backdrop-blur-sm shadow-xl overflow-hidden rounded-2xl border border-gray-200/50 mb-8">
-            <div className="bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-4">
-              <h3 className="text-xl font-bold text-white flex items-center">
-                <UserIcon className="w-6 h-6 mr-3" />
-                Account Information
-              </h3>
-              <p className="mt-1 text-indigo-100">
-                Your account details and verification status
-              </p>
+          {/* Account Information and Timeline Side by Side */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            {/* User Details */}
+            <div className="bg-white/80 backdrop-blur-sm shadow-xl overflow-hidden rounded-2xl border border-gray-200/50">
+              <div className="bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-4">
+                <h3 className="text-xl font-bold text-white flex items-center">
+                  <UserIcon className="w-6 h-6 mr-3" />
+                  Account Information
+                </h3>
+                <p className="mt-1 text-indigo-100">
+                  Your account details and verification status
+                </p>
+              </div>
+              <div className="divide-y divide-gray-200/50">
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-5 sm:grid sm:grid-cols-3 sm:gap-4">
+                  <dt className="text-sm font-semibold text-gray-700 flex items-center">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                    Email Address
+                  </dt>
+                  <dd className="mt-1 text-sm font-medium text-gray-900 sm:mt-0 sm:col-span-2">
+                    {user?.email || 'Not provided'}
+                  </dd>
+                </div>
+                <div className="bg-white px-6 py-5 sm:grid sm:grid-cols-3 sm:gap-4">
+                  <dt className="text-sm font-semibold text-gray-700 flex items-center">
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full mr-2"></div>
+                    Full Name
+                  </dt>
+                  <dd className="mt-1 text-sm font-medium text-gray-900 sm:mt-0 sm:col-span-2">
+                    {user?.firstName && user?.lastName 
+                      ? `${user.firstName} ${user.lastName}` 
+                      : 'Not provided'
+                    }
+                  </dd>
+                </div>
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 px-6 py-5 sm:grid sm:grid-cols-3 sm:gap-4">
+                  <dt className="text-sm font-semibold text-gray-700 flex items-center">
+                    <div className="w-2 h-2 bg-purple-500 rounded-full mr-2"></div>
+                    Wallet Address
+                  </dt>
+                  <dd className="mt-1 text-sm font-mono text-gray-900 sm:mt-0 sm:col-span-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono">
+                        {user?.walletAddress || address || 'Not connected'}
+                      </span>
+                      {!user?.walletAddress && !address && (
+                        <button
+                          onClick={handleWalletConnect}
+                          disabled={walletConnecting}
+                          className="ml-4 px-3 py-1 bg-purple-600 text-white text-xs font-medium rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
+                        >
+                          {walletConnecting ? 'Connecting...' : 'Connect Wallet'}
+                        </button>
+                      )}
+                      {(user?.walletAddress || address) && (
+                        <button
+                          onClick={() => disconnect()}
+                          className="ml-4 px-3 py-1 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 transition-colors"
+                        >
+                          Disconnect
+                        </button>
+                      )}
+                    </div>
+                  </dd>
+                </div>
+                <div className="bg-white px-6 py-5 sm:grid sm:grid-cols-3 sm:gap-4">
+                  <dt className="text-sm font-semibold text-gray-700 flex items-center">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
+                    Application Status
+                  </dt>
+                  <dd className="mt-1 text-sm font-medium text-gray-900 sm:mt-0 sm:col-span-2">
+                    {(() => {
+                      const primaryStatus = getPrimaryStatus();
+                      const config = getStatusConfig(primaryStatus);
+                      
+                      return (
+                        <div className="space-y-2">
+                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${config.bgColor} ${config.textColor} ${config.borderColor} border`}>
+                            <div className={`w-2 h-2 rounded-full mr-2 ${config.dotColor}`}></div>
+                            {config.title}
+                          </span>
+                          <div className="text-xs text-gray-500">
+                            {config.description}
+                          </div>
+                          {/* Progress indicator */}
+                          <div className="w-full bg-gray-200 rounded-full h-1.5">
+                            <div 
+                              className={`h-1.5 rounded-full transition-all duration-500 ${
+                                config.color === 'gray' ? 'bg-gray-400' :
+                                config.color === 'blue' ? 'bg-blue-400' :
+                                config.color === 'yellow' ? 'bg-yellow-400' :
+                                config.color === 'orange' ? 'bg-orange-400' :
+                                config.color === 'green' ? 'bg-green-400' :
+                                config.color === 'emerald' ? 'bg-emerald-400' :
+                                config.color === 'red' ? 'bg-red-400' :
+                                config.color === 'purple' ? 'bg-purple-400' :
+                                'bg-gray-400'
+                              }`}
+                              style={{ width: `${config.progress}%` }}
+                            ></div>
+                          </div>
+                          <div className="text-xs text-gray-400 text-right">
+                            {config.progress}% Complete
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </dd>
+                </div>
+                <div className="bg-gradient-to-r from-cyan-50 to-blue-50 px-6 py-5 sm:grid sm:grid-cols-3 sm:gap-4">
+                  <dt className="text-sm font-semibold text-gray-700 flex items-center">
+                    <div className="w-2 h-2 bg-cyan-500 rounded-full mr-2"></div>
+                    Account Created
+                  </dt>
+                  <dd className="mt-1 text-sm font-medium text-gray-900 sm:mt-0 sm:col-span-2">
+                    {user?.createdAt 
+                      ? new Date(user.createdAt).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })
+                      : 'Unknown'
+                    }
+                  </dd>
+                </div>
+              </div>
             </div>
-            <div className="divide-y divide-gray-200/50">
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-5 sm:grid sm:grid-cols-3 sm:gap-4">
-                <dt className="text-sm font-semibold text-gray-700 flex items-center">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
-                  Email Address
-                </dt>
-                <dd className="mt-1 text-sm font-medium text-gray-900 sm:mt-0 sm:col-span-2">
-                  {user?.email || 'Not provided'}
-                </dd>
-              </div>
-              <div className="bg-white px-6 py-5 sm:grid sm:grid-cols-3 sm:gap-4">
-                <dt className="text-sm font-semibold text-gray-700 flex items-center">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full mr-2"></div>
-                  Full Name
-                </dt>
-                <dd className="mt-1 text-sm font-medium text-gray-900 sm:mt-0 sm:col-span-2">
-                  {user?.firstName && user?.lastName 
-                    ? `${user.firstName} ${user.lastName}` 
-                    : 'Not provided'
-                  }
-                </dd>
-              </div>
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 px-6 py-5 sm:grid sm:grid-cols-3 sm:gap-4">
-                <dt className="text-sm font-semibold text-gray-700 flex items-center">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full mr-2"></div>
-                  Wallet Address
-                </dt>
-                <dd className="mt-1 text-sm font-mono text-gray-900 sm:mt-0 sm:col-span-2">
+
+            {/* Application Status Timeline */}
+            {applicationStatus && (
+              <div className="bg-white/80 backdrop-blur-sm shadow-xl overflow-hidden rounded-2xl border border-gray-200/50">
+                <div 
+                  className="bg-gradient-to-r from-blue-500 to-indigo-600 px-6 py-4 cursor-pointer hover:from-blue-600 hover:to-indigo-700 transition-all duration-200"
+                  onClick={() => setIsTimelineCollapsed(!isTimelineCollapsed)}
+                >
                   <div className="flex items-center justify-between">
-                    <span className="font-mono">
-                      {user?.walletAddress || address || 'Not connected'}
-                    </span>
-                    {!user?.walletAddress && !address && (
-                      <button
-                        onClick={handleWalletConnect}
-                        disabled={walletConnecting}
-                        className="ml-4 px-3 py-1 bg-purple-600 text-white text-xs font-medium rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
-                      >
-                        {walletConnecting ? 'Connecting...' : 'Connect Wallet'}
-                      </button>
-                    )}
-                    {(user?.walletAddress || address) && (
-                      <button
-                        onClick={() => disconnect()}
-                        className="ml-4 px-3 py-1 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 transition-colors"
-                      >
-                        Disconnect
-                      </button>
-                    )}
+                    <div>
+                      <h3 className="text-xl font-bold text-white flex items-center">
+                        <ClockIcon className="w-6 h-6 mr-3" />
+                        Application Progress Timeline
+                      </h3>
+                      <p className="mt-1 text-blue-100">
+                        Track your KYC verification journey from start to completion
+                        <span className="ml-2 text-blue-200 text-sm">(Click to {isTimelineCollapsed ? 'expand' : 'collapse'})</span>
+                      </p>
+                    </div>
+                    <div className="flex items-center">
+                      {isTimelineCollapsed ? (
+                        <ChevronDownIcon className="w-6 h-6 text-white" />
+                      ) : (
+                        <ChevronUpIcon className="w-6 h-6 text-white" />
+                      )}
+                    </div>
                   </div>
-                </dd>
+                </div>
+                <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                  isTimelineCollapsed ? 'max-h-0 opacity-0' : 'max-h-screen opacity-100'
+                }`}>
+                  <div className="p-6">
+                  {(() => {
+                    const primaryStatus = getPrimaryStatus();
+                    const statusSteps = [
+                      { key: 'not_started', title: 'Not Started', description: 'Begin KYC process' },
+                      { key: 'draft', title: 'Draft', description: 'Fill out KYC form' },
+                      { key: 'in_progress', title: 'In Progress', description: 'Complete verification' },
+                      { key: 'submitted', title: 'Submitted', description: 'Application submitted' },
+                      { key: 'under_review', title: 'Under Review', description: 'Admin review' },
+                      { key: 'approved', title: 'Approved', description: 'KYC approved' },
+                      { key: 'verified', title: 'Verified', description: 'Verification complete' },
+                      { key: 'blockchain_submitted', title: 'Blockchain', description: 'On-chain verification' }
+                    ];
+
+                    const currentStepIndex = statusSteps.findIndex(step => step.key === primaryStatus);
+                    
+                    return (
+                      <div className="relative">
+                        {/* Timeline line */}
+                        <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+                        
+                        {statusSteps.map((step, index) => {
+                          const isCompleted = index <= currentStepIndex;
+                          const isCurrent = index === currentStepIndex;
+                          const config = getStatusConfig(step.key);
+                          const Icon = config.icon;
+                          
+                          return (
+                            <div key={step.key} className="relative flex items-start space-x-4 pb-8 last:pb-0">
+                              {/* Timeline dot */}
+                              <div className={`relative z-10 flex items-center justify-center w-16 h-16 rounded-full border-4 ${
+                                isCompleted 
+                                  ? `bg-gradient-to-r ${config.color === 'gray' ? 'from-gray-500 to-gray-600' :
+                                    config.color === 'blue' ? 'from-blue-500 to-blue-600' :
+                                    config.color === 'yellow' ? 'from-yellow-500 to-yellow-600' :
+                                    config.color === 'orange' ? 'from-orange-500 to-orange-600' :
+                                    config.color === 'green' ? 'from-green-500 to-green-600' :
+                                    config.color === 'emerald' ? 'from-emerald-500 to-emerald-600' :
+                                    config.color === 'red' ? 'from-red-500 to-red-600' :
+                                    config.color === 'purple' ? 'from-purple-500 to-purple-600' :
+                                    'from-gray-500 to-gray-600'} border-white shadow-lg`
+                                  : 'bg-white border-gray-300'
+                              }`}>
+                                <Icon className={`w-6 h-6 ${isCompleted ? 'text-white' : 'text-gray-400'}`} />
+                              </div>
+                              
+                              {/* Content */}
+                              <div className={`flex-1 min-w-0 ${isCurrent ? 'bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200' : ''}`}>
+                                <div className="flex items-center justify-between">
+                                  <h4 className={`text-lg font-semibold ${isCompleted ? 'text-gray-900' : 'text-gray-500'}`}>
+                                    {step.title}
+                                  </h4>
+                                  {isCompleted && (
+                                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${
+                                      isCurrent 
+                                        ? 'bg-blue-100 text-blue-800' 
+                                        : 'bg-green-100 text-green-800'
+                                    }`}>
+                                      {isCurrent ? 'Current' : 'Completed'}
+                                    </span>
+                                  )}
+                                </div>
+                                <p className={`text-sm ${isCompleted ? 'text-gray-600' : 'text-gray-400'}`}>
+                                  {step.description}
+                                </p>
+                                
+                                {/* Show dates for completed steps */}
+                                {isCompleted && (
+                                  <div className="mt-2 text-xs text-gray-500">
+                                    {step.key === 'submitted' && applicationStatus.submittedAt && (
+                                      <span>Submitted: {formatDate(applicationStatus.submittedAt)}</span>
+                                    )}
+                                    {step.key === 'under_review' && applicationStatus.reviewedAt && (
+                                      <span>Reviewed: {formatDate(applicationStatus.reviewedAt)}</span>
+                                    )}
+                                    {step.key === 'blockchain_submitted' && applicationStatus.blockchainTxHash && (
+                                      <span>Blockchain: {applicationStatus.blockchainTxHash.substring(0, 8)}...</span>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+                  </div>
+                </div>
               </div>
-              <div className="bg-white px-6 py-5 sm:grid sm:grid-cols-3 sm:gap-4">
-                <dt className="text-sm font-semibold text-gray-700 flex items-center">
-                  <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
-                  KYC Status
-                </dt>
-                <dd className="mt-1 text-sm font-medium text-gray-900 sm:mt-0 sm:col-span-2">
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                    user?.kycStatus === 'verified' 
-                      ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200'
-                      : user?.kycStatus === 'pending'
-                      ? 'bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-800 border border-yellow-200'
-                      : 'bg-gradient-to-r from-gray-100 to-slate-100 text-gray-800 border border-gray-200'
-                  }`}>
-                    <div className={`w-2 h-2 rounded-full mr-2 ${
-                      user?.kycStatus === 'verified' ? 'bg-green-500' :
-                      user?.kycStatus === 'pending' ? 'bg-yellow-500' :
-                      'bg-gray-500'
-                    }`}></div>
-                    {user?.kycStatus === 'verified' ? 'Verified' :
-                     user?.kycStatus === 'pending' ? 'Under Review' :
-                     'Not Started'}
-                  </span>
-                </dd>
+            )}
+          </div>
+
+          {/* Comprehensive Application Status Details */}
+          {applicationStatus && (
+            <div className="bg-white/80 backdrop-blur-sm shadow-xl overflow-hidden rounded-2xl border border-gray-200/50 mb-8">
+              <div className="bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-4">
+                <h3 className="text-xl font-bold text-white flex items-center">
+                  <ShieldCheckIcon className="w-6 h-6 mr-3" />
+                  Application Status Details
+                </h3>
+                <p className="mt-1 text-indigo-100">
+                  Complete overview of your KYC application status and progress
+                </p>
               </div>
-              <div className="bg-gradient-to-r from-cyan-50 to-blue-50 px-6 py-5 sm:grid sm:grid-cols-3 sm:gap-4">
-                <dt className="text-sm font-semibold text-gray-700 flex items-center">
-                  <div className="w-2 h-2 bg-cyan-500 rounded-full mr-2"></div>
-                  Account Created
-                </dt>
-                <dd className="mt-1 text-sm font-medium text-gray-900 sm:mt-0 sm:col-span-2">
-                  {user?.createdAt 
-                    ? new Date(user.createdAt).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })
-                    : 'Unknown'
-                  }
-                </dd>
+              <div className="divide-y divide-gray-200/50">
+                {/* Current Status */}
+                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-5 sm:grid sm:grid-cols-3 sm:gap-4">
+                  <dt className="text-sm font-semibold text-gray-700 flex items-center">
+                    <div className="w-2 h-2 bg-indigo-500 rounded-full mr-2"></div>
+                    Current Status
+                  </dt>
+                  <dd className="mt-1 text-sm font-medium text-gray-900 sm:mt-0 sm:col-span-2">
+                    {(() => {
+                      const primaryStatus = getPrimaryStatus();
+                      const config = getStatusConfig(primaryStatus);
+                      
+                      return (
+                        <div className="space-y-3">
+                          <span className={`inline-flex items-center px-3 py-2 rounded-full text-sm font-semibold ${config.bgColor} ${config.textColor} ${config.borderColor} border`}>
+                            <div className={`w-2 h-2 rounded-full mr-2 ${config.dotColor}`}></div>
+                            {config.title}
+                          </span>
+                          <p className="text-sm text-gray-600">{config.description}</p>
+                          {/* Progress Bar */}
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div 
+                              className={`h-2 rounded-full transition-all duration-500 ${
+                                config.color === 'gray' ? 'bg-gray-400' :
+                                config.color === 'blue' ? 'bg-blue-400' :
+                                config.color === 'yellow' ? 'bg-yellow-400' :
+                                config.color === 'orange' ? 'bg-orange-400' :
+                                config.color === 'green' ? 'bg-green-400' :
+                                config.color === 'emerald' ? 'bg-emerald-400' :
+                                config.color === 'red' ? 'bg-red-400' :
+                                config.color === 'purple' ? 'bg-purple-400' :
+                                'bg-gray-400'
+                              }`}
+                              style={{ width: `${config.progress}%` }}
+                            ></div>
+                          </div>
+                          <div className="text-xs text-gray-500 text-right">
+                            {config.progress}% Complete
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </dd>
+                </div>
+
+                {/* Submission Details */}
+                {applicationStatus.submittedAt && (
+                  <div className="bg-white px-6 py-5 sm:grid sm:grid-cols-3 sm:gap-4">
+                    <dt className="text-sm font-semibold text-gray-700 flex items-center">
+                      <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                      Submitted At
+                    </dt>
+                    <dd className="mt-1 text-sm font-medium text-gray-900 sm:mt-0 sm:col-span-2">
+                      {formatDate(applicationStatus.submittedAt)}
+                    </dd>
+                  </div>
+                )}
+
+                {/* Review Details */}
+                {applicationStatus.reviewedAt && (
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-5 sm:grid sm:grid-cols-3 sm:gap-4">
+                    <dt className="text-sm font-semibold text-gray-700 flex items-center">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                      Reviewed At
+                    </dt>
+                    <dd className="mt-1 text-sm font-medium text-gray-900 sm:mt-0 sm:col-span-2">
+                      {formatDate(applicationStatus.reviewedAt)}
+                    </dd>
+                  </div>
+                )}
+
+                {/* Blockchain Status */}
+                {applicationStatus.blockchainTxHash && (
+                  <div className="bg-gradient-to-r from-purple-50 to-pink-50 px-6 py-5 sm:grid sm:grid-cols-3 sm:gap-4">
+                    <dt className="text-sm font-semibold text-gray-700 flex items-center">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full mr-2"></div>
+                      Blockchain Transaction
+                    </dt>
+                    <dd className="mt-1 text-sm font-medium text-gray-900 sm:mt-0 sm:col-span-2">
+                      <div className="flex items-center space-x-2">
+                        <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">
+                          {applicationStatus.blockchainTxHash.substring(0, 8)}...{applicationStatus.blockchainTxHash.substring(applicationStatus.blockchainTxHash.length - 8)}
+                        </span>
+                        <span className="text-xs text-green-600 font-semibold">✓ Confirmed</span>
+                      </div>
+                    </dd>
+                  </div>
+                )}
+
+                {/* Rejection Reason */}
+                {applicationStatus.rejectionReason && (
+                  <div className="bg-gradient-to-r from-red-50 to-pink-50 px-6 py-5 sm:grid sm:grid-cols-3 sm:gap-4">
+                    <dt className="text-sm font-semibold text-gray-700 flex items-center">
+                      <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
+                      Rejection Reason
+                    </dt>
+                    <dd className="mt-1 text-sm font-medium text-gray-900 sm:mt-0 sm:col-span-2">
+                      <div className="bg-red-100 border border-red-200 rounded-lg p-3">
+                        <p className="text-sm text-red-800">{applicationStatus.rejectionReason}</p>
+                      </div>
+                    </dd>
+                  </div>
+                )}
+
+                {/* Next Steps */}
+                <div className="bg-gradient-to-r from-cyan-50 to-blue-50 px-6 py-5 sm:grid sm:grid-cols-3 sm:gap-4">
+                  <dt className="text-sm font-semibold text-gray-700 flex items-center">
+                    <div className="w-2 h-2 bg-cyan-500 rounded-full mr-2"></div>
+                    Next Steps
+                  </dt>
+                  <dd className="mt-1 text-sm font-medium text-gray-900 sm:mt-0 sm:col-span-2">
+                    {(() => {
+                      const primaryStatus = getPrimaryStatus();
+                      
+                      switch (primaryStatus) {
+                        case 'not_started':
+                          return (
+                            <div className="space-y-2">
+                              <p className="text-sm text-gray-600">Start your KYC verification process</p>
+                              <button
+                                onClick={() => router.push('/onboarding')}
+                                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                              >
+                                Begin KYC Process
+                              </button>
+                            </div>
+                          );
+                        case 'draft':
+                          return (
+                            <div className="space-y-2">
+                              <p className="text-sm text-gray-600">Resume your KYC verification process</p>
+                              <button
+                                onClick={() => router.push('/onboarding')}
+                                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                              >
+                                Resume KYC Process
+                              </button>
+                            </div>
+                          );
+                        case 'in_progress':
+                          return (
+                            <div className="space-y-2">
+                              <p className="text-sm text-gray-600">Continue completing your KYC form</p>
+                              <button
+                                onClick={() => router.push('/onboarding')}
+                                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                              >
+                                Continue KYC
+                              </button>
+                            </div>
+                          );
+                        case 'submitted':
+                        case 'under_review':
+                        case 'pending_review':
+                          return (
+                            <div className="space-y-2">
+                              <p className="text-sm text-gray-600">Your application is being reviewed. Please wait for administrator approval.</p>
+                              <div className="flex items-center space-x-2 text-sm text-orange-600">
+                                <ClockIcon className="w-4 h-4" />
+                                <span>Review in progress</span>
+                              </div>
+                            </div>
+                          );
+                        case 'approved':
+                          return (
+                            <div className="space-y-2">
+                              <p className="text-sm text-gray-600">Your KYC has been approved! Submit to blockchain for permanent verification.</p>
+                              <button
+                                onClick={handleBlockchainSubmission}
+                                disabled={blockchainSubmitting || !isConnected}
+                                className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                              >
+                                Submit to Blockchain
+                              </button>
+                            </div>
+                          );
+                        case 'verified':
+                          return (
+                            <div className="space-y-2">
+                              <p className="text-sm text-gray-600">Your KYC is verified and ready for blockchain submission.</p>
+                              <button
+                                onClick={handleBlockchainSubmission}
+                                disabled={blockchainSubmitting || !isConnected}
+                                className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                              >
+                                Submit to Blockchain
+                              </button>
+                            </div>
+                          );
+                        case 'rejected':
+                          return (
+                            <div className="space-y-2">
+                              <p className="text-sm text-gray-600">Your KYC was rejected. Please review the reason and resubmit.</p>
+                              <button
+                                onClick={() => router.push('/onboarding')}
+                                className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors"
+                              >
+                                Resubmit KYC
+                              </button>
+                            </div>
+                          );
+                        case 'blockchain_submitted':
+                          return (
+                            <div className="space-y-2">
+                              <p className="text-sm text-gray-600">✅ Your KYC is permanently recorded on the blockchain!</p>
+                              <div className="flex items-center space-x-2 text-sm text-green-600">
+                                <CheckCircleIcon className="w-4 h-4" />
+                                <span>Verification Complete</span>
+                              </div>
+                            </div>
+                          );
+                        default:
+                          return <p className="text-sm text-gray-600">Status unknown</p>;
+                      }
+                    })()}
+                  </dd>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* KYC Status Details */}
           {kycStatus && (
@@ -542,19 +1235,134 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* Action Buttons */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <button
-              onClick={() => router.push('/onboarding')}
-              className="group relative bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-            >
-              <div className="flex items-center justify-center space-x-3">
-                <ShieldCheckIcon className="w-6 h-6" />
-                <span className="font-semibold text-lg">Start KYC Process</span>
+          {/* Blockchain Submission Section */}
+          {(() => {
+            const primaryStatus = getPrimaryStatus();
+            return (primaryStatus === 'verified' || primaryStatus === 'approved') && !applicationStatus?.blockchainTxHash;
+          })() && (
+            <div className="bg-white/80 backdrop-blur-sm shadow-xl overflow-hidden rounded-2xl border border-gray-200/50 mb-8">
+              <div className="bg-gradient-to-r from-emerald-500 to-green-600 px-6 py-4">
+                <h3 className="text-xl font-bold text-white flex items-center">
+                  <CheckCircleIcon className="w-6 h-6 mr-3" />
+                  Blockchain Submission
+                </h3>
+                <p className="mt-1 text-emerald-100">
+                  Your KYC is approved. Submit to blockchain for permanent verification.
+                </p>
               </div>
-              <div className="absolute inset-0 bg-white/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            </button>
-            
+              <div className="p-6">
+                {!blockchainTxHash ? (
+                  <div className="space-y-4">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <div className="flex">
+                        <ExclamationTriangleIcon className="h-5 w-5 text-blue-400" />
+                        <div className="ml-3">
+                          <h4 className="text-sm font-medium text-blue-800">
+                            Submit to Blockchain
+                          </h4>
+                          <div className="mt-2 text-sm text-blue-700">
+                            <p>Once submitted to the blockchain, your KYC verification will be permanently recorded and verifiable by anyone.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <button
+                      onClick={handleBlockchainSubmission}
+                      disabled={blockchainSubmitting || !isConnected}
+                      className="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {blockchainSubmitting ? (
+                        <div className="flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                          Submitting to Blockchain...
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-center">
+                          <WalletIcon className="w-5 h-5 mr-2" />
+                          Submit to Blockchain
+                        </div>
+                      )}
+                    </button>
+                    
+                    {!isConnected && (
+                      <p className="text-sm text-gray-500 text-center">
+                        Please connect your wallet to submit to blockchain
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="flex">
+                      <CheckCircleIcon className="h-5 w-5 text-green-400" />
+                      <div className="ml-3">
+                        <h4 className="text-sm font-medium text-green-800">
+                          Successfully Submitted to Blockchain
+                        </h4>
+                        <div className="mt-2 text-sm text-green-700">
+                          <p>Transaction Hash: {blockchainTxHash}</p>
+                          <p className="mt-1">Your KYC is now permanently recorded on the blockchain.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {blockchainError && (
+                  <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div className="flex">
+                      <ExclamationTriangleIcon className="h-5 w-5 text-red-400" />
+                      <div className="ml-3">
+                        <h4 className="text-sm font-medium text-red-800">
+                          Submission Failed
+                        </h4>
+                        <p className="text-sm text-red-700 mt-1">{blockchainError}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* KYC Options */}
+          <div className="bg-white/80 backdrop-blur-sm shadow-xl overflow-hidden rounded-2xl border border-gray-200/50 mb-8">
+            <div className="bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-4">
+              <h3 className="text-xl font-bold text-white flex items-center">
+                <ShieldCheckIcon className="w-6 h-6 mr-3" />
+                KYC Verification Options
+              </h3>
+              <p className="mt-1 text-indigo-100">
+                Choose your preferred KYC verification method
+              </p>
+            </div>
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Web2 KYC */}
+                <button
+                  onClick={() => router.push('/onboarding')}
+                  className="group relative bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-6 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className="p-3 bg-white/20 rounded-lg">
+                      <DocumentTextIcon className="w-6 h-6" />
+                    </div>
+                    <div className="text-left">
+                      <h4 className="font-semibold text-lg">Web2 KYC</h4>
+                      <p className="text-sm text-blue-100">Traditional form-based verification</p>
+                    </div>
+                  </div>
+                  <div className="absolute inset-0 bg-white/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </button>
+
+                {/* Web3 KYC */}
+                <Web3KYCLink />
+              </div>
+            </div>
+          </div>
+
+          {/* Other Action Buttons */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <button
               onClick={() => router.push('/profile')}
               className="group relative bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"

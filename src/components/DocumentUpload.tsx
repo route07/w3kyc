@@ -31,7 +31,7 @@ interface DocumentAnalysis {
 }
 
 interface DocumentUploadProps {
-  onUploadComplete: (document: DocumentAnalysis) => void
+  onUploadComplete: (document: DocumentAnalysis, file: File) => void
   onError: (error: string) => void
 }
 
@@ -56,28 +56,64 @@ export default function DocumentUpload({ onUploadComplete, onError }: DocumentUp
       if (documentType) formData.append('documentType', documentType)
       if (description) formData.append('description', description)
 
+      const authToken = localStorage.getItem('auth_token')
+      console.log('Uploading document:', {
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type,
+        documentType,
+        description,
+        hasAuthToken: !!authToken,
+        authTokenLength: authToken?.length || 0
+      })
+
       // Upload and process document
+      const headers: Record<string, string> = {}
+      if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`
+      } else {
+        console.warn('No auth token found, uploading without authentication')
+      }
+
       const response = await fetch('/api/documents/upload', {
         method: 'POST',
+        headers,
         body: formData
       })
 
+      console.log('Upload response status:', response.status)
+      console.log('Upload response headers:', Object.fromEntries(response.headers.entries()))
+
       if (!response.ok) {
-        const error = await response.text()
-        throw new Error(error)
+        let errorMessage = `HTTP ${response.status}: ${response.statusText}`
+        try {
+          const errorText = await response.text()
+          if (errorText) {
+            errorMessage = errorText
+          }
+        } catch (e) {
+          console.warn('Could not parse error response:', e)
+        }
+        console.error('Upload failed with status:', response.status)
+        console.error('Error response:', errorMessage)
+        throw new Error(errorMessage)
       }
 
       const result = await response.json()
       
       if (result.success) {
         setAnalysis(result.document)
-        onUploadComplete(result.document)
+        onUploadComplete(result.document, file)
       } else {
         throw new Error(result.error || 'Upload failed')
       }
 
     } catch (error) {
       console.error('Upload error:', error)
+      console.error('Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      })
       onError(error instanceof Error ? error.message : 'Upload failed')
     } finally {
       setUploading(false)
@@ -104,7 +140,7 @@ export default function DocumentUpload({ onUploadComplete, onError }: DocumentUp
   }
 
   const getValidationIcon = () => {
-    if (!analysis) return null
+    if (!analysis || !analysis.validation) return null
     
     if (analysis.validation.isValid) {
       return <CheckCircleIcon className="w-5 h-5 text-green-500" />
@@ -189,18 +225,18 @@ export default function DocumentUpload({ onUploadComplete, onError }: DocumentUp
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Document Type</label>
-              <p className="text-gray-900 capitalize">{analysis.documentType.replace('_', ' ')}</p>
+              <p className="text-gray-900 capitalize">{analysis.documentType?.replace('_', ' ') || 'Unknown'}</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">OCR Confidence</label>
-              <p className="text-gray-900">{Math.round(analysis.confidence)}%</p>
+              <p className="text-gray-900">{Math.round(analysis.confidence || 0)}%</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Validation</label>
               <div className="flex items-center space-x-2">
                 {getValidationIcon()}
-                <span className={analysis.validation.isValid ? 'text-green-600' : 'text-red-600'}>
-                  {analysis.validation.isValid ? 'Valid' : 'Invalid'}
+                <span className={analysis.validation?.isValid ? 'text-green-600' : 'text-red-600'}>
+                  {analysis.validation?.isValid ? 'Valid' : 'Invalid'}
                 </span>
               </div>
             </div>
@@ -212,16 +248,16 @@ export default function DocumentUpload({ onUploadComplete, onError }: DocumentUp
             <div className="bg-gray-50 rounded-lg p-4">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm font-medium text-gray-700">Risk Score</span>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRiskLevelColor(analysis.aiAnalysis.riskLevel)}`}>
-                  {analysis.aiAnalysis.riskScore}/100 - {analysis.aiAnalysis.riskLevel.toUpperCase()}
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRiskLevelColor(analysis.aiAnalysis?.riskLevel || 'low')}`}>
+                  {analysis.aiAnalysis?.riskScore || 0}/100 - {(analysis.aiAnalysis?.riskLevel || 'low').toUpperCase()}
                 </span>
               </div>
               
-              {analysis.aiAnalysis.flags.length > 0 && (
+              {analysis.aiAnalysis?.flags?.length > 0 && (
                 <div className="mb-3">
                   <label className="block text-sm font-medium text-gray-700 mb-1">Flags</label>
                   <div className="space-y-1">
-                    {analysis.aiAnalysis.flags.map((flag, index) => (
+                    {analysis.aiAnalysis?.flags?.map((flag, index) => (
                       <div key={index} className="flex items-center space-x-2">
                         <ExclamationTriangleIcon className="w-4 h-4 text-yellow-500" />
                         <span className="text-sm text-gray-700">{flag}</span>
@@ -231,11 +267,11 @@ export default function DocumentUpload({ onUploadComplete, onError }: DocumentUp
                 </div>
               )}
 
-              {analysis.aiAnalysis.recommendations.length > 0 && (
+              {analysis.aiAnalysis?.recommendations?.length > 0 && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Recommendations</label>
                   <ul className="list-disc list-inside space-y-1">
-                    {analysis.aiAnalysis.recommendations.map((rec, index) => (
+                    {analysis.aiAnalysis?.recommendations?.map((rec, index) => (
                       <li key={index} className="text-sm text-gray-700">{rec}</li>
                     ))}
                   </ul>
@@ -245,12 +281,12 @@ export default function DocumentUpload({ onUploadComplete, onError }: DocumentUp
           </div>
 
           {/* Validation Issues */}
-          {analysis.validation.issues.length > 0 && (
+          {analysis.validation?.issues?.length > 0 && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Validation Issues</label>
               <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                 <ul className="list-disc list-inside space-y-1">
-                  {analysis.validation.issues.map((issue, index) => (
+                  {analysis.validation?.issues?.map((issue, index) => (
                     <li key={index} className="text-sm text-red-700">{issue}</li>
                   ))}
                 </ul>

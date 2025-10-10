@@ -32,7 +32,7 @@ interface KYCStep {
   title: string
   description: string
   status: 'not_started' | 'in_progress' | 'completed' | 'required'
-  icon: any
+  icon: React.ComponentType<{ className?: string }>
   color: string
   content: React.ReactNode
 }

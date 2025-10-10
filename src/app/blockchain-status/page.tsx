@@ -5,11 +5,7 @@ import {
   CheckCircleIcon, 
   ExclamationTriangleIcon,
   CubeIcon,
-  ClockIcon,
   ChartBarIcon,
-  ShieldCheckIcon,
-  CogIcon,
-  DocumentTextIcon,
   ArrowPathIcon
 } from '@heroicons/react/24/outline'
 import { getContractAddresses, getNetworkInfo, provider } from '@/lib/blockchain'

@@ -27,7 +27,7 @@ interface OnboardingStep {
   id: string
   title: string
   description: string
-  icon: any
+  icon: React.ComponentType<{ className?: string }>
   status: 'pending' | 'current' | 'completed' | 'error'
   component: string
 }
@@ -100,6 +100,62 @@ interface UserData {
     directorDocuments?: File[]
   }
   kycStatus: 'not_started' | 'in_progress' | 'pending_review' | 'approved' | 'rejected'
+}
+
+// Additional type definitions for form handlers
+interface DocumentData {
+  [key: string]: File | string
+}
+
+interface InstitutionDetails {
+  name: string
+  registrationNumber: string
+  country: string
+  address: {
+    street: string
+    city: string
+    state: string
+    postalCode: string
+    country: string
+  }
+  businessType: string
+  website?: string
+}
+
+interface UBODeclaration {
+  hasUBO: boolean
+  uboDetails: Array<{
+    firstName: string
+    lastName: string
+    dateOfBirth: string
+    nationality: string
+    ownershipPercentage: number
+    address: {
+      street: string
+      city: string
+      state: string
+      postalCode: string
+      country: string
+    }
+  }>
+}
+
+interface DirectorsDeclaration {
+  hasDirectors: boolean
+  directors: Array<{
+    firstName: string
+    lastName: string
+    dateOfBirth: string
+    nationality: string
+    passportNumber: string
+    address: {
+      street: string
+      city: string
+      state: string
+      postalCode: string
+      country: string
+    }
+  }>
 }
 
 export default function OnboardingPage() {
@@ -427,7 +483,7 @@ export default function OnboardingPage() {
     handleNext()
   }
 
-  const handleDocumentUpload = (documents: any) => {
+  const handleDocumentUpload = (documents: DocumentData) => {
     setUserData(prev => ({ ...prev, documents: { ...prev.documents, ...documents } }))
     // Save immediately after documents are uploaded
     setTimeout(() => saveProgress(), 100)
@@ -448,21 +504,21 @@ export default function OnboardingPage() {
     handleNext()
   }
 
-  const handleInstitutionSubmit = (institutionDetails: any) => {
+  const handleInstitutionSubmit = (institutionDetails: InstitutionDetails) => {
     setUserData(prev => ({ ...prev, institutionDetails }))
     // Save immediately after institution details are submitted
     setTimeout(() => saveProgress(), 100)
     handleNext()
   }
 
-  const handleUBOSubmit = (uboDeclaration: any) => {
+  const handleUBOSubmit = (uboDeclaration: UBODeclaration) => {
     setUserData(prev => ({ ...prev, uboDeclaration }))
     // Save immediately after UBO declaration is submitted
     setTimeout(() => saveProgress(), 100)
     handleNext()
   }
 
-  const handleDirectorsSubmit = (directorsDeclaration: any) => {
+  const handleDirectorsSubmit = (directorsDeclaration: DirectorsDeclaration) => {
     setUserData(prev => ({ ...prev, directorsDeclaration }))
     // Save immediately after directors declaration is submitted
     setTimeout(() => saveProgress(), 100)
@@ -918,7 +974,7 @@ function WalletStep({ onConnect, loading, error }: {
 }
 
 function PersonalInfoStep({ onSubmit, userData, onPrevious, onNext, currentStep, totalSteps }: { 
-  onSubmit: (data: any) => void
+  onSubmit: (data: { firstName: string; lastName: string; email: string; jurisdiction: string }) => void
   userData: UserData
   onPrevious: () => void
   onNext: () => void
@@ -1060,7 +1116,7 @@ function PersonalInfoStep({ onSubmit, userData, onPrevious, onNext, currentStep,
 }
 
 function DocumentUploadStep({ onUpload, userData }: { 
-  onUpload: (documents: any) => void
+  onUpload: (documents: DocumentData) => void
   userData: UserData
 }) {
   const [documents, setDocuments] = useState({
@@ -1701,7 +1757,7 @@ function EligibilityStep({ onSubmit, userData, onPrevious, onNext, currentStep, 
 }
 
 function InstitutionStep({ onSubmit, userData, onPrevious, onNext, currentStep, totalSteps }: { 
-  onSubmit: (institutionDetails: any) => void
+  onSubmit: (institutionDetails: InstitutionDetails) => void
   userData: UserData
   onPrevious: () => void
   onNext: () => void
@@ -1912,7 +1968,7 @@ function InstitutionStep({ onSubmit, userData, onPrevious, onNext, currentStep, 
 }
 
 function UBOStep({ onSubmit, userData, onPrevious, onNext, currentStep, totalSteps }: { 
-  onSubmit: (uboDeclaration: any) => void
+  onSubmit: (uboDeclaration: UBODeclaration) => void
   userData: UserData
   onPrevious: () => void
   onNext: () => void
@@ -1944,7 +2000,7 @@ function UBOStep({ onSubmit, userData, onPrevious, onNext, currentStep, totalSte
     }))
   }
 
-  const updateUBO = (index: number, field: string, value: any) => {
+  const updateUBO = (index: number, field: string, value: string | number | boolean) => {
     setUboDeclaration(prev => ({
       ...prev,
       uboDetails: prev.uboDetails.map((ubo, i) => 
@@ -2160,7 +2216,7 @@ function UBOStep({ onSubmit, userData, onPrevious, onNext, currentStep, totalSte
 }
 
 function DirectorsStep({ onSubmit, userData, onPrevious, onNext, currentStep, totalSteps }: { 
-  onSubmit: (directorsDeclaration: any) => void
+  onSubmit: (directorsDeclaration: DirectorsDeclaration) => void
   userData: UserData
   onPrevious: () => void
   onNext: () => void
@@ -2193,7 +2249,7 @@ function DirectorsStep({ onSubmit, userData, onPrevious, onNext, currentStep, to
     }))
   }
 
-  const updateDirector = (index: number, field: string, value: any) => {
+  const updateDirector = (index: number, field: string, value: string | number | boolean) => {
     setDirectorsDeclaration(prev => ({
       ...prev,
       directors: prev.directors.map((director, i) => 

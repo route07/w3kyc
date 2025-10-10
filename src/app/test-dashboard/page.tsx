@@ -86,9 +86,9 @@ export default function TestDashboardPage() {
             <div className="p-4 bg-blue-50 rounded-lg">
               <h3 className="font-semibold text-blue-900 mb-2">Header Section</h3>
               <ul className="text-sm text-blue-800 space-y-1">
-                <li>• Should always show "Welcome, [Name]!" message</li>
-                <li>• Should show "Wallet Connected" only if user has wallet</li>
-                <li>• Should show "Logout" button (not "Disconnect")</li>
+                <li>• Should always show &quot;Welcome, [Name]!&quot; message</li>
+                <li>• Should show &quot;Wallet Connected&quot; only if user has wallet</li>
+                <li>• Should show &quot;Logout&quot; button (not &quot;Disconnect&quot;)</li>
               </ul>
             </div>
             
@@ -96,8 +96,8 @@ export default function TestDashboardPage() {
               <h3 className="font-semibold text-green-900 mb-2">Profile Section</h3>
               <ul className="text-sm text-green-800 space-y-1">
                 <li>• Should show wallet address if connected</li>
-                <li>• Should show "Connect Wallet" button if no wallet</li>
-                <li>• Should show "Disconnect" button if wallet connected</li>
+                <li>• Should show &quot;Connect Wallet&quot; button if no wallet</li>
+                <li>• Should show &quot;Disconnect&quot; button if wallet connected</li>
               </ul>
             </div>
 

@@ -13,7 +13,13 @@ export default function DebugWalletApiPage() {
   const router = useRouter()
   
   const [logs, setLogs] = useState<string[]>([])
-  const [testResult, setTestResult] = useState<any>(null)
+  const [testResult, setTestResult] = useState<{
+    success?: boolean;
+    message?: string;
+    data?: unknown;
+    error?: string;
+    [key: string]: unknown;
+  } | null>(null)
 
   const addLog = (message: string) => {
     const timestamp = new Date().toLocaleTimeString()

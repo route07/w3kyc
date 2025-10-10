@@ -212,9 +212,9 @@ export default function DebugWalletDbSavePage() {
             <div className="p-4 bg-blue-50 rounded-lg">
               <h3 className="font-semibold text-blue-900 mb-2">How to Test</h3>
               <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
-                <li>Make sure you're logged in (authenticated)</li>
-                <li>Disconnect your wallet if it's connected</li>
-                <li>Try both "Dashboard Connect" and "KYC Connect" buttons</li>
+                <li>Make sure you&apos;re logged in (authenticated)</li>
+                <li>Disconnect your wallet if it&apos;s connected</li>
+                <li>Try both &quot;Dashboard Connect&quot; and &quot;KYC Connect&quot; buttons</li>
                 <li>Compare the logs to see any differences</li>
                 <li>Check if wallet gets saved to database</li>
               </ol>
