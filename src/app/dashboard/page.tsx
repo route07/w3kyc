@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useAccount, useDisconnect, useWalletClient } from 'wagmi';
-import { UserIcon, ShieldCheckIcon, DocumentTextIcon, WalletIcon, CheckCircleIcon, ExclamationTriangleIcon, ClockIcon, XCircleIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
+import { UserIcon, ShieldCheckIcon, DocumentTextIcon, WalletIcon, CheckCircleIcon, ExclamationTriangleIcon, ClockIcon, XCircleIcon, ChevronDownIcon, ChevronUpIcon, CloudIcon, LinkIcon, EyeIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 import Web3KYCLink from '@/components/Web3KYCLink';
 
 // Status configuration for comprehensive display
@@ -219,6 +219,9 @@ export default function DashboardPage() {
   const [blockchainSubmitting, setBlockchainSubmitting] = useState(false);
   const [blockchainTxHash, setBlockchainTxHash] = useState<string | null>(null);
   const [blockchainError, setBlockchainError] = useState<string | null>(null);
+  const [ipfsDocuments, setIpfsDocuments] = useState<any[]>([]);
+  const [ipfsLoading, setIpfsLoading] = useState(false);
+  const [ipfsError, setIpfsError] = useState<string | null>(null);
   const [isTimelineCollapsed, setIsTimelineCollapsed] = useState(false);
   const [isLoadingStatus, setIsLoadingStatus] = useState(true);
 
@@ -536,7 +539,7 @@ export default function DashboardPage() {
 
           {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            {/* User Info Card */}
+            {/* Account Type Card */}
             <div className="group relative bg-gradient-to-br from-blue-50 to-indigo-100 overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-blue-200/50">
               <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-500/5"></div>
               <div className="relative p-6">
@@ -546,16 +549,65 @@ export default function DashboardPage() {
                   </div>
                   <div className="text-right">
                     <div className="text-2xl font-bold text-gray-900">
-                      {user?.authMethod === 'web2' ? 'Email' : 'Web3'}
+                      {user?.authMethod === 'web2' ? 'Email' : user?.authMethod === 'web3' ? 'Web3' : 'Hybrid'}
                     </div>
                     <div className="text-sm text-gray-600">Account Type</div>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full"></div>
-                  <span className="text-sm font-medium text-gray-700">
-                    {user?.authMethod === 'web2' ? 'Email Account' : 'Web3 Wallet'}
-                  </span>
+                
+                {/* Account Details */}
+                <div className="space-y-3">
+                  {/* Primary Account Type */}
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full"></div>
+                    <span className="text-sm font-medium text-gray-700">
+                      {user?.authMethod === 'web2' ? 'Email Account' : user?.authMethod === 'web3' ? 'Web3 Wallet' : 'Hybrid Account'}
+                    </span>
+                  </div>
+
+                  {/* Admin Role Indicator */}
+                  {user?.isAdmin && (
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full"></div>
+                      <span className="text-sm font-medium text-gray-700">
+                        {user?.adminLevel ? `${user.adminLevel} Admin` : 'Administrator'}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Verification Status */}
+                  <div className="flex items-center space-x-2">
+                    <div className={`w-2 h-2 rounded-full ${
+                      user?.isEmailVerified ? 'bg-gradient-to-r from-green-400 to-emerald-500' : 'bg-gradient-to-r from-yellow-400 to-orange-500'
+                    }`}></div>
+                    <span className="text-sm font-medium text-gray-700">
+                      Email {user?.isEmailVerified ? 'Verified' : 'Unverified'}
+                    </span>
+                  </div>
+
+                  {/* Wallet Connection Status */}
+                  {(user?.authMethod === 'web3' || user?.authMethod === 'hybrid') && (
+                    <div className="flex items-center space-x-2">
+                      <div className={`w-2 h-2 rounded-full ${
+                        user?.isWalletConnected || (isConnected || user?.walletAddress || address) ? 'bg-gradient-to-r from-green-400 to-emerald-500' : 'bg-gradient-to-r from-gray-400 to-gray-500'
+                      }`}></div>
+                      <span className="text-sm font-medium text-gray-700">
+                        Wallet {user?.isWalletConnected || (isConnected || user?.walletAddress || address) ? 'Connected' : 'Not Connected'}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Account Creation Date */}
+                  {user?.createdAt && (
+                    <div className="pt-2 border-t border-blue-200/50">
+                      <div className="text-xs text-gray-500">
+                        Member since {new Date(user.createdAt).toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          year: 'numeric' 
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
