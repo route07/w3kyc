@@ -3,7 +3,8 @@ import { z } from 'zod';
 import dbConnect from '@/lib/mongodb';
 import { KYCDocument, AuditLog } from '@/lib/models';
 import { withAuth } from '@/lib/auth';
-import { uploadToIPFS, pinToIPFS } from '@/lib/ipfs';
+import { uploadToIPFS, pinToIPFS } from '@/lib/ipfs-simple';
+import { getUserKYCDocuments } from '@/lib/kyc-document-sync';
 
 // Validation schema for document upload
 const documentUploadSchema = z.object({
@@ -133,34 +134,23 @@ async function handler(request: NextRequest) {
 // GET handler to fetch user's IPFS documents
 async function getHandler(request: NextRequest) {
   try {
-    // Connect to database
-    await dbConnect();
-
     // Get authenticated user
     const user = (request as { user: { _id: string; email: string } }).user;
 
-    // Fetch user's documents
-    const documents = await KYCDocument.find({ 
-      userId: user._id.toString() 
-    }).sort({ uploadedAt: -1 });
-
-    // Format documents for response
-    const formattedDocuments = documents.map(doc => ({
-      id: doc._id.toString(),
-      documentType: doc.documentType,
-      fileName: doc.fileName,
-      fileSize: doc.fileSize,
-      mimeType: doc.mimeType,
-      ipfsHash: doc.ipfsHash,
-      verificationStatus: doc.verificationStatus,
-      uploadedAt: doc.uploadedAt,
-      ipfsUrl: `https://ipfs.io/ipfs/${doc.ipfsHash}`,
-    }));
+    // Use the sync function to get documents
+    const result = await getUserKYCDocuments(user._id.toString());
+    
+    if (!result.success) {
+      return NextResponse.json({
+        success: false,
+        error: result.error || 'Failed to fetch IPFS documents',
+      }, { status: 500 });
+    }
 
     return NextResponse.json({
       success: true,
-      documents: formattedDocuments,
-      count: formattedDocuments.length,
+      documents: result.documents || [],
+      count: result.documents?.length || 0,
     });
 
   } catch (error) {

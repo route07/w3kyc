@@ -2,6 +2,81 @@ import { NextRequest, NextResponse } from 'next/server';
 import { kycSubmissionService, KYCSubmissionData } from '@/lib/kyc-submission';
 import { KYCSubmissionService } from '@/lib/kyc-submission-service';
 import { authenticateRequest } from '@/lib/auth';
+import { uploadToIPFS, pinToIPFS } from '@/lib/ipfs-simple';
+import dbConnect from '@/lib/mongodb';
+import { KYCDocument } from '@/lib/models';
+
+// Helper function to upload documents to IPFS and create KYCDocument records
+async function uploadDocumentsToIPFS(
+  documents: File[], 
+  documentTypes: string[], 
+  userId: string
+): Promise<{ success: boolean; documents?: any[]; error?: string }> {
+  try {
+    await dbConnect();
+    
+    const uploadedDocuments = [];
+    
+    for (let i = 0; i < documents.length; i++) {
+      const file = documents[i];
+      const documentType = documentTypes[i] || 'unknown';
+      
+      // Convert file to buffer
+      const buffer = Buffer.from(await file.arrayBuffer());
+      
+      // Upload to IPFS
+      console.log(`📤 Uploading document ${i + 1}/${documents.length} to IPFS: ${file.name}`);
+      const ipfsResult = await uploadToIPFS(buffer, file.name);
+      
+      // Pin the file to ensure persistence
+      console.log(`📌 Pinning file to IPFS: ${ipfsResult.hash}`);
+      const pinResult = await pinToIPFS(ipfsResult.hash);
+      if (!pinResult) {
+        console.warn('Warning: Failed to pin file to IPFS, file may not persist');
+      }
+      
+      // Create KYCDocument record
+      const kycDocument = new KYCDocument({
+        userId: userId,
+        documentType: documentType,
+        fileName: file.name,
+        fileSize: file.size,
+        mimeType: file.type,
+        ipfsHash: ipfsResult.hash,
+        verificationStatus: 'pending',
+        uploadedAt: new Date()
+      });
+      
+      await kycDocument.save();
+      
+      uploadedDocuments.push({
+        id: kycDocument._id.toString(),
+        documentType: documentType,
+        fileName: file.name,
+        fileSize: file.size,
+        mimeType: file.type,
+        ipfsHash: ipfsResult.hash,
+        ipfsUrl: ipfsResult.url,
+        verificationStatus: 'pending',
+        uploadedAt: kycDocument.uploadedAt
+      });
+      
+      console.log(`✅ Document uploaded successfully: ${file.name} -> ${ipfsResult.hash}`);
+    }
+    
+    return {
+      success: true,
+      documents: uploadedDocuments
+    };
+    
+  } catch (error) {
+    console.error('Error uploading documents to IPFS:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to upload documents'
+    };
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,8 +90,31 @@ export async function POST(request: NextRequest) {
     console.log('🔍 Web3 KYC submission received:', {
       hasFormData: !!body.formData,
       hasWalletAddress: !!body.walletAddress,
-      source: body.source
+      source: body.source,
+      hasDocuments: !!(body.formData?.documents && body.formData.documents.length > 0),
+      documentCount: body.formData?.documents?.length || 0
     });
+
+    // Handle document uploads first if documents are provided
+    let uploadedDocuments = [];
+    if (body.formData?.documents && body.formData.documents.length > 0) {
+      console.log('📄 Processing document uploads...');
+      const uploadResult = await uploadDocumentsToIPFS(
+        body.formData.documents,
+        body.formData.documentTypes || [],
+        authResult.userId
+      );
+      
+      if (!uploadResult.success) {
+        return NextResponse.json({
+          success: false,
+          error: `Document upload failed: ${uploadResult.error}`
+        }, { status: 400 });
+      }
+      
+      uploadedDocuments = uploadResult.documents || [];
+      console.log(`✅ Successfully uploaded ${uploadedDocuments.length} documents to IPFS`);
+    }
 
     // Extract data from formData if it exists (Web3 submission)
     const kycData: KYCSubmissionData = {
@@ -25,7 +123,7 @@ export async function POST(request: NextRequest) {
       email: body.formData?.email || body.email,
       walletAddress: body.formData?.walletAddress || body.walletAddress,
       jurisdiction: body.formData?.jurisdiction || body.jurisdiction || 'UK',
-      documents: body.formData?.documents || body.documents,
+      documents: uploadedDocuments, // Use uploaded documents with IPFS hashes
       kycStatus: body.formData?.kycStatus || body.kycStatus || 'pending_review'
     };
 
@@ -112,7 +210,9 @@ export async function POST(request: NextRequest) {
       data: {
         ...blockchainResult.data,
         databaseId: dbSubmission?._id,
-        source: 'web3'
+        source: 'web3',
+        documents: uploadedDocuments,
+        documentCount: uploadedDocuments.length
       }
     }, { status: 200 });
 

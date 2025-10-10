@@ -410,8 +410,16 @@ export default function Web3KYCOnboardingPage() {
     try {
       console.log('💾 Submitting KYC to database for review...');
       
-      await saveFinalSubmission();
+      const result = await saveFinalSubmission();
       console.log('✅ KYC submitted successfully for review');
+      
+      // Log document upload results
+      if (result?.documents && result.documents.length > 0) {
+        console.log(`📄 Successfully uploaded ${result.documents.length} documents to IPFS:`);
+        result.documents.forEach((doc: any, index: number) => {
+          console.log(`  ${index + 1}. ${doc.fileName} -> ${doc.ipfsHash}`);
+        });
+      }
       
       // Redirect to dashboard after successful submission
       setTimeout(() => {
@@ -442,11 +450,19 @@ export default function Web3KYCOnboardingPage() {
         })
       });
 
-      if (response.ok) {
-        console.log('Final submission saved to database');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to submit KYC');
       }
+
+      const result = await response.json();
+      console.log('Final submission saved to database:', result);
+      
+      return result; // Return the result so it can be used in handleFinalSubmission
+      
     } catch (error) {
       console.error('Error saving final submission:', error);
+      throw error;
     }
   };
 
