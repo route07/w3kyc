@@ -310,7 +310,13 @@ export default function DashboardPage() {
 
       if (response.ok) {
         const data = await response.json();
-        setIpfsDocuments(data.documents || []);
+        if (data.success) {
+          setIpfsDocuments(data.documents || []);
+          setIpfsError(null); // Clear any previous errors
+        } else {
+          console.error('API returned error:', data.error);
+          setIpfsError(data.error || 'Failed to load IPFS documents');
+        }
       } else {
         console.error('Failed to fetch IPFS documents:', response.status);
         setIpfsError('Failed to load IPFS documents');
@@ -1543,20 +1549,32 @@ export default function DashboardPage() {
               ) : ipfsError ? (
                 <div className="text-center py-8">
                   <ExclamationTriangleIcon className="h-12 w-12 text-red-500 mx-auto mb-4" />
-                  <p className="text-red-600 font-medium">Error loading IPFS documents</p>
-                  <p className="text-gray-500 text-sm mt-2">{ipfsError}</p>
+                  <p className="text-red-600 font-medium">Unable to load IPFS documents</p>
+                  <p className="text-gray-500 text-sm mt-2">
+                    {ipfsError.includes('Failed to fetch') ? 
+                      'Please check your internet connection and try again.' : 
+                      ipfsError
+                    }
+                  </p>
                   <button
                     onClick={fetchIPFSDocuments}
                     className="mt-4 px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
                   >
-                    Retry
+                    Try Again
                   </button>
                 </div>
               ) : ipfsDocuments.length === 0 ? (
                 <div className="text-center py-8">
                   <CloudIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600 font-medium">No IPFS documents found</p>
-                  <p className="text-gray-500 text-sm mt-2">Upload documents to see them stored on IPFS</p>
+                  <p className="text-gray-600 font-medium">No files uploaded yet</p>
+                  <p className="text-gray-500 text-sm mt-2">
+                    Documents will be uploaded to IPFS after your KYC application is approved
+                  </p>
+                  <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="text-blue-800 text-sm">
+                      💡 <strong>Note:</strong> Documents are only stored on IPFS after approval to avoid storing rejected applications.
+                    </p>
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-4">

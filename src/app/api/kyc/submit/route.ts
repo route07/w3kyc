@@ -95,26 +95,10 @@ export async function POST(request: NextRequest) {
       documentCount: body.formData?.documents?.length || 0
     });
 
-    // Handle document uploads first if documents are provided
-    let uploadedDocuments = [];
-    if (body.formData?.documents && body.formData.documents.length > 0) {
-      console.log('📄 Processing document uploads...');
-      const uploadResult = await uploadDocumentsToIPFS(
-        body.formData.documents,
-        body.formData.documentTypes || [],
-        authResult.userId
-      );
-      
-      if (!uploadResult.success) {
-        return NextResponse.json({
-          success: false,
-          error: `Document upload failed: ${uploadResult.error}`
-        }, { status: 400 });
-      }
-      
-      uploadedDocuments = uploadResult.documents || [];
-      console.log(`✅ Successfully uploaded ${uploadedDocuments.length} documents to IPFS`);
-    }
+    // Note: Documents are NOT uploaded to IPFS during submission
+    // They will be uploaded only after KYC approval to avoid storing rejected documents
+    console.log('📄 Documents will be uploaded to IPFS only after KYC approval');
+    const uploadedDocuments = [];
 
     // Extract data from formData if it exists (Web3 submission)
     const kycData: KYCSubmissionData = {

@@ -132,7 +132,7 @@ export async function getUserKYCDocuments(userId: string): Promise<{
       fileSize: doc.fileSize,
       mimeType: doc.mimeType,
       ipfsHash: doc.ipfsHash,
-      ipfsUrl: `https://ipfs.io/ipfs/${doc.ipfsHash}`,
+      ipfsUrl: `http://65.109.136.54:8080/ipfs/${doc.ipfsHash}`,
       verificationStatus: doc.verificationStatus,
       uploadedAt: doc.uploadedAt,
       verifiedAt: doc.verifiedAt

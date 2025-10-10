@@ -25,6 +25,15 @@ export async function POST(request: NextRequest) {
     // Connect to database
     await dbConnect();
 
+    // Check if user has an approved KYC submission
+    const approvedSubmission = await KYCSubmissionService.findByUserId(authResult.userId);
+    if (!approvedSubmission || approvedSubmission.status !== 'approved') {
+      return NextResponse.json({
+        success: false,
+        error: 'No approved KYC submission found. Documents can only be uploaded to IPFS after KYC approval.',
+      }, { status: 400 });
+    }
+
     // Parse and validate request body
     const body = await request.json();
     const validatedData = documentUploadSchema.parse(body);
@@ -77,38 +86,11 @@ export async function POST(request: NextRequest) {
       fileSize: validatedData.fileSize,
       mimeType: validatedData.mimeType,
       ipfsHash,
-      verificationStatus: 'pending',
+      verificationStatus: 'verified', // Documents uploaded after approval are considered verified
       uploadedAt: new Date()
     });
 
     await kycDocument.save();
-
-    // Update the user's draft KYC submission with IPFS document info
-    const draftSubmission = await KYCSubmissionService.findDraftByUserId(authResult.userId);
-    if (draftSubmission) {
-      // Add IPFS document to the draft submission
-      const ipfsDocument = {
-        documentType: validatedData.documentType,
-        fileName: validatedData.fileName,
-        fileSize: validatedData.fileSize,
-        mimeType: validatedData.mimeType,
-        ipfsHash,
-        ipfsUrl,
-        verificationStatus: 'pending',
-        uploadedAt: new Date()
-      };
-
-      // Update the draft with the new IPFS document
-      await KYCSubmissionService.createOrUpdateDraft(
-        authResult.userId,
-        draftSubmission.email,
-        draftSubmission.currentStep,
-        {
-          ...draftSubmission.userData,
-          ipfsDocuments: [...(draftSubmission.userData.ipfsDocuments || []), ipfsDocument]
-        }
-      );
-    }
 
     return NextResponse.json({
       success: true,
@@ -120,13 +102,13 @@ export async function POST(request: NextRequest) {
         mimeType: validatedData.mimeType,
         ipfsHash,
         ipfsUrl,
-        verificationStatus: 'pending',
+        verificationStatus: 'verified',
         uploadedAt: kycDocument.uploadedAt
       }
     });
 
   } catch (error) {
-    console.error('Draft document upload error:', error);
+    console.error('Post-approval document upload error:', error);
     return NextResponse.json({
       success: false,
       error: 'Internal server error',

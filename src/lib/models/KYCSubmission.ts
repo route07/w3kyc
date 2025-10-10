@@ -71,16 +71,6 @@ export interface KYCSubmissionDocument extends Document {
       uboDocuments?: File[];
       directorDocuments?: File[];
     };
-    ipfsDocuments?: Array<{
-      documentType: string;
-      fileName: string;
-      fileSize: number;
-      mimeType: string;
-      ipfsHash: string;
-      ipfsUrl: string;
-      verificationStatus: string;
-      uploadedAt: Date;
-    }>;
     kycStatus: 'not_started' | 'in_progress' | 'pending_review' | 'approved' | 'rejected';
   };
   status: 'draft' | 'submitted' | 'under_review' | 'approved' | 'rejected' | 'blockchain_submitted';
@@ -182,16 +172,6 @@ const KYCSubmissionSchema = new Schema<KYCSubmissionDocument>({
       type: Schema.Types.Mixed,
       default: {}
     },
-    ipfsDocuments: [{
-      documentType: { type: String, required: false },
-      fileName: { type: String, required: false },
-      fileSize: { type: Number, required: false },
-      mimeType: { type: String, required: false },
-      ipfsHash: { type: String, required: false },
-      ipfsUrl: { type: String, required: false },
-      verificationStatus: { type: String, required: false, default: 'pending' },
-      uploadedAt: { type: Date, required: false, default: Date.now }
-    }],
     kycStatus: {
       type: String,
       enum: ['not_started', 'in_progress', 'pending_review', 'approved', 'rejected'],
