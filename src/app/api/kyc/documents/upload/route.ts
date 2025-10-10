@@ -130,5 +130,48 @@ async function handler(request: NextRequest) {
   }
 }
 
+// GET handler to fetch user's IPFS documents
+async function getHandler(request: NextRequest) {
+  try {
+    // Connect to database
+    await dbConnect();
+
+    // Get authenticated user
+    const user = (request as { user: { _id: string; email: string } }).user;
+
+    // Fetch user's documents
+    const documents = await KYCDocument.find({ 
+      userId: user._id.toString() 
+    }).sort({ uploadedAt: -1 });
+
+    // Format documents for response
+    const formattedDocuments = documents.map(doc => ({
+      id: doc._id.toString(),
+      documentType: doc.documentType,
+      fileName: doc.fileName,
+      fileSize: doc.fileSize,
+      mimeType: doc.mimeType,
+      ipfsHash: doc.ipfsHash,
+      verificationStatus: doc.verificationStatus,
+      uploadedAt: doc.uploadedAt,
+      ipfsUrl: `https://ipfs.io/ipfs/${doc.ipfsHash}`,
+    }));
+
+    return NextResponse.json({
+      success: true,
+      documents: formattedDocuments,
+      count: formattedDocuments.length,
+    });
+
+  } catch (error) {
+    console.error('Error fetching IPFS documents:', error);
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to fetch IPFS documents',
+    }, { status: 500 });
+  }
+}
+
 // Use authentication middleware
-export const POST = withAuth(handler); 
+export const POST = withAuth(handler);
+export const GET = withAuth(getHandler); 
