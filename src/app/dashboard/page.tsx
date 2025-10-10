@@ -289,6 +289,47 @@ export default function DashboardPage() {
     });
   }, [isConnected, address, user?.walletAddress]);
 
+  // Fetch IPFS documents
+  const fetchIPFSDocuments = async () => {
+    if (!mounted || !isAuthenticated || !user) return;
+    
+    setIpfsLoading(true);
+    setIpfsError(null);
+    
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) return;
+
+      // Fetch user's IPFS documents
+      const response = await fetch('/api/kyc/documents/upload', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setIpfsDocuments(data.documents || []);
+      } else {
+        console.error('Failed to fetch IPFS documents:', response.status);
+        setIpfsError('Failed to load IPFS documents');
+      }
+    } catch (error) {
+      console.error('Error fetching IPFS documents:', error);
+      setIpfsError('Error loading IPFS documents');
+    } finally {
+      setIpfsLoading(false);
+    }
+  };
+
+  // Fetch IPFS documents when user is authenticated
+  useEffect(() => {
+    if (mounted && isAuthenticated && user) {
+      fetchIPFSDocuments();
+    }
+  }, [mounted, isAuthenticated, user]);
+
   // Fetch KYC status and submission data
   useEffect(() => {
     const fetchKYCData = async () => {
@@ -1391,6 +1432,154 @@ export default function DashboardPage() {
               )}
             </div>
           )}
+
+          {/* IPFS Data Section */}
+          <div className="bg-white/80 backdrop-blur-sm shadow-xl overflow-hidden rounded-2xl border border-gray-200/50 mb-8">
+            <div className="bg-gradient-to-r from-cyan-500 to-blue-600 px-6 py-4">
+              <h3 className="text-xl font-bold text-white flex items-center">
+                <CloudIcon className="w-6 h-6 mr-3" />
+                IPFS Data Storage
+              </h3>
+              <p className="text-cyan-100 text-sm mt-1">Your documents stored on the decentralized network</p>
+            </div>
+            
+            <div className="p-6">
+              {ipfsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-600"></div>
+                  <span className="ml-3 text-gray-600">Loading IPFS documents...</span>
+                </div>
+              ) : ipfsError ? (
+                <div className="text-center py-8">
+                  <ExclamationTriangleIcon className="h-12 w-12 text-red-500 mx-auto mb-4" />
+                  <p className="text-red-600 font-medium">Error loading IPFS documents</p>
+                  <p className="text-gray-500 text-sm mt-2">{ipfsError}</p>
+                  <button
+                    onClick={fetchIPFSDocuments}
+                    className="mt-4 px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
+                  >
+                    Retry
+                  </button>
+                </div>
+              ) : ipfsDocuments.length === 0 ? (
+                <div className="text-center py-8">
+                  <CloudIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600 font-medium">No IPFS documents found</p>
+                  <p className="text-gray-500 text-sm mt-2">Upload documents to see them stored on IPFS</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h4 className="text-lg font-semibold text-gray-900">
+                        {ipfsDocuments.length} Document{ipfsDocuments.length !== 1 ? 's' : ''} on IPFS
+                      </h4>
+                      <p className="text-sm text-gray-600">All your KYC documents are stored decentralized</p>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-cyan-600">
+                        {ipfsDocuments.filter(doc => doc.verificationStatus === 'verified').length}
+                      </div>
+                      <div className="text-sm text-gray-600">Verified</div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {ipfsDocuments.map((doc, index) => (
+                      <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:shadow-md transition-shadow">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center">
+                            <div className={`w-3 h-3 rounded-full mr-2 ${
+                              doc.verificationStatus === 'verified' ? 'bg-green-500' :
+                              doc.verificationStatus === 'pending' ? 'bg-yellow-500' :
+                              'bg-red-500'
+                            }`}></div>
+                            <span className="text-sm font-medium text-gray-900 capitalize">
+                              {doc.documentType?.replace('_', ' ')}
+                            </span>
+                          </div>
+                          <span className={`text-xs px-2 py-1 rounded-full ${
+                            doc.verificationStatus === 'verified' ? 'bg-green-100 text-green-800' :
+                            doc.verificationStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {doc.verificationStatus}
+                          </span>
+                        </div>
+
+                        <div className="space-y-2">
+                          <div>
+                            <p className="text-xs text-gray-500">File Name</p>
+                            <p className="text-sm font-mono text-gray-900 truncate">{doc.fileName}</p>
+                          </div>
+                          
+                          <div>
+                            <p className="text-xs text-gray-500">IPFS Hash</p>
+                            <div className="flex items-center space-x-2">
+                              <p className="text-xs font-mono text-gray-700 flex-1 truncate">
+                                {doc.ipfsHash?.substring(0, 16)}...
+                              </p>
+                              <button
+                                onClick={() => navigator.clipboard.writeText(doc.ipfsHash)}
+                                className="text-gray-400 hover:text-gray-600"
+                                title="Copy hash"
+                              >
+                                <LinkIcon className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </div>
+
+                          <div>
+                            <p className="text-xs text-gray-500">Size</p>
+                            <p className="text-sm text-gray-700">
+                              {doc.fileSize ? `${(doc.fileSize / 1024).toFixed(1)} KB` : 'Unknown'}
+                            </p>
+                          </div>
+
+                          <div className="flex space-x-2 pt-2">
+                            <button
+                              onClick={() => window.open(`http://65.109.136.54:8080/ipfs/${doc.ipfsHash}`, '_blank')}
+                              className="flex-1 flex items-center justify-center px-3 py-2 bg-cyan-600 text-white text-xs rounded-lg hover:bg-cyan-700 transition-colors"
+                            >
+                              <EyeIcon className="h-4 w-4 mr-1" />
+                              View
+                            </button>
+                            <button
+                              onClick={() => {
+                                const link = document.createElement('a');
+                                link.href = `http://65.109.136.54:8080/ipfs/${doc.ipfsHash}`;
+                                link.download = doc.fileName;
+                                link.click();
+                              }}
+                              className="flex-1 flex items-center justify-center px-3 py-2 bg-gray-600 text-white text-xs rounded-lg hover:bg-gray-700 transition-colors"
+                            >
+                              <ArrowDownTrayIcon className="h-4 w-4 mr-1" />
+                              Download
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-6 p-4 bg-cyan-50 rounded-lg border border-cyan-200">
+                    <div className="flex items-start">
+                      <CloudIcon className="h-5 w-5 text-cyan-600 mt-0.5 mr-3" />
+                      <div>
+                        <h5 className="text-sm font-semibold text-cyan-900">IPFS Storage Benefits</h5>
+                        <ul className="text-xs text-cyan-800 mt-1 space-y-1">
+                          <li>• Decentralized storage - no single point of failure</li>
+                          <li>• Immutable data - cannot be modified once stored</li>
+                          <li>• Global access - available from anywhere in the world</li>
+                          <li>• Data ownership - you control your documents</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
 
           {/* Blockchain Submission Section */}
           {(() => {
