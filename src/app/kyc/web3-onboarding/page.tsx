@@ -99,7 +99,7 @@ const stepConfig = {
 
 export default function Web3KYCOnboardingPage() {
   const router = useRouter();
-  const { address, isConnected } = useAccount();
+  const { address, isConnected, isConnecting } = useAccount();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const {
     session,
@@ -136,6 +136,8 @@ export default function Web3KYCOnboardingPage() {
   const [lastTxHash, setLastTxHash] = useState<string | null>(null);
   const [isWaitingForTx, setIsWaitingForTx] = useState(false);
   const [activeTab, setActiveTab] = useState<'form' | 'status' | 'debug'>('form');
+  const [isWalletLoading, setIsWalletLoading] = useState(true);
+  const [walletCheckComplete, setWalletCheckComplete] = useState(false);
 
   // Update wallet address in formData when address changes
   useEffect(() => {
@@ -165,16 +167,32 @@ export default function Web3KYCOnboardingPage() {
       return;
     }
 
+    // Handle wallet connection state
+    if (isConnecting) {
+      console.log('🔄 Wallet is connecting...');
+      setIsWalletLoading(true);
+      return;
+    }
+
+    // Add a small delay to allow wallet to fully initialize
+    if (!walletCheckComplete) {
+      const timer = setTimeout(() => {
+        setWalletCheckComplete(true);
+        setIsWalletLoading(false);
+      }, 1000); // 1 second delay to allow wallet initialization
+      
+      return () => clearTimeout(timer);
+    }
+
     if (!isConnected || !address) {
       console.log('🔍 Wallet not connected, redirecting to onboarding...');
-      setTimeout(() => {
-        router.push('/onboarding');
-      }, 5000);
+      router.push('/onboarding');
       return;
     }
 
     console.log('✅ User authenticated and wallet connected');
-  }, [isAuthenticated, isConnected, address, authLoading, router]);
+    setIsWalletLoading(false);
+  }, [isAuthenticated, isConnected, isConnecting, address, authLoading, router, walletCheckComplete]);
 
   // Load draft data
   const loadDraftData = async () => {
@@ -672,6 +690,19 @@ export default function Web3KYCOnboardingPage() {
     );
   }
 
+  // Show loading state while wallet connection is being detected
+  if (isWalletLoading || (isConnecting && !isConnected)) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <h2 className="mt-4 text-xl font-semibold text-gray-900">Detecting Wallet Connection</h2>
+          <p className="mt-2 text-gray-600">Please wait while we check your wallet connection...</p>
+        </div>
+      </div>
+    );
+  }
+
   // Wallet not connected
   if (!isConnected || !address) {
     return (
@@ -680,6 +711,7 @@ export default function Web3KYCOnboardingPage() {
           <WalletIcon className="h-12 w-12 text-orange-500 mx-auto" />
           <h2 className="mt-4 text-xl font-semibold text-gray-900">Wallet Not Connected</h2>
           <p className="mt-2 text-gray-600">Please connect your wallet to proceed with Web3 KYC.</p>
+          <p className="mt-1 text-sm text-gray-500">Redirecting to onboarding page...</p>
         </div>
       </div>
     );
