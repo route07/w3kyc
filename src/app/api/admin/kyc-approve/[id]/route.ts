@@ -6,7 +6,7 @@ import { User, AuditLog } from '@/lib/models'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify authentication
@@ -25,7 +25,8 @@ export async function POST(
     // Connect to database
     await dbConnect()
 
-    const submissionId = params.id
+    const resolvedParams = await params
+    const submissionId = resolvedParams.id
     const { reason, adminNotes } = await request.json()
 
     if (!submissionId) {

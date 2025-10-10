@@ -67,6 +67,7 @@ export class KYCSubmissionService {
           directors: []
         },
         documents: userData.documents || {},
+        ipfsDocuments: userData.ipfsDocuments || [],
         kycStatus: userData.kycStatus || 'in_progress'
       };
       

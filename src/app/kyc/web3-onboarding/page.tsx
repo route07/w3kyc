@@ -27,6 +27,7 @@ import {
 import { useOrchestrator } from '@/hooks/useOrchestrator';
 import { OnboardingStep, orchestratorService } from '@/lib/orchestrator-service';
 import DocumentUpload from '@/components/DocumentUpload';
+import KYCDocumentUpload from '@/components/KYCDocumentUpload';
 
 interface KYCFormData {
   // Registration Step
@@ -47,6 +48,16 @@ interface KYCFormData {
   // Document Upload Step
   documents: File[];
   documentTypes: string[];
+  ipfsDocuments: Array<{
+    documentType: string;
+    fileName: string;
+    fileSize: number;
+    mimeType: string;
+    ipfsHash: string;
+    ipfsUrl: string;
+    verificationStatus: string;
+    uploadedAt: Date;
+  }>;
 }
 
 const stepConfig = {
@@ -123,7 +134,8 @@ export default function Web3KYCOnboardingPage() {
     age: '',
     income: '',
     documents: [],
-    documentTypes: []
+    documentTypes: [],
+    ipfsDocuments: []
   });
 
   // UI state
@@ -242,7 +254,8 @@ export default function Web3KYCOnboardingPage() {
           userData: {
             ...formData,
             documents: formData.documents || [],
-            documentTypes: formData.documentTypes || []
+            documentTypes: formData.documentTypes || [],
+            ipfsDocuments: formData.ipfsDocuments || []
           },
           userDataKeys: Object.keys(formData).filter(key => formData[key as keyof KYCFormData] !== '')
         })
@@ -276,7 +289,7 @@ export default function Web3KYCOnboardingPage() {
     }
   };
 
-  // Handle document upload
+  // Handle document upload (legacy)
   const handleDocumentUploadComplete = (document: { type: string; url: string; [key: string]: unknown }, file: File) => {
     console.log('Document uploaded:', document);
     console.log('File:', file);
@@ -288,6 +301,30 @@ export default function Web3KYCOnboardingPage() {
     }
     
     // Add the file to the documents array
+    setFormData(prev => ({ 
+      ...prev, 
+      documents: [...(prev.documents || []), file]
+    }));
+  };
+
+  // Handle KYC document upload (new IPFS flow)
+  const handleKYCDocumentUploadComplete = (document: any, file: File) => {
+    console.log('KYC Document uploaded:', document);
+    console.log('File:', file);
+    
+    // Validate file
+    if (!file || !(file instanceof File)) {
+      console.error('Invalid file received:', file);
+      return;
+    }
+    
+    // Add the IPFS document to the form data
+    setFormData(prev => ({ 
+      ...prev, 
+      ipfsDocuments: [...(prev.ipfsDocuments || []), document]
+    }));
+
+    // Also add the file to the documents array for compatibility
     setFormData(prev => ({ 
       ...prev, 
       documents: [...(prev.documents || []), file]
@@ -641,8 +678,8 @@ export default function Web3KYCOnboardingPage() {
               <p className="mt-2 text-sm text-gray-500">{stepInfo.description}</p>
             </div>
 
-            <DocumentUpload
-              onUploadComplete={handleDocumentUploadComplete}
+            <KYCDocumentUpload
+              onUploadComplete={handleKYCDocumentUploadComplete}
               onError={handleDocumentUploadError}
             />
           </div>
