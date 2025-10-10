@@ -824,50 +824,43 @@ export default function DashboardPage() {
                 {/* Wallet Details */}
                 {(user?.walletAddress || address) && (
                   <div className="space-y-3">
-                    {/* Wallet Address */}
-                    <div className="bg-white/60 rounded-lg p-3 border border-purple-200/50">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-medium text-gray-600">Wallet Address</span>
-                        <button
-                          onClick={() => navigator.clipboard.writeText(user?.walletAddress || address || '')}
-                          className="text-purple-600 hover:text-purple-800 transition-colors"
-                          title="Copy address"
-                        >
-                          <LinkIcon className="h-4 w-4" />
-                        </button>
+                    {/* 2x2 Grid of Wallet Info */}
+                    <div className="grid grid-cols-2 gap-2">
+                      {/* Wallet Address */}
+                      <div className="bg-white/60 rounded-lg p-2 border border-purple-200/50">
+                        <div className="flex items-center justify-between">
+                          <div className="text-xs font-mono text-gray-800 truncate">
+                            {(user?.walletAddress || address)?.slice(0, 6)}...{(user?.walletAddress || address)?.slice(-4)}
+                          </div>
+                          <button
+                            onClick={() => navigator.clipboard.writeText(user?.walletAddress || address || '')}
+                            className="text-purple-600 hover:text-purple-800 transition-colors ml-1"
+                            title="Copy address"
+                          >
+                            <LinkIcon className="h-3 w-3" />
+                          </button>
+                        </div>
                       </div>
-                      <div className="text-xs font-mono text-gray-800 break-all">
-                        {(user?.walletAddress || address)?.slice(0, 6)}...{(user?.walletAddress || address)?.slice(-4)}
-                      </div>
-                    </div>
 
-                    {/* Wallet Provider */}
-                    <div className="bg-white/60 rounded-lg p-3 border border-purple-200/50">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium text-gray-600">Provider</span>
-                        <span className="text-xs text-gray-800">
+                      {/* Wallet Provider */}
+                      <div className="bg-white/60 rounded-lg p-2 border border-purple-200/50">
+                        <div className="text-xs text-gray-800 truncate">
                           {typeof window !== 'undefined' && window.ethereum?.isMetaMask ? 'MetaMask' :
                            typeof window !== 'undefined' && window.ethereum?.isWalletConnect ? 'WalletConnect' :
                            typeof window !== 'undefined' && window.ethereum ? 'Web3 Provider' : 'Unknown'}
-                        </span>
+                        </div>
                       </div>
-                    </div>
 
-                    {/* Connection Method */}
-                    <div className="bg-white/60 rounded-lg p-3 border border-purple-200/50">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium text-gray-600">Connection</span>
-                        <span className="text-xs text-gray-800">
+                      {/* Connection Method */}
+                      <div className="bg-white/60 rounded-lg p-2 border border-purple-200/50">
+                        <div className="text-xs text-gray-800 truncate">
                           {user?.authMethod === 'web3' ? 'Web3 Only' :
                            user?.authMethod === 'hybrid' ? 'Hybrid' : 'Email + Web3'}
-                        </span>
+                        </div>
                       </div>
-                    </div>
 
-                    {/* Security Status */}
-                    <div className="bg-white/60 rounded-lg p-3 border border-purple-200/50">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium text-gray-600">Security</span>
+                      {/* Security Status */}
+                      <div className="bg-white/60 rounded-lg p-2 border border-purple-200/50">
                         <div className="flex items-center space-x-1">
                           <div className="w-2 h-2 rounded-full bg-green-500"></div>
                           <span className="text-xs text-gray-800">Verified</span>
@@ -876,7 +869,7 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Quick Actions */}
-                    <div className="flex space-x-2 pt-2">
+                    <div className="flex space-x-2 pt-1">
                       {!user?.walletAddress && !address && (
                         <button
                           onClick={handleWalletConnect}
