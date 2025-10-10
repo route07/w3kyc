@@ -606,12 +606,20 @@ export default function DashboardPage() {
                     </span>
                   </div>
 
+                  {/* Email Address Display */}
+                  {user?.email && (
+                    <div className="bg-white/60 rounded-lg p-3 border border-blue-200/50">
+                      <div className="text-xs font-medium text-gray-600 mb-1">Email Address</div>
+                      <div className="text-sm text-gray-800 break-all">{user.email}</div>
+                    </div>
+                  )}
+
                   {/* Admin Role Indicator */}
                   {user?.isAdmin && (
                     <div className="flex items-center space-x-2">
                       <div className="w-2 h-2 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full"></div>
                       <span className="text-sm font-medium text-gray-700">
-                        {user?.adminLevel ? `${user.adminLevel} Admin` : 'Administrator'}
+                        Role: {user?.adminLevel ? `${user.adminLevel} Admin` : 'Administrator'}
                       </span>
                     </div>
                   )}
@@ -797,7 +805,9 @@ export default function DashboardPage() {
                     <div className="text-sm text-gray-600">Wallet Status</div>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
+                
+                {/* Connection Status */}
+                <div className="flex items-center space-x-2 mb-4">
                   <div className={`w-2 h-2 rounded-full ${
                     (isConnected || user?.walletAddress || address) ? 'bg-gradient-to-r from-green-400 to-emerald-500 animate-pulse' : 'bg-gradient-to-r from-gray-400 to-gray-500'
                   }`}></div>
@@ -810,9 +820,97 @@ export default function DashboardPage() {
                     </div>
                   )}
                 </div>
+
+                {/* Wallet Details */}
                 {(user?.walletAddress || address) && (
-                  <div className="mt-3 text-xs text-gray-500 font-mono">
-                    {(user?.walletAddress || address)?.slice(0, 6)}...{(user?.walletAddress || address)?.slice(-4)}
+                  <div className="space-y-3">
+                    {/* Wallet Address */}
+                    <div className="bg-white/60 rounded-lg p-3 border border-purple-200/50">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-medium text-gray-600">Wallet Address</span>
+                        <button
+                          onClick={() => navigator.clipboard.writeText(user?.walletAddress || address || '')}
+                          className="text-purple-600 hover:text-purple-800 transition-colors"
+                          title="Copy address"
+                        >
+                          <LinkIcon className="h-4 w-4" />
+                        </button>
+                      </div>
+                      <div className="text-xs font-mono text-gray-800 break-all">
+                        {(user?.walletAddress || address)?.slice(0, 6)}...{(user?.walletAddress || address)?.slice(-4)}
+                      </div>
+                    </div>
+
+                    {/* Wallet Provider */}
+                    <div className="bg-white/60 rounded-lg p-3 border border-purple-200/50">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-gray-600">Provider</span>
+                        <span className="text-xs text-gray-800">
+                          {typeof window !== 'undefined' && window.ethereum?.isMetaMask ? 'MetaMask' :
+                           typeof window !== 'undefined' && window.ethereum?.isWalletConnect ? 'WalletConnect' :
+                           typeof window !== 'undefined' && window.ethereum ? 'Web3 Provider' : 'Unknown'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Connection Method */}
+                    <div className="bg-white/60 rounded-lg p-3 border border-purple-200/50">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-gray-600">Connection</span>
+                        <span className="text-xs text-gray-800">
+                          {user?.authMethod === 'web3' ? 'Web3 Only' :
+                           user?.authMethod === 'hybrid' ? 'Hybrid' : 'Email + Web3'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Security Status */}
+                    <div className="bg-white/60 rounded-lg p-3 border border-purple-200/50">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-gray-600">Security</span>
+                        <div className="flex items-center space-x-1">
+                          <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                          <span className="text-xs text-gray-800">Verified</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Quick Actions */}
+                    <div className="flex space-x-2 pt-2">
+                      {!user?.walletAddress && !address && (
+                        <button
+                          onClick={handleWalletConnect}
+                          disabled={walletConnecting}
+                          className="flex-1 px-3 py-2 bg-purple-600 text-white text-xs rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
+                        >
+                          {walletConnecting ? 'Connecting...' : 'Connect Wallet'}
+                        </button>
+                      )}
+                      {(user?.walletAddress || address) && (
+                        <button
+                          onClick={() => disconnect()}
+                          className="flex-1 px-3 py-2 bg-red-600 text-white text-xs rounded-lg hover:bg-red-700 transition-colors"
+                        >
+                          Disconnect
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Not Connected State */}
+                {!user?.walletAddress && !address && (
+                  <div className="text-center py-4">
+                    <div className="text-gray-500 text-sm mb-3">
+                      Connect your wallet to access Web3 features
+                    </div>
+                    <button
+                      onClick={handleWalletConnect}
+                      disabled={walletConnecting}
+                      className="px-4 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
+                    >
+                      {walletConnecting ? 'Connecting...' : 'Connect Wallet'}
+                    </button>
                   </div>
                 )}
               </div>
