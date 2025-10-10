@@ -701,10 +701,8 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Account Information and Timeline Side by Side */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            {/* User Details */}
-            <div className="bg-white/80 backdrop-blur-sm shadow-xl overflow-hidden rounded-2xl border border-gray-200/50">
+          {/* User Details */}
+          <div className="bg-white/80 backdrop-blur-sm shadow-xl overflow-hidden rounded-2xl border border-gray-200/50 mb-8">
               <div className="bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-4">
                 <h3 className="text-xl font-bold text-white flex items-center">
                   <UserIcon className="w-6 h-6 mr-3" />
@@ -851,9 +849,9 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Application Status Timeline */}
-            {applicationStatus && (
-              <div className="bg-white/80 backdrop-blur-sm shadow-xl overflow-hidden rounded-2xl border border-gray-200/50">
+          {/* Application Status Timeline */}
+          {applicationStatus && (
+            <div className="bg-white/80 backdrop-blur-sm shadow-xl overflow-hidden rounded-2xl border border-gray-200/50 mb-8">
                 <div 
                   className="bg-gradient-to-r from-blue-500 to-indigo-600 px-6 py-4 cursor-pointer hover:from-blue-600 hover:to-indigo-700 transition-all duration-200"
                   onClick={() => setIsTimelineCollapsed(!isTimelineCollapsed)}
@@ -972,7 +970,6 @@ export default function DashboardPage() {
                 </div>
               </div>
             )}
-          </div>
 
           {/* Comprehensive Application Status Details */}
           {applicationStatus && (
