@@ -146,6 +146,11 @@ export default function DashboardPage() {
 
   // Helper function to get primary status
   const getPrimaryStatus = () => {
+    // If still loading, return null to indicate loading state
+    if (isLoadingStatus) {
+      return null;
+    }
+    
     // Priority order: applicationStatus.status > applicationStatus.kycStatus > user.kycStatus > 'not_started'
     if (applicationStatus) {
       const primaryStatus = applicationStatus.status || applicationStatus.kycStatus || 'not_started';
@@ -215,6 +220,7 @@ export default function DashboardPage() {
   const [blockchainTxHash, setBlockchainTxHash] = useState<string | null>(null);
   const [blockchainError, setBlockchainError] = useState<string | null>(null);
   const [isTimelineCollapsed, setIsTimelineCollapsed] = useState(false);
+  const [isLoadingStatus, setIsLoadingStatus] = useState(true);
 
   // Ensure component is mounted on client side
   useEffect(() => {
@@ -268,6 +274,9 @@ export default function DashboardPage() {
   // Fetch KYC status and submission data
   useEffect(() => {
     const fetchKYCData = async () => {
+      // Set loading state at the start
+      setIsLoadingStatus(true);
+      
       if (user?.walletAddress || address) {
         try {
           const walletAddr = user?.walletAddress || address;
@@ -343,6 +352,9 @@ export default function DashboardPage() {
           console.error('Error fetching KYC data:', error);
         }
       }
+      
+      // Set loading state to false when done
+      setIsLoadingStatus(false);
     };
 
     if (mounted && isAuthenticated && user) {
@@ -536,6 +548,42 @@ export default function DashboardPage() {
             {/* KYC Status Card */}
             {(() => {
               const primaryStatus = getPrimaryStatus();
+              
+              // Show loading state if still loading
+              if (primaryStatus === null) {
+                return (
+                  <div className="group relative bg-gray-50 overflow-hidden rounded-2xl shadow-lg border-2 border-gray-200">
+                    <div className="relative p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="p-3 bg-gradient-to-r from-gray-400 to-gray-500 rounded-xl shadow-lg">
+                          <ClockIcon className="h-6 w-6 text-white animate-pulse" />
+                        </div>
+                        <div className="text-right">
+                          <div className="text-2xl font-bold text-gray-600 animate-pulse">
+                            Loading...
+                          </div>
+                          <div className="text-sm text-gray-500">Application Status</div>
+                        </div>
+                      </div>
+                      <div className="space-y-3">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 rounded-full bg-gray-400 animate-pulse"></div>
+                          <span className="text-sm font-medium text-gray-600">
+                            Fetching your application status
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div className="h-2 rounded-full bg-gray-300 animate-pulse"></div>
+                        </div>
+                        <div className="text-xs text-gray-500 text-right">
+                          Please wait...
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              
               const config = getStatusConfig(primaryStatus);
               const Icon = config.icon;
               
@@ -726,6 +774,28 @@ export default function DashboardPage() {
                   <dd className="mt-1 text-sm font-medium text-gray-900 sm:mt-0 sm:col-span-2">
                     {(() => {
                       const primaryStatus = getPrimaryStatus();
+                      
+                      // Show loading state if still loading
+                      if (primaryStatus === null) {
+                        return (
+                          <div className="space-y-2">
+                            <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600 border border-gray-200">
+                              <div className="w-2 h-2 rounded-full mr-2 bg-gray-400 animate-pulse"></div>
+                              Loading...
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              Fetching your application status
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-1.5">
+                              <div className="h-1.5 rounded-full bg-gray-300 animate-pulse"></div>
+                            </div>
+                            <div className="text-xs text-gray-400 text-right">
+                              Please wait...
+                            </div>
+                          </div>
+                        );
+                      }
+                      
                       const config = getStatusConfig(primaryStatus);
                       
                       return (
@@ -1029,6 +1099,19 @@ export default function DashboardPage() {
                   <dd className="mt-1 text-sm font-medium text-gray-900 sm:mt-0 sm:col-span-2">
                     {(() => {
                       const primaryStatus = getPrimaryStatus();
+                      
+                      // Show loading state if still loading
+                      if (primaryStatus === null) {
+                        return (
+                          <div className="space-y-2">
+                            <p className="text-sm text-gray-600">Loading next steps...</p>
+                            <div className="flex items-center space-x-2">
+                              <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
+                              <span className="text-xs text-gray-500">Please wait while we determine your next steps</span>
+                            </div>
+                          </div>
+                        );
+                      }
                       
                       switch (primaryStatus) {
                         case 'not_started':
