@@ -5,6 +5,15 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useAccount, useDisconnect } from 'wagmi'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { 
+  HomeIcon, 
+  ChartBarIcon, 
+  ShieldCheckIcon, 
+  UserGroupIcon,
+  CogIcon,
+  ArrowRightOnRectangleIcon,
+  LinkIcon
+} from '@heroicons/react/24/outline'
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth()
@@ -53,38 +62,42 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-2">
             <Link 
               href="/" 
-              className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+              className="group flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200"
             >
-              Home
+              <HomeIcon className="w-4 h-4" />
+              <span>Home</span>
             </Link>
             
             {isAuthenticated && (
               <>
                 <Link 
                   href="/dashboard" 
-                  className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                  className="group flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200"
                 >
-                  Dashboard
+                  <ChartBarIcon className="w-4 h-4" />
+                  <span>Dashboard</span>
+                </Link>
+                
+                <Link 
+                  href="/kyc/web3-onboarding" 
+                  className="group flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-md hover:shadow-lg transition-all duration-200"
+                >
+                  <ShieldCheckIcon className="w-4 h-4" />
+                  <span>KYC</span>
                 </Link>
                 
                 {user?.isAdmin && (
                   <Link 
                     href="/admin" 
-                    className="text-gray-700 hover:text-red-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                    className="group flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:text-red-600 hover:bg-red-50 transition-all duration-200"
                   >
-                    Admin
+                    <CogIcon className="w-4 h-4" />
+                    <span>Admin</span>
                   </Link>
                 )}
-                
-                <Link 
-                  href="/kyc/web3-onboarding" 
-                  className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-                >
-                  KYC
-                </Link>
               </>
             )}
           </div>
@@ -121,33 +134,37 @@ export default function Navbar() {
                   {isConnected && (
                     <button
                       onClick={handleDisconnect}
-                      className="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+                      className="group flex items-center space-x-1 px-3 py-2 text-xs bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all duration-200"
                     >
-                      Disconnect
+                      <LinkIcon className="w-3 h-3" />
+                      <span>Disconnect</span>
                     </button>
                   )}
                   
                   <button
                     onClick={handleLogout}
-                    className="px-3 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
+                    className="group flex items-center space-x-1 px-3 py-2 text-xs bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-all duration-200"
                   >
-                    Logout
+                    <ArrowRightOnRectangleIcon className="w-3 h-3" />
+                    <span>Logout</span>
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-3">
                 <Link
                   href="/auth/login"
-                  className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                  className="group flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200"
                 >
-                  Login
+                  <ArrowRightOnRectangleIcon className="w-4 h-4" />
+                  <span>Login</span>
                 </Link>
                 <Link
                   href="/auth/signup"
-                  className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
+                  className="group flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-md hover:shadow-lg transition-all duration-200"
                 >
-                  Sign Up
+                  <UserGroupIcon className="w-4 h-4" />
+                  <span>Sign Up</span>
                 </Link>
               </div>
             )}
@@ -172,39 +189,43 @@ export default function Navbar() {
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-gray-50 rounded-lg mt-2">
               <Link 
                 href="/" 
-                className="text-gray-700 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium"
+                className="group flex items-center space-x-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 block px-3 py-3 rounded-lg text-base font-medium transition-all duration-200"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Home
+                <HomeIcon className="w-5 h-5" />
+                <span>Home</span>
               </Link>
               
               {isAuthenticated && (
                 <>
                   <Link 
                     href="/dashboard" 
-                    className="text-gray-700 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium"
+                    className="group flex items-center space-x-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 block px-3 py-3 rounded-lg text-base font-medium transition-all duration-200"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Dashboard
+                    <ChartBarIcon className="w-5 h-5" />
+                    <span>Dashboard</span>
+                  </Link>
+                  
+                  <Link 
+                    href="/kyc/web3-onboarding" 
+                    className="group flex items-center space-x-3 text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 block px-3 py-3 rounded-lg text-base font-medium shadow-md transition-all duration-200"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <ShieldCheckIcon className="w-5 h-5" />
+                    <span>KYC</span>
                   </Link>
                   
                   {user?.isAdmin && (
                     <Link 
                       href="/admin" 
-                      className="text-gray-700 hover:text-red-600 block px-3 py-2 rounded-md text-base font-medium"
+                      className="group flex items-center space-x-3 text-gray-700 hover:text-red-600 hover:bg-red-50 block px-3 py-3 rounded-lg text-base font-medium transition-all duration-200"
                       onClick={() => setIsMenuOpen(false)}
                     >
-                      Admin
+                      <CogIcon className="w-5 h-5" />
+                      <span>Admin</span>
                     </Link>
                   )}
-                  
-                  <Link 
-                    href="/kyc/web3-onboarding" 
-                    className="text-gray-700 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    KYC
-                  </Link>
                 </>
               )}
 
@@ -238,9 +259,10 @@ export default function Navbar() {
                           handleDisconnect()
                           setIsMenuOpen(false)
                         }}
-                        className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
+                        className="group flex items-center space-x-2 w-full text-left px-3 py-3 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-200"
                       >
-                        Disconnect Wallet
+                        <LinkIcon className="w-4 h-4" />
+                        <span>Disconnect Wallet</span>
                       </button>
                     )}
                     
@@ -249,9 +271,10 @@ export default function Navbar() {
                         handleLogout()
                         setIsMenuOpen(false)
                       }}
-                      className="w-full text-left px-3 py-2 text-sm text-red-700 hover:bg-red-50 rounded-md"
+                      className="group flex items-center space-x-2 w-full text-left px-3 py-3 text-sm text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200"
                     >
-                      Logout
+                      <ArrowRightOnRectangleIcon className="w-4 h-4" />
+                      <span>Logout</span>
                     </button>
                   </div>
                 </div>
@@ -259,17 +282,19 @@ export default function Navbar() {
                 <div className="pt-4 border-t border-gray-200 space-y-2">
                   <Link
                     href="/auth/login"
-                    className="text-gray-700 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium"
+                    className="group flex items-center space-x-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 block px-3 py-3 rounded-lg text-base font-medium transition-all duration-200"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Login
+                    <ArrowRightOnRectangleIcon className="w-5 h-5" />
+                    <span>Login</span>
                   </Link>
                   <Link
                     href="/auth/signup"
-                    className="bg-blue-600 text-white block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700"
+                    className="group flex items-center space-x-3 text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 block px-3 py-3 rounded-lg text-base font-medium shadow-md transition-all duration-200"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Sign Up
+                    <UserGroupIcon className="w-5 h-5" />
+                    <span>Sign Up</span>
                   </Link>
                 </div>
               )}

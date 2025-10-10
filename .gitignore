@@ -21,7 +21,7 @@
 /build
 
 #
-.env.local
+#.env.local
 
 # misc
 .DS_Store
