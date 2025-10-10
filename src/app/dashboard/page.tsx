@@ -271,6 +271,21 @@ export default function DashboardPage() {
   //   }
   // }, [mounted, isConnected, address, isAuthenticated, user?.email, user?.walletAddress]);
 
+  // Debug wallet connection state
+  useEffect(() => {
+    const hasWallet = !!(isConnected || user?.walletAddress || address);
+    const walletProvider = typeof window !== 'undefined' && window.ethereum;
+    
+    console.log('Dashboard: Wallet connection state changed', {
+      isConnected,
+      address,
+      userWalletAddress: user?.walletAddress,
+      hasWallet,
+      walletProvider: !!walletProvider,
+      walletProviderType: walletProvider?.isMetaMask ? 'MetaMask' : walletProvider?.isWalletConnect ? 'WalletConnect' : 'Unknown'
+    });
+  }, [isConnected, address, user?.walletAddress]);
+
   // Fetch KYC status and submission data
   useEffect(() => {
     const fetchKYCData = async () => {
@@ -680,23 +695,33 @@ export default function DashboardPage() {
               <div className="relative p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="p-3 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl shadow-lg">
-                    <DocumentTextIcon className="h-6 w-6 text-white" />
+                    <WalletIcon className="h-6 w-6 text-white" />
                   </div>
                   <div className="text-right">
                     <div className="text-2xl font-bold text-gray-900">
-                      {isConnected ? 'Active' : 'Offline'}
+                      {(isConnected || user?.walletAddress || address) ? 'Active' : 'Offline'}
                     </div>
                     <div className="text-sm text-gray-600">Wallet Status</div>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className={`w-2 h-2 rounded-full ${
-                    isConnected ? 'bg-gradient-to-r from-green-400 to-emerald-500 animate-pulse' : 'bg-gradient-to-r from-gray-400 to-gray-500'
+                    (isConnected || user?.walletAddress || address) ? 'bg-gradient-to-r from-green-400 to-emerald-500 animate-pulse' : 'bg-gradient-to-r from-gray-400 to-gray-500'
                   }`}></div>
                   <span className="text-sm font-medium text-gray-700">
-                    {isConnected ? 'Connected' : 'Not Connected'}
+                    {(isConnected || user?.walletAddress || address) ? 'Connected' : 'Not Connected'}
                   </span>
+                  {walletConnecting && (
+                    <div className="ml-2">
+                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-purple-600"></div>
+                    </div>
+                  )}
                 </div>
+                {(user?.walletAddress || address) && (
+                  <div className="mt-3 text-xs text-gray-500 font-mono">
+                    {(user?.walletAddress || address)?.slice(0, 6)}...{(user?.walletAddress || address)?.slice(-4)}
+                  </div>
+                )}
               </div>
             </div>
           </div>

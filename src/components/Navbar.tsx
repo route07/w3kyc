@@ -12,7 +12,8 @@ import {
   UserGroupIcon,
   CogIcon,
   ArrowRightOnRectangleIcon,
-  LinkIcon
+  LinkIcon,
+  BookOpenIcon
 } from '@heroicons/react/24/outline'
 
 export default function Navbar() {
@@ -87,6 +88,14 @@ export default function Navbar() {
                 >
                   <ShieldCheckIcon className="w-4 h-4" />
                   <span>KYC</span>
+                </Link>
+                
+                <Link 
+                  href="/user-guide" 
+                  className="group flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200"
+                >
+                  <BookOpenIcon className="w-4 h-4" />
+                  <span>Guide</span>
                 </Link>
                 
                 {user?.isAdmin && (
@@ -214,6 +223,15 @@ export default function Navbar() {
                   >
                     <ShieldCheckIcon className="w-5 h-5" />
                     <span>KYC</span>
+                  </Link>
+                  
+                  <Link 
+                    href="/user-guide" 
+                    className="group flex items-center space-x-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 block px-3 py-3 rounded-lg text-base font-medium transition-all duration-200"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <BookOpenIcon className="w-5 h-5" />
+                    <span>Guide</span>
                   </Link>
                   
                   {user?.isAdmin && (
